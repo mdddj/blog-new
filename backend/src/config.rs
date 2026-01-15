@@ -20,6 +20,7 @@ pub struct Config {
 pub struct ServerConfig {
     pub host: String,
     pub port: u16,
+    pub max_body_size_mb: usize,
 }
 
 /// Database configuration
@@ -27,6 +28,10 @@ pub struct ServerConfig {
 pub struct DatabaseConfig {
     pub url: String,
     pub max_connections: u32,
+    pub min_connections: u32,
+    pub acquire_timeout_secs: u64,
+    pub idle_timeout_secs: u64,
+    pub max_lifetime_secs: u64,
 }
 
 /// Redis configuration
@@ -63,15 +68,45 @@ impl Config {
                     .unwrap_or_else(|_| "8080".to_string())
                     .parse()
                     .map_err(|_| ConfigError::InvalidValue("SERVER_PORT".to_string()))?,
+                max_body_size_mb: env::var("SERVER_MAX_BODY_SIZE_MB")
+                    .unwrap_or_else(|_| "50".to_string())
+                    .parse()
+                    .map_err(|_| {
+                        ConfigError::InvalidValue("SERVER_MAX_BODY_SIZE_MB".to_string())
+                    })?,
             },
             database: DatabaseConfig {
                 url: env::var("DATABASE_URL")
                     .map_err(|_| ConfigError::MissingEnv("DATABASE_URL".to_string()))?,
                 max_connections: env::var("DATABASE_MAX_CONNECTIONS")
-                    .unwrap_or_else(|_| "10".to_string())
+                    .unwrap_or_else(|_| "50".to_string())
                     .parse()
                     .map_err(|_| {
                         ConfigError::InvalidValue("DATABASE_MAX_CONNECTIONS".to_string())
+                    })?,
+                min_connections: env::var("DATABASE_MIN_CONNECTIONS")
+                    .unwrap_or_else(|_| "5".to_string())
+                    .parse()
+                    .map_err(|_| {
+                        ConfigError::InvalidValue("DATABASE_MIN_CONNECTIONS".to_string())
+                    })?,
+                acquire_timeout_secs: env::var("DATABASE_ACQUIRE_TIMEOUT_SECS")
+                    .unwrap_or_else(|_| "10".to_string())
+                    .parse()
+                    .map_err(|_| {
+                        ConfigError::InvalidValue("DATABASE_ACQUIRE_TIMEOUT_SECS".to_string())
+                    })?,
+                idle_timeout_secs: env::var("DATABASE_IDLE_TIMEOUT_SECS")
+                    .unwrap_or_else(|_| "600".to_string())
+                    .parse()
+                    .map_err(|_| {
+                        ConfigError::InvalidValue("DATABASE_IDLE_TIMEOUT_SECS".to_string())
+                    })?,
+                max_lifetime_secs: env::var("DATABASE_MAX_LIFETIME_SECS")
+                    .unwrap_or_else(|_| "1800".to_string())
+                    .parse()
+                    .map_err(|_| {
+                        ConfigError::InvalidValue("DATABASE_MAX_LIFETIME_SECS".to_string())
                     })?,
             },
             redis: RedisConfig {

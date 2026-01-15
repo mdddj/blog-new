@@ -12,7 +12,7 @@ mod routes;
 mod services;
 mod utils;
 
-use axum::Router;
+use axum::{extract::DefaultBodyLimit, Router};
 use sqlx::postgres::PgPoolOptions;
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -52,6 +52,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Create database connection pool
     let db = PgPoolOptions::new()
         .max_connections(config.database.max_connections)
+        .min_connections(config.database.min_connections)
+        .acquire_timeout(std::time::Duration::from_secs(
+            config.database.acquire_timeout_secs,
+        ))
+        .idle_timeout(std::time::Duration::from_secs(
+            config.database.idle_timeout_secs,
+        ))
+        .max_lifetime(std::time::Duration::from_secs(
+            config.database.max_lifetime_secs,
+        ))
         .connect(&config.database.url)
         .await?;
 
@@ -85,6 +95,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let app = Router::new()
         .nest("/api/v1", routes::create_routes())
         .nest("/api/v1/admin", routes::create_admin_routes(state.clone()))
+        .layer(DefaultBodyLimit::max(
+            config.server.max_body_size_mb * 1024 * 1024,
+        ))
         .layer(TraceLayer::new_for_http())
         .layer(cors)
         .with_state(state);
