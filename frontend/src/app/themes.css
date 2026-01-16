@@ -1,0 +1,286 @@
+/* ============================================
+   STYLE THEMES FOR BLOG FRONTEND
+   ============================================ */
+
+/* ============================================
+   THEME: MINIMAL (极简)
+   Clean, black & white, generous whitespace
+   ============================================ */
+.theme-minimal {
+    --theme-font-heading: "Inter", system-ui, sans-serif;
+    --theme-font-body: "Inter", system-ui, sans-serif;
+    --theme-radius: 0.5rem;
+    --theme-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --theme-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --theme-transition: 0.2s ease;
+}
+
+.theme-minimal:root,
+:root.theme-minimal {
+    --background: oklch(0.99 0 0);
+    --foreground: oklch(0.1 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.1 0 0);
+    --primary: oklch(0.15 0 0);
+    --primary-foreground: oklch(0.98 0 0);
+    --secondary: oklch(0.96 0 0);
+    --secondary-foreground: oklch(0.15 0 0);
+    --muted: oklch(0.96 0 0);
+    --muted-foreground: oklch(0.45 0 0);
+    --accent: oklch(0.96 0 0);
+    --accent-foreground: oklch(0.15 0 0);
+    --border: oklch(0.9 0 0);
+}
+
+.theme-minimal.dark,
+.dark.theme-minimal {
+    --background: oklch(0.08 0 0);
+    --foreground: oklch(0.95 0 0);
+    --card: oklch(0.12 0 0);
+    --card-foreground: oklch(0.95 0 0);
+    --primary: oklch(0.95 0 0);
+    --primary-foreground: oklch(0.08 0 0);
+    --secondary: oklch(0.18 0 0);
+    --secondary-foreground: oklch(0.95 0 0);
+    --muted: oklch(0.18 0 0);
+    --muted-foreground: oklch(0.6 0 0);
+    --accent: oklch(0.18 0 0);
+    --accent-foreground: oklch(0.95 0 0);
+    --border: oklch(0.25 0 0);
+}
+
+/* ============================================
+   THEME: CYBER (赛博)
+   Neon gradients, dark base, tech vibes
+   ============================================ */
+.theme-cyber {
+    --theme-font-heading: "Space Grotesk", "Inter", system-ui, sans-serif;
+    --theme-font-body: "Inter", system-ui, sans-serif;
+    --theme-radius: 0.75rem;
+    --theme-shadow: 0 0 20px rgba(139, 92, 246, 0.15);
+    --theme-shadow-lg: 0 0 40px rgba(139, 92, 246, 0.25);
+    --theme-transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-cyber:root,
+:root.theme-cyber {
+    --background: oklch(0.14 0.02 280);
+    --foreground: oklch(0.95 0.02 280);
+    --card: oklch(0.18 0.025 280);
+    --card-foreground: oklch(0.95 0.02 280);
+    --primary: oklch(0.7 0.25 300);
+    --primary-foreground: oklch(0.98 0 0);
+    --secondary: oklch(0.25 0.04 280);
+    --secondary-foreground: oklch(0.9 0.1 300);
+    --muted: oklch(0.22 0.03 280);
+    --muted-foreground: oklch(0.65 0.05 280);
+    --accent: oklch(0.6 0.2 180);
+    --accent-foreground: oklch(0.98 0 0);
+    --border: oklch(0.3 0.05 280);
+}
+
+.theme-cyber.dark,
+.dark.theme-cyber {
+    --background: oklch(0.1 0.02 280);
+    --foreground: oklch(0.95 0.02 280);
+    --card: oklch(0.14 0.025 280);
+    --card-foreground: oklch(0.95 0.02 280);
+    --primary: oklch(0.75 0.28 300);
+    --primary-foreground: oklch(0.1 0 0);
+    --secondary: oklch(0.2 0.04 280);
+    --secondary-foreground: oklch(0.9 0.1 300);
+    --muted: oklch(0.18 0.03 280);
+    --muted-foreground: oklch(0.6 0.05 280);
+    --accent: oklch(0.65 0.22 180);
+    --accent-foreground: oklch(0.1 0 0);
+    --border: oklch(0.28 0.05 280);
+}
+
+/* Cyber theme special effects */
+.theme-cyber .blog-header {
+    background: linear-gradient(
+        135deg,
+        oklch(0.14 0.02 280 / 0.95) 0%,
+        oklch(0.18 0.04 300 / 0.95) 100%
+    );
+    border-bottom: 1px solid oklch(0.7 0.25 300 / 0.3);
+}
+
+.theme-cyber .blog-card {
+    border: 1px solid oklch(0.7 0.25 300 / 0.2);
+    transition: all 0.3s ease;
+}
+
+.theme-cyber .blog-card:hover {
+    border-color: oklch(0.7 0.25 300 / 0.5);
+    box-shadow: 0 0 30px oklch(0.7 0.25 300 / 0.2);
+}
+
+/* ============================================
+   THEME: WARM (暖调)
+   Earthy tones, serif fonts, cozy feeling
+   ============================================ */
+.theme-warm {
+    --theme-font-heading: "Playfair Display", "Noto Serif SC", Georgia, serif;
+    --theme-font-body: "Source Sans 3", "Noto Sans SC", system-ui, sans-serif;
+    --theme-radius: 0.25rem;
+    --theme-shadow: 0 2px 8px rgba(120, 80, 40, 0.08);
+    --theme-shadow-lg: 0 8px 24px rgba(120, 80, 40, 0.12);
+    --theme-transition: 0.25s ease;
+}
+
+.theme-warm:root,
+:root.theme-warm {
+    --background: oklch(0.97 0.01 80);
+    --foreground: oklch(0.25 0.03 50);
+    --card: oklch(0.99 0.008 80);
+    --card-foreground: oklch(0.25 0.03 50);
+    --primary: oklch(0.55 0.12 40);
+    --primary-foreground: oklch(0.98 0.01 80);
+    --secondary: oklch(0.93 0.02 80);
+    --secondary-foreground: oklch(0.35 0.04 50);
+    --muted: oklch(0.94 0.015 80);
+    --muted-foreground: oklch(0.5 0.03 50);
+    --accent: oklch(0.85 0.06 80);
+    --accent-foreground: oklch(0.3 0.04 50);
+    --border: oklch(0.88 0.02 80);
+}
+
+.theme-warm.dark,
+.dark.theme-warm {
+    --background: oklch(0.18 0.02 50);
+    --foreground: oklch(0.92 0.02 80);
+    --card: oklch(0.22 0.025 50);
+    --card-foreground: oklch(0.92 0.02 80);
+    --primary: oklch(0.7 0.14 40);
+    --primary-foreground: oklch(0.15 0.02 50);
+    --secondary: oklch(0.28 0.03 50);
+    --secondary-foreground: oklch(0.88 0.03 80);
+    --muted: oklch(0.25 0.025 50);
+    --muted-foreground: oklch(0.65 0.03 80);
+    --accent: oklch(0.4 0.08 40);
+    --accent-foreground: oklch(0.95 0.02 80);
+    --border: oklch(0.32 0.03 50);
+}
+
+/* Warm theme typography */
+.theme-warm h1,
+.theme-warm h2,
+.theme-warm h3,
+.theme-warm h4 {
+    font-family: var(--theme-font-heading);
+    letter-spacing: -0.02em;
+}
+
+/* ============================================
+   THEME: OCEAN (海洋)
+   Blue-green palette, fresh and clean
+   ============================================ */
+.theme-ocean {
+    --theme-font-heading: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
+    --theme-font-body: "Inter", system-ui, sans-serif;
+    --theme-radius: 1rem;
+    --theme-shadow: 0 4px 16px rgba(0, 120, 150, 0.08);
+    --theme-shadow-lg: 0 8px 32px rgba(0, 120, 150, 0.12);
+    --theme-transition: 0.2s ease;
+}
+
+.theme-ocean:root,
+:root.theme-ocean {
+    --background: oklch(0.98 0.01 200);
+    --foreground: oklch(0.2 0.03 220);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.2 0.03 220);
+    --primary: oklch(0.55 0.15 200);
+    --primary-foreground: oklch(0.99 0 0);
+    --secondary: oklch(0.94 0.02 200);
+    --secondary-foreground: oklch(0.3 0.05 200);
+    --muted: oklch(0.95 0.015 200);
+    --muted-foreground: oklch(0.5 0.04 200);
+    --accent: oklch(0.65 0.12 170);
+    --accent-foreground: oklch(0.15 0.03 200);
+    --border: oklch(0.9 0.02 200);
+}
+
+.theme-ocean.dark,
+.dark.theme-ocean {
+    --background: oklch(0.12 0.025 220);
+    --foreground: oklch(0.95 0.01 200);
+    --card: oklch(0.16 0.03 220);
+    --card-foreground: oklch(0.95 0.01 200);
+    --primary: oklch(0.65 0.18 200);
+    --primary-foreground: oklch(0.1 0.02 220);
+    --secondary: oklch(0.22 0.035 220);
+    --secondary-foreground: oklch(0.9 0.02 200);
+    --muted: oklch(0.2 0.03 220);
+    --muted-foreground: oklch(0.6 0.04 200);
+    --accent: oklch(0.5 0.15 170);
+    --accent-foreground: oklch(0.98 0 0);
+    --border: oklch(0.28 0.04 220);
+}
+
+/* Ocean theme special effects */
+.theme-ocean .blog-card {
+    border-radius: 1rem;
+    overflow: hidden;
+}
+
+.theme-ocean .blog-header {
+    background: linear-gradient(
+        180deg,
+        oklch(0.98 0.01 200) 0%,
+        oklch(0.96 0.02 200) 100%
+    );
+}
+
+.dark.theme-ocean .blog-header {
+    background: linear-gradient(
+        180deg,
+        oklch(0.12 0.025 220) 0%,
+        oklch(0.14 0.03 220) 100%
+    );
+}
+
+/* ============================================
+   SHARED THEME UTILITIES
+   ============================================ */
+[class*="theme-"] {
+    transition: background-color var(--theme-transition, 0.2s ease),
+                color var(--theme-transition, 0.2s ease),
+                border-color var(--theme-transition, 0.2s ease);
+}
+
+/* Apply theme fonts */
+[class*="theme-"] h1,
+[class*="theme-"] h2,
+[class*="theme-"] h3,
+[class*="theme-"] h4,
+[class*="theme-"] h5,
+[class*="theme-"] h6 {
+    font-family: var(--theme-font-heading, inherit);
+}
+
+[class*="theme-"] body,
+[class*="theme-"] p,
+[class*="theme-"] span,
+[class*="theme-"] li {
+    font-family: var(--theme-font-body, inherit);
+}
+
+/* Theme-aware card shadows */
+[class*="theme-"] .card,
+[class*="theme-"] [class*="Card"] {
+    box-shadow: var(--theme-shadow);
+    transition: box-shadow var(--theme-transition, 0.2s ease),
+                transform var(--theme-transition, 0.2s ease);
+}
+
+[class*="theme-"] .card:hover,
+[class*="theme-"] [class*="Card"]:hover {
+    box-shadow: var(--theme-shadow-lg);
+}
+
+/* Theme-aware border radius */
+[class*="theme-"] .rounded-lg {
+    border-radius: var(--theme-radius, 0.5rem);
+}

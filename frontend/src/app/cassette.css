@@ -1,0 +1,872 @@
+/* ============================================
+   CASSETTE FUTURISM MINIMALIST THEME
+   Refined retro-futuristic aesthetic 
+   Clean lines, high contrast, analog soul
+   ============================================ */
+
+/* Import retro fonts */
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Orbitron:wght@400;500;600;700&family=Syncopate:wght@400;700&display=swap');
+
+/* ============================================
+   DARK MODE (Default) - Clean Industrial
+   ============================================ */
+:root,
+.dark {
+    /* Cassette Futurism Color Palette - Minimalist Dark */
+    --cf-bg-deep: #050505;       /* Almost Black */
+    --cf-bg-panel: #0a0a0a;      /* Very Dark Grey */
+    --cf-bg-elevated: #111111;   /* Dark Grey */
+    --cf-bg-inset: #000000;      /* Pure Black */
+    
+    --cf-amber: #ffae00;         /* Sharp Amber */
+    --cf-amber-dim: #996900;     /* Muted Amber */
+    --cf-amber-glow: #ffcc00;    /* Bright Amber */
+    
+    --cf-green: #00ff41;         /* Terminal Green */
+    --cf-green-dim: #008f24;
+    
+    --cf-cyan: #00f0ff;          /* Cyber Cyan */
+    --cf-cyan-dim: #008fa3;
+    
+    --cf-red: #ff2a2a;           /* Alert Red */
+    --cf-red-dim: #991919;
+    
+    --cf-text: #ffffff;          /* Pure White for max contrast */
+    --cf-text-dim: #888888;      /* Neutral Grey */
+    --cf-text-muted: #444444;    /* Darker Grey */
+    
+    --cf-border: #333333;        /* Subtle Border */
+    --cf-border-light: #555555;
+    
+    --cf-header-bg: rgba(10, 10, 10, 0.8);
+    
+    --cf-grid-color: rgba(255, 174, 0, 0.07);
+    --cf-grid-size: 40px;
+
+    /* Effects - Minimalist */
+    --cf-scanline-opacity: 0.15; /* More visible */
+    --cf-noise-opacity: 0.04;    /* More visible */
+    --cf-glow-amber: 0 0 10px rgba(255, 174, 0, 0.4);
+    --cf-glow-green: 0 0 10px rgba(0, 255, 65, 0.4);
+    --cf-glow-cyan: 0 0 10px rgba(0, 240, 255, 0.4);
+}
+
+/* ============================================
+   LIGHT MODE - Technical Diagram
+   ============================================ */
+:root.light,
+html.light {
+    --cf-bg-deep: #f0f0f0;
+    --cf-bg-panel: #ffffff;
+    --cf-bg-elevated: #f8f8f8;
+    --cf-bg-inset: #e5e5e5;
+    
+    --cf-amber: #d65d0e;         /* Burnt Orange */
+    --cf-amber-dim: #af4600;
+    --cf-amber-glow: #e07a34;
+    
+    --cf-green: #458588;         /* Teal Green */
+    --cf-green-dim: #2f5e60;
+    
+    --cf-cyan: #076678;          /* Dark Cyan */
+    --cf-cyan-dim: #054854;
+    
+    --cf-red: #cc241d;           /* Brick Red */
+    --cf-red-dim: #9d1c16;
+    
+    --cf-text: #050505;          /* Pure Black */
+    --cf-text-dim: #404040;      /* Dark Grey */
+    --cf-text-muted: #737373;    /* Medium Grey */
+    
+    --cf-border: #bdae93;        /* Parchment Border */
+    --cf-border-light: #a89984;
+    
+    --cf-header-bg: rgba(255, 255, 255, 0.8);
+    
+    --cf-grid-color: rgba(0, 0, 0, 0.03);
+    --cf-grid-size: 40px;
+    
+    --cf-scanline-opacity: 0.03;
+    --cf-noise-opacity: 0.02;
+    --cf-glow-amber: none;
+    --cf-glow-green: none;
+    --cf-glow-cyan: none;
+}
+
+/* Shared variables */
+:root {
+    /* Fonts */
+    --cf-font-display: 'Syncopate', 'Orbitron', sans-serif; /* Wide, futuristic */
+    --cf-font-mono: 'Space Mono', monospace;                /* Clean mono */
+    --cf-font-body: 'Space Mono', system-ui, monospace;     /* Consistent mono look */
+    
+    /* Effects */
+    --cf-scanline: linear-gradient(
+        rgba(18, 16, 16, 0) 50%,
+        rgba(0, 0, 0, 0.25) 50%
+    ), linear-gradient(
+        90deg,
+        rgba(255, 0, 0, 0.06),
+        rgba(0, 255, 0, 0.02),
+        rgba(0, 0, 255, 0.06)
+    );
+    
+    --cf-noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+/* ============================================
+   BASE STYLES
+   ============================================ */
+.cassette-theme {
+    background-color: var(--cf-bg-deep);
+    /* Retro Grid Background */
+    background-image: 
+        linear-gradient(var(--cf-grid-color) 1px, transparent 1px),
+        linear-gradient(90deg, var(--cf-grid-color) 1px, transparent 1px),
+        radial-gradient(circle at 50% 0%, rgba(255, 174, 0, 0.05) 0%, transparent 70%);
+    background-size: 
+        var(--cf-grid-size) var(--cf-grid-size), 
+        var(--cf-grid-size) var(--cf-grid-size),
+        100% 100%;
+    background-position: 
+        center top,
+        center top,
+        center top;
+        
+    color: var(--cf-text);
+    font-family: var(--cf-font-body);
+    min-height: 100vh;
+    position: relative;
+    overflow: visible !important;
+    overflow-x: clip;
+
+    /* Map Cassette variables to Shadcn/Tailwind variables for compatibility */
+    --background: var(--cf-bg-deep);
+    --foreground: var(--cf-text);
+    --card: var(--cf-bg-panel);
+    --card-foreground: var(--cf-text);
+    --popover: var(--cf-bg-panel);
+    --popover-foreground: var(--cf-text);
+    --primary: var(--cf-amber);
+    --primary-foreground: #000000;
+    --secondary: var(--cf-bg-elevated);
+    --secondary-foreground: var(--cf-text);
+    --muted: var(--cf-bg-inset);
+    --muted-foreground: var(--cf-text-muted);
+    --accent: var(--cf-bg-elevated);
+    --accent-foreground: var(--cf-text);
+    --destructive: var(--cf-red);
+    --destructive-foreground: #ffffff;
+    --border: var(--cf-border);
+    --input: var(--cf-border);
+    --ring: var(--cf-amber);
+    --radius: 0; /* Sharp corners for retro feel */
+}
+
+/* Scanline overlay */
+.cassette-theme::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--cf-scanline);
+    pointer-events: none;
+    z-index: 9999;
+    opacity: var(--cf-scanline-opacity);
+}
+
+/* Noise texture overlay */
+.cassette-theme::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: var(--cf-noise);
+    pointer-events: none;
+    z-index: 9998;
+    opacity: var(--cf-noise-opacity);
+    mix-blend-mode: overlay;
+}
+
+/* ============================================
+   HEADER - Minimal Control Strip
+   ============================================ */
+.cf-header {
+    background: var(--cf-header-bg);
+    border-bottom: 1px solid var(--cf-border);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+}
+
+.cf-header-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 72px;
+}
+
+.cf-logo {
+    font-family: var(--cf-font-display);
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--cf-text);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: color 0.2s ease;
+}
+
+.cf-logo:hover {
+    color: var(--cf-amber);
+}
+
+.cf-logo span {
+    position: relative;
+}
+
+/* Decorative square next to logo */
+.cf-logo::before {
+    content: '';
+    display: block;
+    width: 12px;
+    height: 12px;
+    background: var(--cf-amber);
+    box-shadow: var(--cf-glow-amber);
+}
+
+/* Navigation */
+.cf-nav {
+    display: flex;
+    gap: 2rem;
+}
+
+.cf-nav-link {
+    font-family: var(--cf-font-mono);
+    font-size: 0.8rem;
+    color: var(--cf-text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    position: relative;
+    padding: 0.5rem 0;
+    transition: all 0.2s ease;
+}
+
+.cf-nav-link:hover {
+    color: var(--cf-text);
+}
+
+.cf-nav-link.active {
+    color: var(--cf-amber);
+}
+
+.cf-nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--cf-amber);
+    box-shadow: var(--cf-glow-amber);
+}
+
+/* Header Actions */
+.cf-header-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.cf-btn-icon {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--cf-border);
+    background: transparent;
+    color: var(--cf-text-dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cf-btn-icon:hover {
+    border-color: var(--cf-text);
+    color: var(--cf-text);
+    background: var(--cf-bg-elevated);
+}
+
+/* ============================================
+   MAIN CONTENT AREA
+   ============================================ */
+.cf-main {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: calc(72px + 3rem) 2rem 3rem 2rem;
+    position: relative;
+    z-index: 1;
+    animation: cf-entry-zoom 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes cf-entry-zoom {
+    0% { 
+        opacity: 0; 
+        transform: scale(0.99) translateY(20px); 
+        filter: blur(4px);
+    }
+    100% { 
+        opacity: 1; 
+        transform: none; 
+        filter: none;
+    }
+}
+
+/* Section Headers - Clean Lines */
+.cf-section-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--cf-border);
+    padding-bottom: 1rem;
+}
+
+.cf-section-title {
+    font-family: var(--cf-font-display);
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: var(--cf-text);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    line-height: 1;
+}
+
+.cf-section-badge {
+    font-family: var(--cf-font-mono);
+    font-size: 0.7rem;
+    color: var(--cf-amber);
+    border: 1px solid var(--cf-amber-dim);
+    padding: 0.2rem 0.5rem;
+    text-transform: uppercase;
+}
+
+/* ============================================
+   ARTICLE CARDS - Cassette Label Style
+   ============================================ */
+.cf-card {
+    background: var(--cf-bg-panel);
+    border: 1px solid var(--cf-border);
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+    position: relative;
+    height: 100%;
+}
+
+/* The "Label" strip at top */
+.cf-card-header {
+    background: var(--cf-bg-inset);
+    border-bottom: 1px solid var(--cf-border);
+    padding: 0.5rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--cf-font-mono);
+    font-size: 0.6rem;
+    color: var(--cf-text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.cf-card-header span:first-child::before {
+    content: 'NO. ';
+    color: var(--cf-text-muted);
+}
+
+.cf-card:hover {
+    border-color: var(--cf-amber);
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 
+        0 10px 30px -10px rgba(0,0,0,0.5),
+        0 0 15px rgba(255, 174, 0, 0.1);
+    z-index: 10;
+}
+
+.cf-card:hover .cf-card-header {
+    border-color: var(--cf-amber);
+    color: var(--cf-amber);
+    background: rgba(255, 174, 0, 0.05);
+}
+
+.cf-card-image-wrapper {
+    position: relative;
+    width: 100%;
+    padding-top: 56.25%; /* 16:9 Aspect Ratio */
+    overflow: hidden;
+    background: var(--cf-bg-inset);
+    border-bottom: 1px solid var(--cf-border);
+}
+
+.cf-card-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(100%) contrast(1.1) brightness(0.9);
+    transition: all 0.5s ease;
+}
+
+.cf-card:hover .cf-card-image {
+    filter: grayscale(0%) contrast(1.05) brightness(1);
+    transform: scale(1.03);
+}
+
+.cf-card-content {
+    padding: 1.5rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.cf-card-meta {
+    display: flex;
+    gap: 1rem;
+    font-family: var(--cf-font-mono);
+    font-size: 0.7rem;
+    color: var(--cf-text-muted);
+    margin-bottom: 0.75rem;
+}
+
+.cf-card-title {
+    font-family: var(--cf-font-display);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--cf-text);
+    line-height: 1.4;
+    margin-bottom: 1rem;
+    letter-spacing: 0.02em;
+}
+
+.cf-card-excerpt {
+    font-family: var(--cf-font-body);
+    font-size: 0.85rem;
+    color: var(--cf-text-dim);
+    line-height: 1.6;
+    margin-bottom: auto; /* Push tags to bottom */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.cf-tags {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.cf-tag {
+    font-family: var(--cf-font-mono);
+    font-size: 0.6rem;
+    color: var(--cf-text-muted);
+    border: 1px solid var(--cf-border);
+    padding: 0.2rem 0.5rem;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
+}
+
+.cf-tag:hover {
+    color: var(--cf-text);
+    border-color: var(--cf-text);
+}
+
+/* ============================================
+   FEATURED POST - "Side A"
+   ============================================ */
+.cf-featured {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    background: var(--cf-bg-panel);
+    border: 1px solid var(--cf-border);
+    margin-bottom: 4rem;
+    position: relative;
+}
+
+/* "Side A" label */
+.cf-featured::before {
+    content: 'SIDE A // FEATURED';
+    position: absolute;
+    top: -12px;
+    left: 20px;
+    background: var(--cf-bg-deep);
+    padding: 0 10px;
+    font-family: var(--cf-font-mono);
+    font-size: 0.7rem;
+    color: var(--cf-amber);
+    letter-spacing: 0.1em;
+}
+
+.cf-featured-image-wrapper {
+    position: relative;
+    height: 400px;
+    overflow: hidden;
+    border-right: 1px solid var(--cf-border);
+}
+
+.cf-featured-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(100%);
+    transition: filter 0.5s ease;
+}
+
+.cf-featured:hover .cf-featured-image {
+    filter: grayscale(0%);
+}
+
+.cf-featured-content {
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.cf-featured-meta {
+    font-family: var(--cf-font-mono);
+    font-size: 0.8rem;
+    color: var(--cf-amber);
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.cf-featured-title {
+    font-family: var(--cf-font-display);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--cf-text);
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+}
+
+.cf-featured-excerpt {
+    font-size: 1rem;
+    color: var(--cf-text-dim);
+    line-height: 1.7;
+    margin-bottom: 2rem;
+}
+
+.cf-read-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--cf-font-mono);
+    font-size: 0.8rem;
+    color: var(--cf-text);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding-bottom: 0.2rem;
+    border-bottom: 1px solid var(--cf-amber);
+    width: fit-content;
+    transition: all 0.2s ease;
+}
+
+.cf-read-more:hover {
+    color: var(--cf-amber);
+    gap: 0.8rem;
+}
+
+/* ============================================
+   GRID LAYOUTS
+   ============================================ */
+.cf-grid {
+    display: grid;
+    gap: 2rem;
+}
+
+.cf-grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.cf-grid-2-1 {
+    grid-template-columns: 3fr 1fr;
+}
+
+/* ============================================
+   SIDEBAR - Data Column
+   ============================================ */
+.cf-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+    padding-left: 1rem;
+    border-left: 1px dashed var(--cf-border);
+}
+
+.cf-widget-title {
+    font-family: var(--cf-font-mono);
+    font-size: 0.7rem;
+    color: var(--cf-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cf-widget-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--cf-border);
+}
+
+.cf-category-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.cf-category-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    font-family: var(--cf-font-mono);
+    font-size: 0.85rem;
+    color: var(--cf-text-dim);
+    border-bottom: 1px solid transparent;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.cf-category-item:hover {
+    color: var(--cf-text);
+    border-bottom-color: var(--cf-amber);
+    padding-left: 0.5rem;
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+.cf-footer {
+    margin-top: 6rem;
+    border-top: 1px solid var(--cf-border);
+    padding: 2rem 0;
+    background: var(--cf-bg-panel);
+}
+
+.cf-footer-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--cf-font-mono);
+    font-size: 0.7rem;
+    color: var(--cf-text-muted);
+}
+
+/* ============================================
+   ANIMATIONS & EFFECTS
+   ============================================ */
+@keyframes cf-glitch {
+    0% { transform: translate(0) }
+    20% { transform: translate(-2px, 2px) }
+    40% { transform: translate(-2px, -2px) }
+    60% { transform: translate(2px, 2px) }
+    80% { transform: translate(2px, -2px) }
+    100% { transform: translate(0) }
+}
+
+@keyframes cf-scan {
+    0% { background-position: 0 -100vh; }
+    100% { background-position: 0 100vh; }
+}
+
+@keyframes cf-pulse-glow {
+    0%, 100% { box-shadow: 0 0 5px var(--cf-amber-dim); }
+    50% { box-shadow: 0 0 15px var(--cf-amber); }
+}
+
+@keyframes cf-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+@keyframes cf-slide-up {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+.cf-animate-slide-up {
+    animation: cf-slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.cf-glitch-hover:hover {
+    animation: cf-glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
+    color: var(--cf-amber);
+}
+
+.cf-card:hover .cf-card-title {
+    animation: cf-glitch 0.4s cubic-bezier(.25, .46, .45, .94) both;
+    color: var(--cf-amber);
+}
+
+.cf-featured:hover .cf-featured-title {
+    animation: cf-glitch 0.4s cubic-bezier(.25, .46, .45, .94) both;
+    color: var(--cf-amber);
+}
+
+.cf-blink {
+    animation: cf-blink 1s step-end infinite;
+}
+
+/* Enhanced Panel Styles */
+.cf-panel {
+    background: var(--cf-bg-panel);
+    border: 1px solid var(--cf-border);
+    position: relative;
+    overflow: hidden;
+}
+
+.cf-panel::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        45deg,
+        transparent 0%,
+        transparent 45%,
+        rgba(255, 174, 0, 0.03) 50%,
+        transparent 55%,
+        transparent 100%
+    );
+    background-size: 200% 200%;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.cf-panel:hover::after {
+    opacity: 1;
+}
+
+.cf-panel-header {
+    background: var(--cf-bg-inset);
+    border-bottom: 1px solid var(--cf-border);
+    padding: 0.75rem 1rem;
+    font-family: var(--cf-font-mono);
+    font-size: 0.75rem;
+    color: var(--cf-text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Card Dots Decoration */
+.cf-card-dots {
+    display: flex;
+    gap: 4px;
+}
+
+.cf-card-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--cf-bg-elevated);
+    border: 1px solid var(--cf-border);
+}
+
+.cf-card-dot.red { background: var(--cf-red); box-shadow: 0 0 5px var(--cf-red); }
+.cf-card-dot.amber { background: var(--cf-amber); box-shadow: 0 0 5px var(--cf-amber); }
+.cf-card-dot.green { background: var(--cf-green); box-shadow: 0 0 5px var(--cf-green); }
+
+/* Buttons */
+.cf-btn-primary {
+    background: var(--cf-amber);
+    color: var(--cf-bg-deep);
+    font-family: var(--cf-font-mono);
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 0.5rem 1.5rem;
+    border: none;
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+    transition: all 0.2s ease;
+}
+
+.cf-btn-primary:hover {
+    background: var(--cf-amber-glow);
+    transform: translateY(-1px);
+    box-shadow: 0 0 15px var(--cf-amber-dim);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 1024px) {
+    .cf-grid-3 { grid-template-columns: repeat(2, 1fr); }
+    .cf-grid-2-1 { grid-template-columns: 1fr; }
+    .cf-featured { grid-template-columns: 1fr; }
+    .cf-featured-image-wrapper { height: 250px; border-right: none; border-bottom: 1px solid var(--cf-border); }
+    .cf-sidebar { border-left: none; padding-left: 0; margin-top: 2rem; }
+}
+
+@media (max-width: 640px) {
+    .cf-grid-3 { grid-template-columns: 1fr; }
+    .cf-nav { display: none; }
+    .cf-header-inner { padding: 0 1rem; }
+    .cf-main { padding: 2rem 1rem; }
+}
+
+/* ============================================
+   UTILITIES
+   ============================================ */
+.cf-text-amber { color: var(--cf-amber); }
+
+/* ============================================
+   SCROLLBAR
+   ============================================ */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: var(--cf-border);
+    border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: var(--cf-text-dim);
+}

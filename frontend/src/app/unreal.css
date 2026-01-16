@@ -1,0 +1,1562 @@
+/* ============================================
+   UNREAL ENGINE 5 INSPIRED THEME
+   Modern minimalist tech aesthetic - 2026
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* ============================================
+   DARK MODE (Default) - UE5 Editor Style
+   ============================================ */
+:root,
+.dark {
+    /* Core UE5 Colors */
+    --ue-bg-deep: #0a0a0f;
+    --ue-bg-primary: #0d0d14;
+    --ue-bg-secondary: #12121a;
+    --ue-bg-elevated: #1a1a24;
+    --ue-bg-card: rgba(18, 18, 26, 0.8);
+    
+    /* UE5 Signature Blue */
+    --ue-blue: #0d7aff;
+    --ue-blue-dim: #0a5fcc;
+    --ue-blue-glow: #3d9eff;
+    --ue-blue-subtle: rgba(13, 122, 255, 0.1);
+    
+    /* Accent Colors */
+    --ue-cyan: #00d4ff;
+    --ue-purple: #8b5cf6;
+    --ue-green: #10b981;
+    --ue-orange: #f59e0b;
+    --ue-red: #ef4444;
+
+    /* Text Colors */
+    --ue-text: #f0f0f5;
+    --ue-text-secondary: #a0a0b0;
+    --ue-text-muted: #606070;
+    
+    /* Borders & Lines */
+    --ue-border: rgba(255, 255, 255, 0.08);
+    --ue-border-hover: rgba(13, 122, 255, 0.3);
+    --ue-grid-line: rgba(13, 122, 255, 0.05);
+    
+    /* Effects */
+    --ue-glow-blue: 0 0 20px rgba(13, 122, 255, 0.4), 0 0 40px rgba(13, 122, 255, 0.2);
+    --ue-glow-soft: 0 0 30px rgba(13, 122, 255, 0.15);
+    --ue-shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--ue-border);
+    --ue-glass: rgba(18, 18, 26, 0.7);
+    --ue-glass-border: rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================
+   LIGHT MODE - Clean Tech
+   ============================================ */
+:root.light,
+html.light {
+    --ue-bg-deep: #f8f9fc;
+    --ue-bg-primary: #ffffff;
+    --ue-bg-secondary: #f0f2f5;
+    --ue-bg-elevated: #ffffff;
+    --ue-bg-card: rgba(255, 255, 255, 0.9);
+    
+    --ue-blue: #0066dd;
+    --ue-blue-dim: #0055bb;
+    --ue-blue-glow: #3388ff;
+    --ue-blue-subtle: rgba(0, 102, 221, 0.08);
+    
+    --ue-text: #1a1a2e;
+    --ue-text-secondary: #4a4a5a;
+    --ue-text-muted: #8a8a9a;
+    
+    --ue-border: rgba(0, 0, 0, 0.08);
+    --ue-border-hover: rgba(0, 102, 221, 0.3);
+    --ue-grid-line: rgba(0, 102, 221, 0.03);
+    
+    --ue-glow-blue: 0 0 20px rgba(0, 102, 221, 0.2);
+    --ue-glow-soft: 0 0 30px rgba(0, 102, 221, 0.1);
+    --ue-shadow-card: 0 4px 24px rgba(0, 0, 0, 0.08), 0 0 0 1px var(--ue-border);
+    --ue-glass: rgba(255, 255, 255, 0.8);
+    --ue-glass-border: rgba(0, 0, 0, 0.08);
+}
+
+/* Shared Variables */
+:root {
+    --ue-font-display: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    --ue-font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+    --ue-radius: 12px;
+    --ue-radius-sm: 8px;
+    --ue-radius-lg: 16px;
+    --ue-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================
+   BASE STYLES
+   ============================================ */
+.unreal-theme {
+    background: var(--ue-bg-deep);
+    color: var(--ue-text);
+    font-family: var(--ue-font-display);
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Subtle grid background */
+.unreal-theme::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        linear-gradient(var(--ue-grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--ue-grid-line) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Gradient orb effect */
+.unreal-theme::after {
+    content: '';
+    position: fixed;
+    top: -20%;
+    right: -10%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(13, 122, 255, 0.15) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ============================================
+   HEADER - Glassmorphism Nav
+   ============================================ */
+.ue-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: var(--ue-glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--ue-glass-border);
+}
+
+/* Spacer for fixed header */
+.ue-header-spacer {
+    height: 72px;
+}
+
+.ue-header-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 72px;
+}
+
+.ue-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 600;
+    font-size: 1.25rem;
+    color: var(--ue-text);
+    text-decoration: none;
+    transition: var(--ue-transition);
+}
+
+.ue-logo:hover {
+    color: var(--ue-blue);
+}
+
+.ue-logo-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--ue-blue) 0%, var(--ue-blue-dim) 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--ue-glow-soft);
+}
+
+.ue-logo-icon svg {
+    width: 20px;
+    height: 20px;
+    color: white;
+}
+
+/* Navigation */
+.ue-nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.ue-nav-link {
+    position: relative;
+    padding: 10px 18px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--ue-text-secondary);
+    text-decoration: none;
+    border-radius: var(--ue-radius-sm);
+    transition: var(--ue-transition);
+}
+
+.ue-nav-link:hover {
+    color: var(--ue-text);
+    background: var(--ue-blue-subtle);
+}
+
+.ue-nav-link.active {
+    color: var(--ue-blue);
+    background: var(--ue-blue-subtle);
+}
+
+.ue-nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 2px;
+    background: var(--ue-blue);
+    border-radius: 1px;
+}
+
+/* Header Actions */
+.ue-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ue-btn-icon {
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid var(--ue-border);
+    border-radius: var(--ue-radius-sm);
+    color: var(--ue-text-secondary);
+    cursor: pointer;
+    transition: var(--ue-transition);
+    position: relative;
+}
+
+/* Mobile menu button - only show on mobile */
+.ue-btn-icon.ue-mobile-menu {
+    display: flex;
+}
+
+@media (min-width: 768px) {
+    .ue-btn-icon.ue-mobile-menu {
+        display: none;
+    }
+}
+
+.ue-btn-icon:hover {
+    color: var(--ue-blue);
+    border-color: var(--ue-border-hover);
+    background: var(--ue-blue-subtle);
+}
+
+.ue-btn-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* ============================================
+   MAIN CONTENT
+   ============================================ */
+.ue-main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+    position: relative;
+    z-index: 1;
+}
+
+/* Section Headers */
+.ue-section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 2rem;
+    
+    /* Entry animation */
+    opacity: 0;
+    transform: translateX(-20px);
+    animation: sectionFadeIn 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+    animation-delay: 0.05s;
+}
+
+@keyframes sectionFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.ue-section-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--ue-blue);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.ue-section-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--ue-border) 0%, transparent 100%);
+}
+
+.ue-section-badge {
+    font-family: var(--ue-font-mono);
+    font-size: 0.75rem;
+    color: var(--ue-text-muted);
+    background: var(--ue-bg-secondary);
+    padding: 6px 12px;
+    border-radius: var(--ue-radius-sm);
+    border: 1px solid var(--ue-border);
+}
+
+/* ============================================
+   CARDS - Glass Effect
+   ============================================ */
+.ue-card {
+    position: relative;
+    background: var(--ue-bg-card);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--ue-border);
+    border-radius: var(--ue-radius-lg);
+    overflow: hidden;
+    transition: 
+        transform 0.5s cubic-bezier(0.23, 1, 0.32, 1),
+        box-shadow 0.5s cubic-bezier(0.23, 1, 0.32, 1),
+        border-color 0.4s ease-out,
+        opacity 0.6s ease-out;
+    will-change: transform, box-shadow, opacity;
+    
+    /* Entry animation */
+    opacity: 0;
+    transform: translateY(30px);
+    animation: cardFadeIn 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+/* Staggered animation delays for cards */
+.ue-card:nth-child(1) { animation-delay: 0.1s; }
+.ue-card:nth-child(2) { animation-delay: 0.2s; }
+.ue-card:nth-child(3) { animation-delay: 0.3s; }
+.ue-card:nth-child(4) { animation-delay: 0.4s; }
+.ue-card:nth-child(5) { animation-delay: 0.5s; }
+.ue-card:nth-child(6) { animation-delay: 0.6s; }
+.ue-card:nth-child(7) { animation-delay: 0.7s; }
+.ue-card:nth-child(8) { animation-delay: 0.8s; }
+.ue-card:nth-child(9) { animation-delay: 0.9s; }
+
+@keyframes cardFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Shimmer animation keyframes */
+@keyframes shimmer {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+/* Curved flowing shimmer animation - more subtle */
+@keyframes flowingShimmer {
+    0% {
+        transform: translateX(-50%) translateY(-50%) rotate(-3deg) scaleX(0.6);
+        opacity: 0;
+    }
+    20% {
+        opacity: 0.6;
+        transform: translateX(-25%) translateY(-48%) rotate(1deg) scaleX(0.8);
+    }
+    50% {
+        transform: translateX(0%) translateY(-52%) rotate(-1deg) scaleX(1);
+    }
+    80% {
+        opacity: 0.6;
+        transform: translateX(25%) translateY(-48%) rotate(2deg) scaleX(0.8);
+    }
+    100% {
+        transform: translateX(50%) translateY(-50%) rotate(-3deg) scaleX(0.6);
+        opacity: 0;
+    }
+}
+
+/* Wave path animation */
+@keyframes waveFlow {
+    0% {
+        d: path('M-50,0 Q25,-15 100,0 T250,0');
+    }
+    50% {
+        d: path('M-50,0 Q25,15 100,0 T250,0');
+    }
+    100% {
+        d: path('M-50,0 Q25,-15 100,0 T250,0');
+    }
+}
+
+.ue-card:hover {
+    border-color: var(--ue-border-hover);
+    box-shadow: 
+        0 12px 40px rgba(0, 0, 0, 0.25),
+        0 0 0 1px var(--ue-border-hover),
+        0 0 60px rgba(13, 122, 255, 0.08);
+    transform: translateY(-8px);
+}
+
+/* Curved flowing shimmer effect - subtle and behind text */
+.ue-card::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -30%;
+    width: 160%;
+    height: 2px;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(13, 122, 255, 0.08) 20%,
+        rgba(13, 122, 255, 0.25) 50%,
+        rgba(13, 122, 255, 0.08) 80%,
+        transparent 100%
+    );
+    border-radius: 50px;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+    z-index: 1;
+    transform: translateY(-50%) rotate(-2deg);
+    box-shadow: 
+        0 0 6px rgba(13, 122, 255, 0.15),
+        0 0 12px rgba(13, 122, 255, 0.08);
+    filter: blur(1px);
+}
+
+/* Additional curved line for wave effect */
+.ue-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, var(--ue-blue) 50%, transparent 100%);
+    opacity: 0;
+    transform: scaleX(0);
+    transition: 
+        opacity 0.4s ease-out,
+        transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    z-index: 10;
+}
+
+.ue-card:hover::before {
+    opacity: 1;
+    transform: scaleX(1);
+}
+
+.ue-card:hover::after {
+    opacity: 1;
+    animation: flowingShimmer 3s ease-in-out infinite;
+}
+
+.ue-card-image {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+}
+
+.ue-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.ue-card:hover .ue-card-image img {
+    transform: scale(1.05);
+}
+
+/* Image overlay gradient */
+.ue-card-image::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60%;
+    background: linear-gradient(to top, var(--ue-bg-card) 0%, transparent 100%);
+    pointer-events: none;
+}
+
+.ue-card-content {
+    padding: 1.5rem;
+}
+
+/* Text-only card style (no image) */
+.ue-card-text .ue-card-content {
+    padding: 1.25rem 1.5rem;
+}
+
+.ue-card-text .ue-card-title {
+    font-size: 1rem;
+    margin-bottom: 8px;
+}
+
+.ue-card-text .ue-card-excerpt {
+    font-size: 0.8rem;
+    margin-bottom: 0;
+    color: var(--ue-text-muted);
+}
+
+.ue-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--ue-border);
+}
+
+.ue-card-footer .ue-tags {
+    margin-top: 0;
+}
+
+.ue-card-category {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--ue-blue);
+    margin-bottom: 12px;
+    transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.ue-card:hover .ue-card-category {
+    transform: translateX(3px);
+}
+
+.ue-card-category::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: var(--ue-blue);
+    border-radius: 50%;
+    box-shadow: 0 0 6px var(--ue-blue);
+    transition: box-shadow 0.5s ease-out;
+}
+
+.ue-card:hover .ue-card-category::before {
+    box-shadow: 0 0 10px var(--ue-blue), 0 0 16px var(--ue-blue);
+}
+
+.ue-card-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--ue-text);
+    line-height: 1.4;
+    margin-bottom: 12px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    transition: color 0.4s ease-out;
+}
+
+.ue-card:hover .ue-card-title {
+    color: var(--ue-blue);
+}
+
+.ue-card-excerpt {
+    font-size: 0.875rem;
+    color: var(--ue-text-secondary);
+    line-height: 1.6;
+    margin-bottom: 16px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.ue-card-excerpt.line-clamp-4 {
+    -webkit-line-clamp: 4;
+}
+
+.ue-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 0.8rem;
+    color: var(--ue-text-muted);
+}
+
+.ue-card-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ue-card-meta-item svg {
+    width: 14px;
+    height: 14px;
+    opacity: 0.7;
+}
+
+/* Tags */
+.ue-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.ue-tag {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--ue-text-secondary);
+    background: var(--ue-bg-secondary);
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--ue-border);
+    transition: var(--ue-transition);
+    text-decoration: none;
+}
+
+.ue-tag:hover {
+    color: var(--ue-blue);
+    border-color: var(--ue-border-hover);
+    background: var(--ue-blue-subtle);
+}
+
+/* ============================================
+   FEATURED POST - Hero Style
+   ============================================ */
+.ue-featured {
+    position: relative;
+    background: var(--ue-bg-card);
+    border: 1px solid var(--ue-border);
+    border-radius: var(--ue-radius-lg);
+    overflow: hidden;
+    margin-bottom: 3rem;
+    
+    /* Entry animation */
+    opacity: 0;
+    transform: translateY(20px);
+    animation: featuredFadeIn 0.7s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+@keyframes featuredFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Featured text-only style (no image) */
+.ue-featured-text {
+    text-decoration: none;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.ue-featured-text:hover {
+    border-color: var(--ue-border-hover);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), 0 0 60px rgba(13, 122, 255, 0.08);
+}
+
+.ue-featured-text-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: 2rem;
+    padding: 2.5rem;
+}
+
+.ue-featured-text-icon {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--ue-blue) 0%, var(--ue-blue-dim) 100%);
+    border-radius: var(--ue-radius);
+    color: white;
+    flex-shrink: 0;
+    box-shadow: var(--ue-glow-soft);
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.ue-featured-text-icon svg {
+    width: 28px;
+    height: 28px;
+}
+
+.ue-featured-text:hover .ue-featured-text-icon {
+    transform: scale(1.05);
+    box-shadow: var(--ue-glow-blue);
+}
+
+.ue-featured-text-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.ue-featured-text .ue-featured-title {
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.ue-featured-text .ue-featured-excerpt {
+    margin-bottom: 1.25rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.ue-featured-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--ue-blue);
+    transition: all 0.3s ease;
+}
+
+.ue-featured-action svg {
+    width: 16px;
+    height: 16px;
+    transition: transform 0.3s ease;
+}
+
+.ue-featured-text:hover .ue-featured-action {
+    gap: 12px;
+}
+
+.ue-featured-text:hover .ue-featured-action svg {
+    transform: translateX(4px);
+}
+
+@media (max-width: 640px) {
+    .ue-featured-text-inner {
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: 1.5rem;
+    }
+    
+    .ue-featured-text-icon {
+        width: 48px;
+        height: 48px;
+    }
+    
+    .ue-featured-text-icon svg {
+        width: 22px;
+        height: 22px;
+    }
+    
+    .ue-featured-text .ue-featured-title {
+        font-size: 1.25rem;
+    }
+}
+
+.ue-featured-inner {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    min-height: 400px;
+}
+
+.ue-featured-image {
+    position: relative;
+    overflow: hidden;
+}
+
+.ue-featured-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.ue-featured-image::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 40%;
+    background: linear-gradient(to left, var(--ue-bg-card) 0%, transparent 100%);
+}
+
+.ue-featured-content {
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.ue-featured-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--ue-blue);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 1rem;
+}
+
+.ue-featured-badge::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: var(--ue-blue);
+    border-radius: 50%;
+    box-shadow: 0 0 12px var(--ue-blue);
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.1); }
+}
+
+.ue-featured-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--ue-text);
+    line-height: 1.3;
+    margin-bottom: 1rem;
+}
+
+.ue-featured-excerpt {
+    font-size: 1rem;
+    color: var(--ue-text-secondary);
+    line-height: 1.7;
+    margin-bottom: 1.5rem;
+}
+
+.ue-featured-btn {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: white;
+    background: linear-gradient(135deg, var(--ue-blue) 0%, var(--ue-blue-dim) 100%);
+    border: none;
+    border-radius: var(--ue-radius-sm);
+    cursor: pointer;
+    transition: var(--ue-transition);
+    text-decoration: none;
+}
+
+.ue-featured-btn:hover {
+    box-shadow: var(--ue-glow-blue);
+    transform: translateY(-2px);
+}
+
+.ue-featured-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* ============================================
+   GRID LAYOUTS
+   ============================================ */
+.ue-grid {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.ue-grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.ue-grid-2-1 {
+    grid-template-columns: 1fr 340px;
+    gap: 2rem;
+}
+
+@media (max-width: 1200px) {
+    .ue-grid-3 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .ue-grid-2-1 {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .ue-grid-3 {
+        grid-template-columns: 1fr;
+    }
+    .ue-featured-inner {
+        grid-template-columns: 1fr;
+    }
+    .ue-featured-image {
+        height: 240px;
+    }
+    .ue-featured-image::after {
+        width: 100%;
+        height: 40%;
+        top: auto;
+        bottom: 0;
+        background: linear-gradient(to top, var(--ue-bg-card) 0%, transparent 100%);
+    }
+    .ue-featured-content {
+        padding: 2rem;
+    }
+    .ue-featured-title {
+        font-size: 1.5rem;
+    }
+    .ue-nav {
+        display: none;
+    }
+    .ue-header-inner {
+        height: 64px;
+        padding: 0 1rem;
+    }
+    .ue-header-spacer {
+        height: 64px;
+    }
+    .ue-main {
+        padding: 2rem 1rem;
+    }
+}
+
+/* ============================================
+   SIDEBAR - Info Panels
+   ============================================ */
+.ue-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.ue-panel {
+    background: var(--ue-bg-card);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--ue-border);
+    border-radius: var(--ue-radius-lg);
+    overflow: hidden;
+    
+    /* Entry animation */
+    opacity: 0;
+    transform: translateX(20px);
+    animation: panelFadeIn 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.ue-panel:nth-child(1) { animation-delay: 0.2s; }
+.ue-panel:nth-child(2) { animation-delay: 0.35s; }
+.ue-panel:nth-child(3) { animation-delay: 0.5s; }
+
+@keyframes panelFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.ue-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--ue-border);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--ue-text);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.ue-panel-header svg {
+    width: 16px;
+    height: 16px;
+    color: var(--ue-blue);
+}
+
+.ue-panel-body {
+    padding: 1.25rem;
+}
+
+/* Sticky TOC for blog detail */
+.ue-aside-sticky {
+    position: sticky;
+    top: 96px;
+    align-self: start;
+    height: fit-content;
+}
+
+.ue-aside-sticky .ue-panel {
+    animation: none;
+    opacity: 1;
+    transform: none;
+}
+
+.ue-toc-body {
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+}
+
+.ue-toc-body::-webkit-scrollbar {
+    width: 4px;
+}
+
+.ue-toc-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.ue-toc-body::-webkit-scrollbar-thumb {
+    background: var(--ue-border);
+    border-radius: 2px;
+}
+
+.ue-toc-body::-webkit-scrollbar-thumb:hover {
+    background: var(--ue-text-muted);
+}
+
+/* Profile Card */
+.ue-profile {
+    text-align: center;
+    padding: 1.5rem;
+}
+
+.ue-profile-avatar {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    border: 2px solid var(--ue-blue);
+    box-shadow: var(--ue-glow-soft);
+    overflow: hidden;
+}
+
+.ue-profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.ue-profile-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ue-text);
+    margin-bottom: 4px;
+}
+
+.ue-profile-bio {
+    font-size: 0.8rem;
+    color: var(--ue-text-muted);
+}
+
+/* Category List */
+.ue-category-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.ue-category-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-radius: var(--ue-radius-sm);
+    font-size: 0.875rem;
+    color: var(--ue-text-secondary);
+    text-decoration: none;
+    transition: var(--ue-transition);
+}
+
+.ue-category-item:hover {
+    color: var(--ue-blue);
+    background: var(--ue-blue-subtle);
+}
+
+.ue-category-count {
+    font-family: var(--ue-font-mono);
+    font-size: 0.75rem;
+    color: var(--ue-text-muted);
+    background: var(--ue-bg-secondary);
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+.ue-footer {
+    background: var(--ue-bg-secondary);
+    border-top: 1px solid var(--ue-border);
+    padding: 2rem;
+    margin-top: 4rem;
+}
+
+/* Tech Stack Section */
+.ue-footer-tech {
+    max-width: 1400px;
+    margin: 0 auto 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.ue-footer-tech-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--ue-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+}
+
+.ue-tech-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--ue-blue);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--ue-blue);
+}
+
+.ue-footer-tech-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+}
+
+.ue-tech-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--ue-text-secondary);
+    background: var(--ue-bg-card);
+    border: 1px solid var(--ue-border);
+    border-radius: 20px;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.ue-tech-item:hover {
+    color: var(--ue-blue);
+    border-color: var(--ue-border-hover);
+    background: var(--ue-blue-subtle);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(13, 122, 255, 0.15);
+}
+
+.ue-tech-icon {
+    width: 18px;
+    height: 18px;
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+}
+
+.ue-tech-item:hover .ue-tech-icon {
+    opacity: 1;
+}
+
+.ue-footer-divider {
+    max-width: 1400px;
+    margin: 0 auto 1.5rem;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--ue-border), transparent);
+}
+
+.ue-footer-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem 2rem;
+}
+
+.ue-footer-links {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ue-footer-link {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ue-text-muted);
+    border: 1px solid var(--ue-border);
+    border-radius: var(--ue-radius-sm);
+    transition: var(--ue-transition);
+    text-decoration: none;
+}
+
+.ue-footer-link:hover {
+    color: var(--ue-blue);
+    border-color: var(--ue-border-hover);
+}
+
+.ue-footer-link svg {
+    width: 16px;
+    height: 16px;
+}
+
+.ue-footer-text {
+    font-size: 0.8rem;
+    color: var(--ue-text-muted);
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.5rem;
+}
+
+.ue-footer-text a {
+    color: var(--ue-blue);
+    text-decoration: none;
+}
+
+.ue-footer-text a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+    .ue-footer-inner {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+
+/* ============================================
+   PAGINATION
+   ============================================ */
+.ue-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 3rem;
+}
+
+.ue-page-btn {
+    min-width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--ue-text-secondary);
+    background: var(--ue-bg-card);
+    border: 1px solid var(--ue-border);
+    border-radius: var(--ue-radius-sm);
+    cursor: pointer;
+    transition: var(--ue-transition);
+    text-decoration: none;
+}
+
+.ue-page-btn:hover:not(:disabled) {
+    color: var(--ue-blue);
+    border-color: var(--ue-border-hover);
+    background: var(--ue-blue-subtle);
+}
+
+.ue-page-btn.active {
+    color: white;
+    background: var(--ue-blue);
+    border-color: var(--ue-blue);
+}
+
+.ue-page-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* ============================================
+   UTILITIES
+   ============================================ */
+.ue-text-blue { color: var(--ue-blue); }
+.ue-text-muted { color: var(--ue-text-muted); }
+.ue-glow { box-shadow: var(--ue-glow-blue); }
+
+/* Skeleton Loading */
+.ue-skeleton {
+    background: linear-gradient(90deg, var(--ue-bg-secondary) 25%, var(--ue-bg-elevated) 50%, var(--ue-bg-secondary) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: var(--ue-radius-sm);
+}
+
+@keyframes skeleton-loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ============================================
+   CODE BLOCKS - UE5 Style
+   ============================================ */
+.dark pre code.hljs,
+:root pre code.hljs,
+.dark .hljs,
+:root .hljs {
+    background: var(--ue-bg-primary) !important;
+    color: var(--ue-text) !important;
+}
+
+.dark pre,
+:root pre {
+    background: var(--ue-bg-primary) !important;
+    border: 1px solid var(--ue-border) !important;
+    border-radius: var(--ue-radius);
+    padding: 1.5rem !important;
+    overflow-x: auto;
+    font-size: 0.875rem;
+    line-height: 1.7;
+}
+
+.dark pre code,
+:root pre code {
+    background: transparent !important;
+    padding: 0 !important;
+    border: none !important;
+}
+
+/* Remove background from all code elements inside pre */
+pre code,
+pre code span,
+pre code *,
+pre .hljs span,
+pre .hljs * {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Syntax highlighting - UE5 inspired */
+.dark .hljs-keyword,
+:root .hljs-keyword { color: var(--ue-blue) !important; }
+
+.dark .hljs-string,
+:root .hljs-string { color: var(--ue-green) !important; }
+
+.dark .hljs-number,
+:root .hljs-number { color: var(--ue-orange) !important; }
+
+.dark .hljs-function,
+:root .hljs-function,
+.dark .hljs-title,
+:root .hljs-title { color: var(--ue-cyan) !important; }
+
+.dark .hljs-comment,
+:root .hljs-comment {
+    color: var(--ue-text-muted) !important;
+    font-style: italic;
+}
+
+.dark .hljs-type,
+:root .hljs-type,
+.dark .hljs-built_in,
+:root .hljs-built_in { color: var(--ue-purple) !important; }
+
+/* Inline code */
+.dark :not(pre) > code:not(.hljs),
+:root :not(pre) > code:not(.hljs) {
+    background: var(--ue-bg-secondary) !important;
+    color: var(--ue-blue) !important;
+    padding: 0.2em 0.5em;
+    border-radius: 4px;
+    font-size: 0.875em;
+    border: 1px solid var(--ue-border);
+}
+
+/* Light mode code */
+html.light pre {
+    background: #f8f9fc !important;
+    border: 1px solid var(--ue-border) !important;
+}
+
+html.light pre code,
+html.light pre code span,
+html.light pre code *,
+html.light pre .hljs span,
+html.light pre .hljs * {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+html.light code:not(.hljs) {
+    background: #f0f2f5 !important;
+    color: var(--ue-blue) !important;
+}
+
+/* ============================================
+   GLOBAL OVERRIDES FOR UE5 THEME
+   ============================================ */
+
+/* Override default card styles in unreal theme */
+.unreal-theme .card,
+.unreal-theme [class*="Card"] {
+    background: var(--ue-bg-card);
+    border: 1px solid var(--ue-border);
+    border-radius: var(--ue-radius-lg);
+}
+
+/* Badge overrides */
+.unreal-theme .badge,
+.unreal-theme [class*="Badge"] {
+    border-radius: 20px;
+}
+
+/* Container max-width */
+.unreal-theme .container {
+    max-width: 1400px;
+}
+
+/* Page title styles */
+.unreal-theme h1 {
+    color: var(--ue-text);
+}
+
+.unreal-theme h1 svg {
+    color: var(--ue-blue);
+}
+
+/* Muted text */
+.unreal-theme .text-muted-foreground {
+    color: var(--ue-text-muted);
+}
+
+/* Hover states */
+.unreal-theme .hover\:bg-accent:hover {
+    background: var(--ue-blue-subtle);
+}
+
+.unreal-theme .hover\:text-primary:hover {
+    color: var(--ue-blue);
+}
+
+/* Search page styles */
+.unreal-theme input[type="search"],
+.unreal-theme input[type="text"] {
+    background: var(--ue-bg-secondary);
+    border: 1px solid var(--ue-border);
+    border-radius: var(--ue-radius-sm);
+    color: var(--ue-text);
+}
+
+.unreal-theme input:focus {
+    border-color: var(--ue-blue);
+    outline: none;
+    box-shadow: 0 0 0 2px var(--ue-blue-subtle);
+}
+
+/* Button primary */
+.unreal-theme .bg-primary {
+    background: var(--ue-blue) !important;
+}
+
+.unreal-theme .text-primary {
+    color: var(--ue-blue) !important;
+}
+
+/* Scrollbar styling */
+.unreal-theme ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.unreal-theme ::-webkit-scrollbar-track {
+    background: var(--ue-bg-secondary);
+}
+
+.unreal-theme ::-webkit-scrollbar-thumb {
+    background: var(--ue-border);
+    border-radius: 4px;
+}
+
+.unreal-theme ::-webkit-scrollbar-thumb:hover {
+    background: var(--ue-text-muted);
+}
+
+/* Selection color */
+.unreal-theme ::selection {
+    background: var(--ue-blue);
+    color: white;
+}
+
+/* Link styles */
+.unreal-theme a {
+    transition: color 0.2s ease;
+}
+
+/* Focus visible */
+.unreal-theme :focus-visible {
+    outline: 2px solid var(--ue-blue);
+    outline-offset: 2px;
+}
+
+/* Smooth scroll */
+.unreal-theme {
+    scroll-behavior: smooth;
+}
+
+/* Animation for page transitions */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.unreal-theme main {
+    animation: fadeIn 0.3s ease-out;
+}
