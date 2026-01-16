@@ -22,6 +22,10 @@ const MIGRATIONS: &[(&str, &str)] = &[
         "004_ai_config",
         include_str!("../../migrations/004_ai_config.sql"),
     ),
+    (
+        "005_blog_references",
+        include_str!("../../migrations/005_blog_references.sql"),
+    ),
 ];
 
 /// Run all pending migrations

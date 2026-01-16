@@ -180,7 +180,7 @@ impl BlogRepository {
         let blog = sqlx::query_as::<_, Blog>(
             r#"
             SELECT id, title, slug, author, content, html, summary, thumbnail, 
-                   category_id, view_count, is_published, created_at, updated_at
+                   category_id, view_count, is_published, created_at, updated_at, "references"
             FROM blogs
             WHERE id = $1
             "#,
@@ -197,7 +197,7 @@ impl BlogRepository {
         let blog = sqlx::query_as::<_, Blog>(
             r#"
             SELECT id, title, slug, author, content, html, summary, thumbnail, 
-                   category_id, view_count, is_published, created_at, updated_at
+                   category_id, view_count, is_published, created_at, updated_at, "references"
             FROM blogs
             WHERE slug = $1
             "#,
@@ -243,6 +243,7 @@ impl BlogRepository {
                     is_published: b.is_published,
                     created_at: b.created_at,
                     updated_at: b.updated_at,
+                    references: b.references,
                 }))
             }
             None => Ok(None),
@@ -286,6 +287,7 @@ impl BlogRepository {
                     is_published: b.is_published,
                     created_at: b.created_at,
                     updated_at: b.updated_at,
+                    references: b.references,
                 }))
             }
             None => Ok(None),
@@ -300,10 +302,10 @@ impl BlogRepository {
     ) -> Result<Blog, ApiError> {
         let blog = sqlx::query_as::<_, Blog>(
             r#"
-            INSERT INTO blogs (title, slug, author, content, html, summary, thumbnail, category_id, is_published)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            INSERT INTO blogs (title, slug, author, content, html, summary, thumbnail, category_id, is_published, "references")
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
             RETURNING id, title, slug, author, content, html, summary, thumbnail, 
-                      category_id, view_count, is_published, created_at, updated_at
+                      category_id, view_count, is_published, created_at, updated_at, "references"
             "#,
         )
         .bind(&req.title)
@@ -315,6 +317,7 @@ impl BlogRepository {
         .bind(&req.thumbnail)
         .bind(req.category_id)
         .bind(req.is_published.unwrap_or(false))
+        .bind(&req.references)
         .fetch_one(pool)
         .await?;
 
@@ -352,10 +355,11 @@ impl BlogRepository {
                 thumbnail = COALESCE($8, thumbnail),
                 category_id = COALESCE($9, category_id),
                 is_published = COALESCE($10, is_published),
+                "references" = COALESCE($11, "references"),
                 updated_at = NOW()
             WHERE id = $1
             RETURNING id, title, slug, author, content, html, summary, thumbnail, 
-                      category_id, view_count, is_published, created_at, updated_at
+                      category_id, view_count, is_published, created_at, updated_at, "references"
             "#,
         )
         .bind(id)
@@ -368,6 +372,7 @@ impl BlogRepository {
         .bind(&req.thumbnail)
         .bind(req.category_id)
         .bind(req.is_published)
+        .bind(&req.references)
         .fetch_optional(pool)
         .await?;
 

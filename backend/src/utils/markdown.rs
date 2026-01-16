@@ -167,7 +167,9 @@ pub fn render_markdown(markdown: &str) -> String {
     let markdown = process_alert_syntax(markdown);
     let html = get_renderer().render(&markdown);
     // Post-process: convert custom image preview syntax ~~[text]url~~
-    process_image_preview_syntax(&html)
+    let html = process_image_preview_syntax(&html);
+    // Post-process: preserve reference markers (they will be handled by frontend)
+    process_reference_markers(&html)
 }
 
 /// Process alert/admonition syntax: ::: type\ncontent\n:::
@@ -302,4 +304,45 @@ mod tests {
         assert!(html.contains("alert-warning"));
         assert!(html.contains("警告"));
     }
+}
+
+/// Process reference markers: :::ref[id] or ::ref[id] (in case markdown ate one colon)
+/// Normalizes them to a consistent format that frontend can parse
+fn process_reference_markers(html: &str) -> String {
+    use regex::Regex;
+
+    // Match both :::ref[id] and ::ref[id] patterns (markdown might eat one colon)
+    // Also handle cases where it might be wrapped in <p> tags or have HTML entities
+    let re = Regex::new(r":{2,3}ref\[([^\]]+)\]").unwrap();
+
+    re.replace_all(html, |caps: &regex::Captures| {
+        let ref_id = &caps[1];
+        // Output consistent format for frontend
+        format!(":::ref[{}]", ref_id)
+    })
+    .to_string()
+}
+
+#[test]
+fn test_reference_markers() {
+    let md = "6666:::ref[ref-1]666";
+    let html = render_markdown(md);
+    println!("Input: {}", md);
+    println!("Output: {}", html);
+    assert!(
+        html.contains(":::ref[ref-1]"),
+        "HTML should contain reference marker"
+    );
+}
+
+#[test]
+fn test_reference_markers_inline() {
+    let md = "这是一段文字 :::ref[ref-1] 后面还有内容";
+    let html = render_markdown(md);
+    println!("Input: {}", md);
+    println!("Output: {}", html);
+    assert!(
+        html.contains(":::ref[ref-1]"),
+        "HTML should contain reference marker"
+    );
 }

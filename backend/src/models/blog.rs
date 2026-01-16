@@ -2,10 +2,19 @@
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use serde_json::Value as JsonValue;
 use sqlx::FromRow;
 
 use super::category::Category;
 use super::tag::Tag;
+
+/// Blog reference item
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct BlogReference {
+    pub id: String,
+    pub title: String,
+    pub content: String,
+}
 
 /// Blog entity from database
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
@@ -23,6 +32,8 @@ pub struct Blog {
     pub is_published: bool,
     pub created_at: Option<DateTime<Utc>>,
     pub updated_at: Option<DateTime<Utc>>,
+    #[sqlx(default)]
+    pub references: Option<JsonValue>,
 }
 
 /// Blog list item (without full content) for list display
@@ -58,6 +69,7 @@ pub struct BlogDetail {
     pub is_published: bool,
     pub created_at: Option<DateTime<Utc>>,
     pub updated_at: Option<DateTime<Utc>>,
+    pub references: Option<JsonValue>,
 }
 
 /// Create blog request DTO
@@ -72,6 +84,7 @@ pub struct CreateBlogRequest {
     pub category_id: Option<i64>,
     pub tag_ids: Option<Vec<i64>>,
     pub is_published: Option<bool>,
+    pub references: Option<JsonValue>,
 }
 
 /// Update blog request DTO
@@ -86,6 +99,7 @@ pub struct UpdateBlogRequest {
     pub category_id: Option<i64>,
     pub tag_ids: Option<Vec<i64>>,
     pub is_published: Option<bool>,
+    pub references: Option<JsonValue>,
 }
 
 /// Blog query parameters for list endpoint
@@ -125,6 +139,7 @@ pub struct BlogResponse {
     pub is_published: bool,
     pub created_at: Option<DateTime<Utc>>,
     pub updated_at: Option<DateTime<Utc>>,
+    pub references: Option<JsonValue>,
 }
 
 impl From<BlogDetail> for BlogResponse {
@@ -144,6 +159,7 @@ impl From<BlogDetail> for BlogResponse {
             is_published: blog.is_published,
             created_at: blog.created_at,
             updated_at: blog.updated_at,
+            references: blog.references,
         }
     }
 }
