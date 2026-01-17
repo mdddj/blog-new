@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { useDebounce, useAutoSaveSuccess } from "../blog-editor/utils";
+import { useDebounce } from "../blog-editor/utils";
+import { useAutoSaveSuccess } from "../blog-editor/auto-save-command";
 import { toast } from "sonner";
 
 export interface UseAutoSaveOptions<T> {
