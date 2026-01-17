@@ -51,6 +51,23 @@ export default function EditBlogPage({ params }: PageProps) {
     const [references, setReferences] = useState<Record<string, BlogReference>>({});
     const [referenceManagerOpen, setReferenceManagerOpen] = useState(false);
 
+    // Auto-save functions - memoized to prevent re-creation
+    const saveFunction = useCallback(async (data: UpdateBlogRequest) => {
+        await blogApi.update(parseInt(id), data);
+    }, [id]);
+
+    const buildSaveData = useCallback(() => ({
+        title: title.trim(),
+        slug: slug.trim() || undefined,
+        content,
+        summary: summary || undefined,
+        thumbnail: thumbnail || undefined,
+        category_id: categoryId ? parseInt(categoryId) : undefined,
+        tag_ids: selectedTagIds,
+        is_published: isPublished,
+        references: Object.keys(references).length > 0 ? references : undefined,
+    }), [title, slug, content, summary, thumbnail, categoryId, selectedTagIds, isPublished, references]);
+
     // Auto-save hook
     const {
         autoSaveEnabled,
@@ -62,20 +79,8 @@ export default function EditBlogPage({ params }: PageProps) {
         content,
         title,
         enabled: false,
-        saveFunction: async (data: UpdateBlogRequest) => {
-            await blogApi.update(parseInt(id), data);
-        },
-        buildSaveData: () => ({
-            title: title.trim(),
-            slug: slug.trim() || undefined,
-            content,
-            summary: summary || undefined,
-            thumbnail: thumbnail || undefined,
-            category_id: categoryId ? parseInt(categoryId) : undefined,
-            tag_ids: selectedTagIds,
-            is_published: isPublished,
-            references: Object.keys(references).length > 0 ? references : undefined,
-        }),
+        saveFunction,
+        buildSaveData,
     });
 
     // Ref to track cursor position

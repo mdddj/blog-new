@@ -55,6 +55,18 @@ export default function EditDocumentPage({ params }: PageProps) {
     const [content, setContent] = useState("");
     const [sortOrder, setSortOrder] = useState(0);
 
+    // Auto-save functions - memoized to prevent re-creation
+    const saveFunction = useCallback(async (data: UpdateDocumentRequest) => {
+        await documentApi.update(currentDocId, data);
+    }, [currentDocId]);
+
+    const buildSaveData = useCallback(() => ({
+        name: name.trim(),
+        filename: filename.trim() || undefined,
+        content,
+        sort_order: sortOrder,
+    }), [name, filename, content, sortOrder]);
+
     // Auto-save hook
     const {
         autoSaveEnabled,
@@ -66,15 +78,8 @@ export default function EditDocumentPage({ params }: PageProps) {
         content,
         title: name,
         enabled: false,
-        saveFunction: async (data: UpdateDocumentRequest) => {
-            await documentApi.update(currentDocId, data);
-        },
-        buildSaveData: () => ({
-            name: name.trim(),
-            filename: filename.trim() || undefined,
-            content,
-            sort_order: sortOrder,
-        }),
+        saveFunction,
+        buildSaveData,
     });
 
     // Ref to track cursor position
