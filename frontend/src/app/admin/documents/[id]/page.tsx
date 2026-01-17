@@ -431,6 +431,7 @@ export default function EditDocumentPage({ params }: PageProps) {
                             onToggleAutoSave={toggleAutoSave}
                             isUploadingImage={isUploadingImage}
                             onImageUpload={handleToolbarImageUpload}
+                            key="document-editor" // Add key to prevent unnecessary re-mounts
                         />
                     </div>
                 </ResizablePanel>
