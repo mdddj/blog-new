@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useMemo } from "react";
 import dynamic from "next/dynamic";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -67,22 +67,31 @@ export function MarkdownEditor({
     onOpenReferenceManager,
     customCommands = [],
 }: MarkdownEditorProps) {
-    // Create commands
-    const imageUploadCommand = onImageUpload ? createImageUploadCommand(onImageUpload) : null;
+    // Create commands - memoized to prevent re-creation
+    const imageUploadCommand = useMemo(() =>
+        onImageUpload ? createImageUploadCommand(onImageUpload) : null,
+        [onImageUpload]
+    );
 
-    const autoSaveCommand = onToggleAutoSave ? createAutoSaveCommand({
-        autoSaveEnabled,
-        isAutoSaving,
-        onToggle: onToggleAutoSave,
-        showSuccess: showAutoSaveSuccess,
-    }) : null;
+    const autoSaveCommand = useMemo(() =>
+        onToggleAutoSave ? createAutoSaveCommand({
+            autoSaveEnabled,
+            isAutoSaving,
+            onToggle: onToggleAutoSave,
+            showSuccess: showAutoSaveSuccess,
+        }) : null,
+        [autoSaveEnabled, isAutoSaving, onToggleAutoSave, showAutoSaveSuccess]
+    );
 
-    const referenceCommand = onOpenReferenceManager ? createReferenceCommand(() => {
-        onOpenReferenceManager();
-    }) : null;
+    const referenceCommand = useMemo(() =>
+        onOpenReferenceManager ? createReferenceCommand(() => {
+            onOpenReferenceManager();
+        }) : null,
+        [onOpenReferenceManager]
+    );
 
-    // Build commands array
-    const editorCommands = [
+    // Build commands array - memoized to prevent MDEditor re-mount
+    const editorCommands = useMemo(() => [
         ...commands.getCommands(),
         commands.divider,
         ...(imageUploadCommand ? [imageUploadCommand] : []),
@@ -90,7 +99,7 @@ export function MarkdownEditor({
         ...(referenceCommand ? [referenceCommand] : []),
         ...customCommands,
         ...(autoSaveCommand ? [commands.divider, autoSaveCommand] : []),
-    ];
+    ], [imageUploadCommand, referenceCommand, customCommands, autoSaveCommand]);
 
     return (
         <Card>
