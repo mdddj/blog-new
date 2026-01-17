@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useDebounce } from "../blog-editor/utils";
 import { useAutoSaveSuccess } from "../blog-editor/auto-save-command";
 import { toast } from "sonner";
@@ -31,7 +31,51 @@ export function useAutoSave<T>({
     const { showSuccess, triggerSuccess } = useAutoSaveSuccess();
     const debouncedContent = useDebounce(content, delay);
 
-    // Auto-save effect
+    // Use refs to avoid stale closures and prevent infinite re-renders
+    const saveFunctionRef = useRef(saveFunction);
+    const buildSaveDataRef = useRef(buildSaveData);
+    const onSaveSuccessRef = useRef(onSaveSuccess);
+    const onSaveErrorRef = useRef(onSaveError);
+
+    // Update refs when functions change
+    useEffect(() => {
+        saveFunctionRef.current = saveFunction;
+    }, [saveFunction]);
+
+    useEffect(() => {
+        buildSaveDataRef.current = buildSaveData;
+    }, [buildSaveData]);
+
+    useEffect(() => {
+        onSaveSuccessRef.current = onSaveSuccess;
+    }, [onSaveSuccess]);
+
+    useEffect(() => {
+        onSaveErrorRef.current = onSaveError;
+    }, [onSaveError]);
+
+    // Auto-save function - memoized to prevent recreating
+    const handleAutoSave = useCallback(async () => {
+        if (isAutoSaving || !title.trim()) return;
+
+        setIsAutoSaving(true);
+        try {
+            const data = buildSaveDataRef.current();
+            await saveFunctionRef.current(data);
+            setLastSavedContent(debouncedContent);
+            triggerSuccess();
+            toast.success("自动保存成功", { duration: 1500 });
+            onSaveSuccessRef.current?.();
+        } catch (err) {
+            const error = err instanceof Error ? err : new Error("未知错误");
+            toast.error("自动保存失败: " + error.message);
+            onSaveErrorRef.current?.(error);
+        } finally {
+            setIsAutoSaving(false);
+        }
+    }, [isAutoSaving, title, debouncedContent, triggerSuccess]);
+
+    // Auto-save effect - only depend on essential values
     useEffect(() => {
         if (
             autoSaveEnabled &&
@@ -41,43 +85,16 @@ export function useAutoSave<T>({
         ) {
             handleAutoSave();
         }
-    }, [debouncedContent, autoSaveEnabled, lastSavedContent, title]);
-
-    // Auto-save function
-    const handleAutoSave = useCallback(async () => {
-        if (isAutoSaving || !title.trim()) return;
-
-        setIsAutoSaving(true);
-        try {
-            const data = buildSaveData();
-            await saveFunction(data);
-            setLastSavedContent(debouncedContent);
-            triggerSuccess();
-            toast.success("自动保存成功", { duration: 1500 });
-            onSaveSuccess?.();
-        } catch (err) {
-            const error = err instanceof Error ? err : new Error("未知错误");
-            toast.error("自动保存失败: " + error.message);
-            onSaveError?.(error);
-        } finally {
-            setIsAutoSaving(false);
-        }
-    }, [
-        isAutoSaving,
-        title,
-        debouncedContent,
-        buildSaveData,
-        saveFunction,
-        triggerSuccess,
-        onSaveSuccess,
-        onSaveError,
-    ]);
+    }, [autoSaveEnabled, debouncedContent, lastSavedContent, title, handleAutoSave]);
 
     // Toggle auto-save
     const toggleAutoSave = useCallback(() => {
-        setAutoSaveEnabled(!autoSaveEnabled);
-        toast.info(autoSaveEnabled ? "已关闭自动保存" : "已开启自动保存");
-    }, [autoSaveEnabled]);
+        setAutoSaveEnabled(prev => {
+            const newValue = !prev;
+            toast.info(newValue ? "已开启自动保存" : "已关闭自动保存");
+            return newValue;
+        });
+    }, []);
 
     // Reset last saved content (call when content is saved manually)
     const resetLastSavedContent = useCallback(() => {
