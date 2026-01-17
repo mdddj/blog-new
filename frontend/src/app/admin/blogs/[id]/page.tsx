@@ -12,17 +12,17 @@ import type { TextAreaTextApi } from "@uiw/react-md-editor";
 // Import components
 import {
     BlogForm,
-    ContentEditor,
     Sidebar,
     PageHeader,
     ReferenceManager,
-    useAutoSaveSuccess,
-    useDebounce,
+} from "@/components/admin/blog-editor";
+
+import {
+    MarkdownEditor,
     insertTextAtCursor,
     uploadImageToServer,
-    createImageUploadCommand,
-    kbdCommand,
-} from "@/components/admin/blog-editor";
+    useAutoSave,
+} from "@/components/admin/markdown-editor";
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -51,73 +51,35 @@ export default function EditBlogPage({ params }: PageProps) {
     const [references, setReferences] = useState<Record<string, BlogReference>>({});
     const [referenceManagerOpen, setReferenceManagerOpen] = useState(false);
 
-    // Auto-save states
-    const [autoSaveEnabled, setAutoSaveEnabled] = useState(false);
-    const [isAutoSaving, setIsAutoSaving] = useState(false);
-    const [lastSavedContent, setLastSavedContent] = useState("");
-
-    // Auto-save success animation
-    const { showSuccess, triggerSuccess } = useAutoSaveSuccess();
+    // Auto-save hook
+    const {
+        autoSaveEnabled,
+        isAutoSaving,
+        showAutoSaveSuccess,
+        toggleAutoSave,
+        resetLastSavedContent,
+    } = useAutoSave({
+        content,
+        title,
+        enabled: false,
+        saveFunction: async (data: UpdateBlogRequest) => {
+            await blogApi.update(parseInt(id), data);
+        },
+        buildSaveData: () => ({
+            title: title.trim(),
+            slug: slug.trim() || undefined,
+            content,
+            summary: summary || undefined,
+            thumbnail: thumbnail || undefined,
+            category_id: categoryId ? parseInt(categoryId) : undefined,
+            tag_ids: selectedTagIds,
+            is_published: isPublished,
+            references: Object.keys(references).length > 0 ? references : undefined,
+        }),
+    });
 
     // Ref to track cursor position
     const cursorPosRef = useRef<number | null>(null);
-
-    // Debounced content for auto-save
-    const debouncedContent = useDebounce(content, 2000); // 2秒防抖
-
-    // Auto-save effect
-    useEffect(() => {
-        if (
-            autoSaveEnabled &&
-            debouncedContent &&
-            debouncedContent !== lastSavedContent &&
-            title.trim() // 确保有标题才自动保存
-        ) {
-            handleAutoSave();
-        }
-    }, [debouncedContent, autoSaveEnabled, lastSavedContent, title]);
-
-    // Auto-save function
-    const handleAutoSave = async () => {
-        if (isAutoSaving || !title.trim()) return;
-
-        setIsAutoSaving(true);
-        try {
-            const data: UpdateBlogRequest = {
-                title: title.trim(),
-                slug: slug.trim() || undefined,
-                content: debouncedContent,
-                summary: summary || undefined,
-                thumbnail: thumbnail || undefined,
-                category_id: categoryId ? parseInt(categoryId) : undefined,
-                tag_ids: selectedTagIds,
-                is_published: isPublished,
-                references: Object.keys(references).length > 0 ? references : undefined,
-            };
-            await blogApi.update(parseInt(id), data);
-            setLastSavedContent(debouncedContent);
-            triggerSuccess(); // 触发成功动画
-            toast.success("自动保存成功", { duration: 1500 });
-        } catch (err) {
-            toast.error("自动保存失败: " + (err instanceof Error ? err.message : "未知错误"));
-        } finally {
-            setIsAutoSaving(false);
-        }
-    };
-
-    // Toggle auto-save
-    const toggleAutoSave = () => {
-        setAutoSaveEnabled(!autoSaveEnabled);
-        toast.info(autoSaveEnabled ? "已关闭自动保存" : "已开启自动保存");
-    };
-
-    // Dialog states
-    const [categoryDialogOpen, setCategoryDialogOpen] = useState(false);
-    const [tagDialogOpen, setTagDialogOpen] = useState(false);
-    const [newCategoryName, setNewCategoryName] = useState("");
-    const [newTagName, setNewTagName] = useState("");
-    const [isCreatingCategory, setIsCreatingCategory] = useState(false);
-    const [isCreatingTag, setIsCreatingTag] = useState(false);
 
     // Refresh categories
     const refreshCategories = useCallback(async () => {
@@ -167,9 +129,6 @@ export default function EditBlogPage({ params }: PageProps) {
             setIsUploadingImage(false);
         }
     }, []);
-
-    // Custom image upload command
-    const imageUploadCommand = createImageUploadCommand(handleToolbarImageUpload);
 
     // Handle paste event for image upload in editor
     const handleEditorPaste = useCallback(async (event: React.ClipboardEvent) => {
@@ -279,8 +238,8 @@ export default function EditBlogPage({ params }: PageProps) {
                 setCategoryId(blogData.category?.id ? String(blogData.category.id) : "");
                 setSelectedTagIds(blogData.tags.map((t) => t.id));
                 setIsPublished(blogData.is_published ?? false);
-                setLastSavedContent(blogData.content || "");
                 setReferences(blogData.references || {});
+                resetLastSavedContent();
 
                 // Check if AI is enabled
                 try {
@@ -347,6 +306,7 @@ export default function EditBlogPage({ params }: PageProps) {
                 references: Object.keys(references).length > 0 ? references : undefined,
             };
             await blogApi.update(parseInt(id), data);
+            resetLastSavedContent();
             toast.success(publish ? "发布成功" : "保存成功");
             router.push("/admin/blogs");
         } catch (err) {
@@ -404,19 +364,19 @@ export default function EditBlogPage({ params }: PageProps) {
                         onSlugChange={setSlug}
                     />
 
-                    <ContentEditor
+                    <MarkdownEditor
+                        title="文章内容"
                         content={content}
                         onContentChange={handleEditorChange}
                         onPaste={handleEditorPaste}
                         onDrop={handleEditorDrop}
                         onInteraction={handleEditorInteraction}
-                        imageUploadCommand={imageUploadCommand}
-                        kbdCommand={kbdCommand}
                         autoSaveEnabled={autoSaveEnabled}
                         isAutoSaving={isAutoSaving}
-                        showAutoSaveSuccess={showSuccess}
+                        showAutoSaveSuccess={showAutoSaveSuccess}
                         onToggleAutoSave={toggleAutoSave}
                         isUploadingImage={isUploadingImage}
+                        onImageUpload={handleToolbarImageUpload}
                         aiEnabled={aiEnabled}
                         onPolishComplete={setContent}
                         onSummarizeComplete={setSummary}

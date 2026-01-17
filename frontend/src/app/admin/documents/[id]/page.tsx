@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect, use, useCallback } from "react";
+import { useState, useEffect, use, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
 import { ArrowLeft, Save, FolderOpen, FileText, ChevronRight, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,116 +20,19 @@ import {
     ResizablePanel,
     ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { directoryApi, documentApi, fileApi } from "@/lib/api";
-import type { DirectoryTreeNode, DirectoryDocument } from "@/types";
+import { directoryApi, documentApi } from "@/lib/api";
+import type { DirectoryTreeNode, DirectoryDocument, UpdateDocumentRequest, TreeNode } from "@/types";
 import { toast } from "sonner";
 import "@uiw/react-md-editor/markdown-editor.css";
-import { commands } from "@uiw/react-md-editor";
-import type { ICommand, TextState, TextAreaTextApi } from "@uiw/react-md-editor";
+import type { TextAreaTextApi } from "@uiw/react-md-editor";
 import { cn } from "@/lib/utils";
 
-const MDEditor = dynamic(() => import("@uiw/react-md-editor"), {
-    ssr: false,
-    loading: () => <Skeleton className="h-[500px] w-full" />,
-});
-
-async function uploadImageToServer(file: File): Promise<string> {
-    const result = await fileApi.upload(file);
-    return `![${file.name}](${result.url})`;
-}
-
-function createImageUploadCommand(onUpload: (file: File) => Promise<void>): ICommand {
-    return {
-        name: "image-upload",
-        keyCommand: "image-upload",
-        buttonProps: { "aria-label": "上传图片", title: "上传图片" },
-        icon: (
-            <svg width="13" height="13" viewBox="0 0 20 20">
-                <path fill="currentColor" d="M15 9c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm4-7H1c-.55 0-1 .45-1 1v14c0 .55.45 1 1 1h18c.55 0 1-.45 1-1V3c0-.55-.45-1-1-1zm-1 13l-6-5-2 2-4-5-4 8V4h16v11z" />
-            </svg>
-        ),
-        execute: (_state: TextState, _api: TextAreaTextApi) => {
-            const input = document.createElement("input");
-            input.type = "file";
-            input.accept = "image/*";
-            input.multiple = true;
-            input.onchange = async () => {
-                const files = input.files;
-                if (!files) return;
-                for (const file of files) {
-                    await onUpload(file);
-                }
-            };
-            input.click();
-        },
-    };
-}
-
-// Tree node component for sidebar
-interface TreeNodeProps {
-    directory: DirectoryTreeNode;
-    level: number;
-    expandedIds: Set<number>;
-    selectedDocId: number;
-    onToggle: (id: number) => void;
-    onSelectDoc: (doc: DirectoryDocument) => void;
-}
-
-function TreeNode({ directory, level, expandedIds, selectedDocId, onToggle, onSelectDoc }: TreeNodeProps) {
-    const isExpanded = expandedIds.has(directory.id);
-    const hasChildren = (directory.children && directory.children.length > 0) ||
-        (directory.documents && directory.documents.length > 0);
-
-    return (
-        <div>
-            <div
-                className="flex items-center gap-1.5 py-1.5 px-2 rounded-md hover:bg-muted/50 cursor-pointer text-sm"
-                style={{ paddingLeft: `${level * 12 + 8}px` }}
-                onClick={() => onToggle(directory.id)}
-            >
-                {hasChildren ? (
-                    isExpanded ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                        : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                ) : <span className="w-3.5" />}
-                <FolderOpen className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-                <span className="truncate">{directory.name}</span>
-            </div>
-
-            {isExpanded && (
-                <>
-                    {directory.documents?.map((doc) => (
-                        <div
-                            key={`doc-${doc.id}`}
-                            className={cn(
-                                "flex items-center gap-1.5 py-1.5 px-2 rounded-md cursor-pointer text-sm",
-                                selectedDocId === doc.id
-                                    ? "bg-primary text-primary-foreground"
-                                    : "hover:bg-muted/50"
-                            )}
-                            style={{ paddingLeft: `${(level + 1) * 12 + 8}px` }}
-                            onClick={() => onSelectDoc(doc)}
-                        >
-                            <span className="w-3.5" />
-                            <FileText className={cn("h-3.5 w-3.5 shrink-0", selectedDocId === doc.id ? "text-primary-foreground" : "text-blue-500")} />
-                            <span className="truncate">{doc.name}</span>
-                        </div>
-                    ))}
-                    {directory.children?.map((child) => (
-                        <TreeNode
-                            key={child.id}
-                            directory={child}
-                            level={level + 1}
-                            expandedIds={expandedIds}
-                            selectedDocId={selectedDocId}
-                            onToggle={onToggle}
-                            onSelectDoc={onSelectDoc}
-                        />
-                    ))}
-                </>
-            )}
-        </div>
-    );
-}
+import {
+    MarkdownEditor,
+    insertTextAtCursor,
+    uploadImageToServer,
+    useAutoSave,
+} from "@/components/admin/markdown-editor";
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -145,7 +47,6 @@ export default function EditDocumentPage({ params }: PageProps) {
     const [directories, setDirectories] = useState<DirectoryTreeNode[]>([]);
     const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
     const [isUploadingImage, setIsUploadingImage] = useState(false);
-    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
     // Current document state
     const [currentDocId, setCurrentDocId] = useState<number>(parseInt(id));
@@ -154,12 +55,36 @@ export default function EditDocumentPage({ params }: PageProps) {
     const [content, setContent] = useState("");
     const [sortOrder, setSortOrder] = useState(0);
 
-    const handleToolbarImageUpload = useCallback(async (file: File) => {
+    // Auto-save hook
+    const {
+        autoSaveEnabled,
+        isAutoSaving,
+        showAutoSaveSuccess,
+        toggleAutoSave,
+        resetLastSavedContent,
+    } = useAutoSave({
+        content,
+        title: name,
+        enabled: false,
+        saveFunction: async (data: UpdateDocumentRequest) => {
+            await documentApi.update(currentDocId, data);
+        },
+        buildSaveData: () => ({
+            name: name.trim(),
+            filename: filename.trim() || undefined,
+            content,
+            sort_order: sortOrder,
+        }),
+    });
+
+    // Ref to track cursor position
+    const cursorPosRef = useRef<number | null>(null);
+
+    const handleToolbarImageUpload = useCallback(async (file: File, api: TextAreaTextApi) => {
         setIsUploadingImage(true);
         try {
             const markdown = await uploadImageToServer(file);
-            setContent((prev) => prev + "\n" + markdown + "\n");
-            setHasUnsavedChanges(true);
+            api.replaceSelection("\n" + markdown + "\n");
         } catch {
             // Error already handled in uploadImageToServer
         } finally {
@@ -167,11 +92,14 @@ export default function EditDocumentPage({ params }: PageProps) {
         }
     }, []);
 
-    const imageUploadCommand = createImageUploadCommand(handleToolbarImageUpload);
-
     const handleEditorPaste = useCallback(async (event: React.ClipboardEvent) => {
         const items = event.clipboardData?.items;
         if (!items) return;
+
+        // Get cursor position from textarea
+        const textarea = (event.target as HTMLElement).closest('.w-md-editor')?.querySelector('textarea');
+        const cursorPos = textarea?.selectionStart ?? cursorPosRef.current;
+
         for (const item of items) {
             if (item.type.startsWith("image/")) {
                 event.preventDefault();
@@ -180,8 +108,10 @@ export default function EditDocumentPage({ params }: PageProps) {
                 setIsUploadingImage(true);
                 try {
                     const markdown = await uploadImageToServer(file);
-                    setContent((prev) => prev + "\n" + markdown + "\n");
-                    setHasUnsavedChanges(true);
+                    setContent((prev) => {
+                        const { newContent } = insertTextAtCursor(prev, markdown, cursorPos ?? null);
+                        return newContent;
+                    });
                 } catch {
                     // Error already handled in uploadImageToServer
                 } finally {
@@ -198,6 +128,11 @@ export default function EditDocumentPage({ params }: PageProps) {
         const imageFiles = Array.from(files).filter((f) => f.type.startsWith("image/"));
         if (imageFiles.length === 0) return;
         event.preventDefault();
+
+        // Get cursor position from textarea
+        const textarea = (event.target as HTMLElement).closest('.w-md-editor')?.querySelector('textarea');
+        const cursorPos = textarea?.selectionStart ?? cursorPosRef.current;
+
         setIsUploadingImage(true);
         try {
             const markdowns: string[] = [];
@@ -205,8 +140,10 @@ export default function EditDocumentPage({ params }: PageProps) {
                 const markdown = await uploadImageToServer(file);
                 markdowns.push(markdown);
             }
-            setContent((prev) => prev + "\n" + markdowns.join("\n") + "\n");
-            setHasUnsavedChanges(true);
+            setContent((prev) => {
+                const { newContent } = insertTextAtCursor(prev, markdowns.join("\n"), cursorPos ?? null);
+                return newContent;
+            });
         } catch {
             // Error already handled in uploadImageToServer
         } finally {
@@ -214,100 +151,82 @@ export default function EditDocumentPage({ params }: PageProps) {
         }
     }, []);
 
-    // Load document content
-    const loadDocument = useCallback(async (docId: number) => {
-        try {
-            const docData = await documentApi.getById(docId);
-            setName(docData.name);
-            setFilename(docData.filename || "");
-            setContent(docData.content);
-            setSortOrder(docData.sort_order);
-            setCurrentDocId(docId);
-            setHasUnsavedChanges(false);
-            // Update URL without navigation
-            window.history.replaceState(null, "", `/admin/documents/${docId}`);
-        } catch (err) {
-            toast.error(err instanceof Error ? err.message : "加载文档失败");
+    // Track cursor position when editor content changes
+    const handleEditorChange = useCallback((val: string | undefined) => {
+        setContent(val || "");
+    }, []);
+
+    // Track cursor position on click/keyup in editor
+    const handleEditorInteraction = useCallback((event: React.SyntheticEvent) => {
+        const textarea = (event.target as HTMLElement).closest('.w-md-editor')?.querySelector('textarea');
+        if (textarea) {
+            cursorPosRef.current = textarea.selectionStart;
         }
     }, []);
 
-    // Initial load
+    // Load document content
+    const loadDocument = useCallback(async (docId: number) => {
+        try {
+            const doc = await documentApi.getById(docId);
+            setName(doc.name);
+            setFilename(doc.filename || "");
+            setContent(doc.content || "");
+            setSortOrder(doc.sort_order || 0);
+            setCurrentDocId(docId);
+            resetLastSavedContent();
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "加载文档失败");
+        }
+    }, [resetLastSavedContent]);
+
+    // Load directories and initial document
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
             try {
-                const [docData, dirsData] = await Promise.all([
-                    documentApi.getById(parseInt(id)),
+                const [dirData] = await Promise.all([
                     directoryApi.getTree(),
+                    loadDocument(parseInt(id)),
                 ]);
-                setDirectories(dirsData);
-                setName(docData.name);
-                setFilename(docData.filename || "");
-                setContent(docData.content);
-                setSortOrder(docData.sort_order);
-
-                // Auto expand all directories
-                const allIds = new Set<number>();
-                const collectIds = (dirs: DirectoryTreeNode[]) => {
-                    dirs.forEach((dir) => {
-                        allIds.add(dir.id);
-                        if (dir.children) collectIds(dir.children);
-                    });
-                };
-                collectIds(dirsData);
-                setExpandedIds(allIds);
+                setDirectories(dirData);
+                setTreeNodes(convertToTreeNodes(dirData));
             } catch (err) {
-                toast.error(err instanceof Error ? err.message : "加载文档失败");
-                router.push("/admin/directories");
+                toast.error(err instanceof Error ? err.message : "加载数据失败");
             } finally {
                 setIsLoading(false);
             }
         };
         fetchData();
-    }, [id, router]);
+    }, [id, loadDocument]);
 
-    const toggleExpand = (dirId: number) => {
-        setExpandedIds((prev) => {
-            const next = new Set(prev);
-            if (next.has(dirId)) {
-                next.delete(dirId);
+    const toggleExpanded = (id: number) => {
+        setExpandedIds(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(id)) {
+                newSet.delete(id);
             } else {
-                next.add(dirId);
+                newSet.add(id);
             }
-            return next;
+            return newSet;
         });
     };
 
-    const handleSelectDoc = async (doc: DirectoryDocument) => {
-        if (doc.id === currentDocId) return;
-
-        if (hasUnsavedChanges) {
-            const confirmed = window.confirm("当前文档有未保存的更改，是否放弃更改并切换？");
-            if (!confirmed) return;
-        }
-
-        await loadDocument(doc.id);
-    };
-
-    const handleSubmit = async () => {
+    const handleSave = async () => {
         if (!name.trim()) {
             toast.error("请输入文档名称");
-            return;
-        }
-        if (!content.trim()) {
-            toast.error("请输入文档内容");
             return;
         }
 
         setIsSaving(true);
         try {
-            await documentApi.update(currentDocId, {
+            const data: UpdateDocumentRequest = {
                 name: name.trim(),
                 filename: filename.trim() || undefined,
                 content,
                 sort_order: sortOrder,
-            });
-            setHasUnsavedChanges(false);
+            };
+            await documentApi.update(currentDocId, data);
+            resetLastSavedContent();
             toast.success("保存成功");
         } catch (err) {
             toast.error(err instanceof Error ? err.message : "保存失败");
@@ -316,25 +235,93 @@ export default function EditDocumentPage({ params }: PageProps) {
         }
     };
 
-    const handleContentChange = (val: string | undefined) => {
-        setContent(val || "");
-        setHasUnsavedChanges(true);
+    // Convert DirectoryTreeNode to TreeNode for navigation
+    const convertToTreeNodes = (nodes: DirectoryTreeNode[]): TreeNode[] => {
+        const result: TreeNode[] = [];
+
+        const processNode = (node: DirectoryTreeNode): TreeNode[] => {
+            const treeNodes: TreeNode[] = [];
+
+            // Add directory node
+            const dirNode: TreeNode = {
+                id: node.id,
+                name: node.name,
+                type: "directory",
+                children: [],
+            };
+
+            // Add child directories
+            if (node.children && node.children.length > 0) {
+                node.children.forEach(child => {
+                    dirNode.children!.push(...processNode(child));
+                });
+            }
+
+            // Add documents
+            if (node.documents && node.documents.length > 0) {
+                node.documents.forEach(doc => {
+                    dirNode.children!.push({
+                        id: doc.id,
+                        name: doc.name,
+                        type: "document",
+                    });
+                });
+            }
+
+            treeNodes.push(dirNode);
+            return treeNodes;
+        };
+
+        nodes.forEach(node => {
+            result.push(...processNode(node));
+        });
+
+        return result;
     };
 
-    const handleNameChange = (val: string) => {
-        setName(val);
-        setHasUnsavedChanges(true);
-    };
+    const [treeNodes, setTreeNodes] = useState<TreeNode[]>([]);
 
-    const handleFilenameChange = (val: string) => {
-        setFilename(val);
-        setHasUnsavedChanges(true);
-    };
-
-    const handleSortOrderChange = (val: number) => {
-        setSortOrder(val);
-        setHasUnsavedChanges(true);
-    };
+    const renderTreeNode = (node: TreeNode, level = 0) => (
+        <div key={`${node.type}-${node.id}`}>
+            <div
+                className={cn(
+                    "flex items-center gap-2 px-2 py-1 text-sm cursor-pointer hover:bg-muted rounded-sm",
+                    { "bg-muted": node.type === "document" && node.id === currentDocId }
+                )}
+                style={{ paddingLeft: `${level * 16 + 8}px` }}
+                onClick={() => {
+                    if (node.type === "directory") {
+                        toggleExpanded(node.id);
+                    } else {
+                        loadDocument(node.id);
+                    }
+                }}
+            >
+                {node.type === "directory" ? (
+                    <>
+                        {expandedIds.has(node.id) ? (
+                            <ChevronDown className="h-4 w-4" />
+                        ) : (
+                            <ChevronRight className="h-4 w-4" />
+                        )}
+                        <FolderOpen className="h-4 w-4 text-blue-500" />
+                        <span>{node.name}</span>
+                    </>
+                ) : (
+                    <>
+                        <div className="w-4" />
+                        <FileText className="h-4 w-4 text-gray-500" />
+                        <span>{node.name}</span>
+                    </>
+                )}
+            </div>
+            {node.type === "directory" && expandedIds.has(node.id) && node.children && (
+                <div>
+                    {node.children.map(child => renderTreeNode(child, level + 1))}
+                </div>
+            )}
+        </div>
+    );
 
     if (isLoading) {
         return (
@@ -346,10 +333,7 @@ export default function EditDocumentPage({ params }: PageProps) {
                         <Skeleton className="h-4 w-32 mt-2" />
                     </div>
                 </div>
-                <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
-                    <Skeleton className="h-[600px] w-full" />
-                    <Skeleton className="h-[600px] w-full" />
-                </div>
+                <Skeleton className="h-[600px] w-full" />
             </div>
         );
     }
@@ -358,135 +342,92 @@ export default function EditDocumentPage({ params }: PageProps) {
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="icon" onClick={() => router.push("/admin/directories")}>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => router.back()}
+                    >
                         <ArrowLeft className="h-4 w-4" />
                     </Button>
                     <div>
                         <h1 className="text-2xl font-bold">编辑文档</h1>
-                        <p className="text-muted-foreground">
-                            {hasUnsavedChanges && <span className="text-amber-500">● 未保存 </span>}
-                            {name || "选择文档进行编辑"}
-                        </p>
+                        <p className="text-muted-foreground">修改文档内容</p>
                     </div>
                 </div>
-                <Button onClick={handleSubmit} disabled={isSaving}>
-                    <Save className="mr-2 h-4 w-4" />
-                    {isSaving ? "保存中..." : "保存文档"}
-                </Button>
+                <div className="flex items-center gap-2">
+                    <Button
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className="flex items-center gap-2"
+                    >
+                        <Save className="h-4 w-4" />
+                        {isSaving ? "保存中..." : "保存"}
+                    </Button>
+                </div>
             </div>
 
-            <ResizablePanelGroup direction="horizontal" className="min-h-[calc(100vh-200px)] rounded-lg border">
-                {/* Sidebar - Directory Tree */}
-                <ResizablePanel defaultSize={20} minSize={15} maxSize={40}>
-                    <div className="h-full flex flex-col">
-                        <div className="p-3 border-b">
-                            <h3 className="text-sm font-medium">目录结构</h3>
-                            <p className="text-xs text-muted-foreground">点击文档切换编辑</p>
-                        </div>
-                        <ScrollArea className="flex-1">
-                            <div className="p-2">
-                                {directories.map((dir) => (
-                                    <TreeNode
-                                        key={dir.id}
-                                        directory={dir}
-                                        level={0}
-                                        expandedIds={expandedIds}
-                                        selectedDocId={currentDocId}
-                                        onToggle={toggleExpand}
-                                        onSelectDoc={handleSelectDoc}
-                                    />
-                                ))}
-                            </div>
-                        </ScrollArea>
-                    </div>
+            <ResizablePanelGroup direction="horizontal" className="min-h-[600px]">
+                <ResizablePanel defaultSize={25} minSize={20}>
+                    <Card className="h-full">
+                        <CardHeader>
+                            <CardTitle className="text-lg">文档目录</CardTitle>
+                            <CardDescription>点击文档切换编辑</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <ScrollArea className="h-[500px]">
+                                {treeNodes.map(node => renderTreeNode(node))}
+                            </ScrollArea>
+                        </CardContent>
+                    </Card>
                 </ResizablePanel>
 
-                <ResizableHandle withHandle />
+                <ResizableHandle />
 
-                {/* Main Content */}
-                <ResizablePanel defaultSize={80}>
-                    <ScrollArea className="h-full">
-                        <div className="p-4 space-y-4">
-                            <Card>
-                                <CardHeader className="py-3">
-                                    <CardTitle className="text-sm">基本信息</CardTitle>
-                                </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <div className="grid grid-cols-3 gap-4">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="name">名称 *</Label>
-                                            <Input
-                                                id="name"
-                                                placeholder="请输入文档名称"
-                                                value={name}
-                                                onChange={(e) => handleNameChange(e.target.value)}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="filename">文件名</Label>
-                                            <Input
-                                                id="filename"
-                                                placeholder="例如: getting-started.md"
-                                                value={filename}
-                                                onChange={(e) => handleFilenameChange(e.target.value)}
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="sort">排序</Label>
-                                            <Input
-                                                id="sort"
-                                                type="number"
-                                                value={sortOrder}
-                                                onChange={(e) => handleSortOrderChange(parseInt(e.target.value) || 0)}
-                                            />
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-
-                            <Card>
-                                <CardHeader className="py-3">
-                                    <CardTitle className="text-sm">文档内容</CardTitle>
-                                    <CardDescription className="text-xs">
-                                        使用 Markdown 格式编写，支持粘贴或拖拽图片自动上传
-                                        {isUploadingImage && <span className="ml-2 text-primary">图片上传中...</span>}
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <div
-                                        data-color-mode="light"
-                                        className="dark:hidden"
-                                        onPaste={handleEditorPaste}
-                                        onDrop={handleEditorDrop}
-                                        onDragOver={(e) => e.preventDefault()}
-                                    >
-                                        <MDEditor
-                                            value={content}
-                                            onChange={handleContentChange}
-                                            height={500}
-                                            preview="live"
-                                            commands={[...commands.getCommands(), commands.divider, imageUploadCommand]}
+                <ResizablePanel defaultSize={75}>
+                    <div className="space-y-6 pl-6">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>文档信息</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="name">文档名称 *</Label>
+                                        <Input
+                                            id="name"
+                                            placeholder="请输入文档名称"
+                                            value={name}
+                                            onChange={(e) => setName(e.target.value)}
                                         />
                                     </div>
-                                    <div
-                                        data-color-mode="dark"
-                                        className="hidden dark:block"
-                                        onPaste={handleEditorPaste}
-                                        onDrop={handleEditorDrop}
-                                        onDragOver={(e) => e.preventDefault()}
-                                    >
-                                        <MDEditor
-                                            value={content}
-                                            onChange={handleContentChange}
-                                            height={500}
-                                            preview="live"
-                                            commands={[...commands.getCommands(), commands.divider, imageUploadCommand]}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="filename">文件名</Label>
+                                        <Input
+                                            id="filename"
+                                            placeholder="留空则自动生成"
+                                            value={filename}
+                                            onChange={(e) => setFilename(e.target.value)}
                                         />
                                     </div>
-                                </CardContent>
-                            </Card>
-                        </div>
-                    </ScrollArea>
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <MarkdownEditor
+                            title="文档内容"
+                            content={content}
+                            onContentChange={handleEditorChange}
+                            onPaste={handleEditorPaste}
+                            onDrop={handleEditorDrop}
+                            onInteraction={handleEditorInteraction}
+                            autoSaveEnabled={autoSaveEnabled}
+                            isAutoSaving={isAutoSaving}
+                            showAutoSaveSuccess={showAutoSaveSuccess}
+                            onToggleAutoSave={toggleAutoSave}
+                            isUploadingImage={isUploadingImage}
+                            onImageUpload={handleToolbarImageUpload}
+                        />
+                    </div>
                 </ResizablePanel>
             </ResizablePanelGroup>
         </div>

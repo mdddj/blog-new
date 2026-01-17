@@ -118,6 +118,15 @@ export interface DirectoryTreeNode {
     documents: DirectoryDocument[];
 }
 
+// Unified tree node for navigation (includes both directories and documents)
+export interface TreeNode {
+    id: number;
+    name: string;
+    type: "directory" | "document";
+    children?: TreeNode[];
+    level?: number;
+}
+
 // Simplified document info for directory tree
 export interface DirectoryDocument {
     id: number;
