@@ -8,5 +8,5 @@ export {
     uploadImageToServer,
     createImageUploadCommand,
     kbdCommand,
-    useAutoSaveSuccess,
 } from "../blog-editor/utils";
+export { useAutoSaveSuccess } from "../blog-editor/auto-save-command";

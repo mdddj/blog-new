@@ -27,9 +27,15 @@ export function useAutoSave<T>({
     const [autoSaveEnabled, setAutoSaveEnabled] = useState(enabled);
     const [isAutoSaving, setIsAutoSaving] = useState(false);
     const lastSavedContentRef = useRef("");
+    const contentRef = useRef(content);
 
     const { showSuccess, triggerSuccess } = useAutoSaveSuccess();
     const debouncedContent = useDebounce(content, delay);
+
+    // Update content ref whenever content changes
+    useEffect(() => {
+        contentRef.current = content;
+    }, [content]);
 
     // Store functions in refs to avoid dependency changes
     const saveFunctionRef = useRef(saveFunction);
@@ -38,10 +44,21 @@ export function useAutoSave<T>({
     const onSaveErrorRef = useRef(onSaveError);
 
     // Update refs when functions change
-    saveFunctionRef.current = saveFunction;
-    buildSaveDataRef.current = buildSaveData;
-    onSaveSuccessRef.current = onSaveSuccess;
-    onSaveErrorRef.current = onSaveError;
+    useEffect(() => {
+        saveFunctionRef.current = saveFunction;
+    }, [saveFunction]);
+
+    useEffect(() => {
+        buildSaveDataRef.current = buildSaveData;
+    }, [buildSaveData]);
+
+    useEffect(() => {
+        onSaveSuccessRef.current = onSaveSuccess;
+    }, [onSaveSuccess]);
+
+    useEffect(() => {
+        onSaveErrorRef.current = onSaveError;
+    }, [onSaveError]);
 
     // Auto-save effect
     useEffect(() => {
@@ -84,10 +101,10 @@ export function useAutoSave<T>({
         });
     }, []);
 
-    // Reset last saved content - stable function
+    // Reset last saved content - stable function without dependencies
     const resetLastSavedContent = useCallback(() => {
-        lastSavedContentRef.current = content;
-    }, [content]);
+        lastSavedContentRef.current = contentRef.current;
+    }, []);
 
     return {
         autoSaveEnabled,
