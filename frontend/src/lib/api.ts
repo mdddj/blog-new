@@ -35,8 +35,10 @@ import type {
     DashboardStats,
 } from "@/types";
 
-// API base URL - uses env variable or relative path for reverse proxy compatibility
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
+const isServer = typeof window === "undefined";
+const API_BASE_URL = isServer
+    ? (process.env.INTERNAL_API_URL || (process.env.NEXT_PUBLIC_API_URL?.startsWith("http") ? process.env.NEXT_PUBLIC_API_URL : "http://127.0.0.1:8080/api/v1"))
+    : (process.env.NEXT_PUBLIC_API_URL || "/api/v1");
 
 class ApiError extends Error {
     constructor(
