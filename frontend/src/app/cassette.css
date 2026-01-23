@@ -509,6 +509,10 @@ html.light {
     position: relative;
 }
 
+.cf-featured.no-image {
+    grid-template-columns: 1fr;
+}
+
 /* "Side A" label */
 .cf-featured::before {
     content: 'SIDE A // FEATURED';

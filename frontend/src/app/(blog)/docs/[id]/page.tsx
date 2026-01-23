@@ -175,7 +175,8 @@ export default function DocDetailPage() {
     }
 
     return (
-        <div className="docs-page w-full">
+        <main className="cf-main docs-page w-full">
+
             {/* Mobile Header with Toggle */}
             <div className="lg:hidden mb-6 flex items-center justify-between cf-panel p-3">
                 <div className="flex items-center gap-2 text-sm font-mono text-(--cf-text-dim)">
@@ -358,27 +359,31 @@ export default function DocDetailPage() {
                     </div>
                 </aside>
             </div>
-        </div>
+        </main>
     );
+
 }
 
 function DocsPageSkeleton() {
     return (
-        <div className="grid lg:grid-cols-[280px_1fr] xl:grid-cols-[280px_1fr_240px] gap-6">
-            <div className="hidden lg:block cf-panel h-96 animate-pulse" />
-            <div className="cf-panel h-[800px] animate-pulse">
-                <div className="cf-panel-header h-10" />
-                <div className="p-8 space-y-4">
-                    <div className="h-8 w-2/3 bg-(--cf-bg-inset) rounded" />
-                    <div className="h-4 w-1/3 bg-(--cf-bg-inset) rounded" />
-                    <div className="space-y-2 mt-8">
-                        <div className="h-4 w-full bg-(--cf-bg-inset) rounded" />
-                        <div className="h-4 w-full bg-(--cf-bg-inset) rounded" />
-                        <div className="h-4 w-3/4 bg-(--cf-bg-inset) rounded" />
+        <main className="cf-main">
+            <div className="grid lg:grid-cols-[280px_1fr] xl:grid-cols-[280px_1fr_240px] gap-6">
+
+                <div className="hidden lg:block cf-panel h-96 animate-pulse" />
+                <div className="cf-panel h-[800px] animate-pulse">
+                    <div className="cf-panel-header h-10" />
+                    <div className="p-8 space-y-4">
+                        <div className="h-8 w-2/3 bg-(--cf-bg-inset) rounded" />
+                        <div className="h-4 w-1/3 bg-(--cf-bg-inset) rounded" />
+                        <div className="space-y-2 mt-8">
+                            <div className="h-4 w-full bg-(--cf-bg-inset) rounded" />
+                            <div className="h-4 w-full bg-(--cf-bg-inset) rounded" />
+                            <div className="h-4 w-3/4 bg-(--cf-bg-inset) rounded" />
+                        </div>
                     </div>
                 </div>
             </div>
-            <div className="hidden xl:block h-64 animate-pulse bg-(--cf-bg-panel) border border-(--cf-border)" />
-        </div>
+        </main>
     );
 }
+

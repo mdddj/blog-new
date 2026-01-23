@@ -16,7 +16,7 @@ export default function BlogLayout({
             <div className="cassette-theme flex flex-col min-h-screen">
                 <CassetteBackground />
                 <CassetteHeader />
-                <div className="flex-1 cf-main">{children}</div>
+                <div className="flex-1">{children}</div>
                 <CassetteFooter />
             </div>
         </SiteConfigProvider>

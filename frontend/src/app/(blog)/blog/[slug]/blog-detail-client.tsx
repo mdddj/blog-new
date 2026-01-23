@@ -3,7 +3,8 @@
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Calendar, Eye, Clock, List, ChevronLeft, ChevronRight, Terminal, Pencil } from "lucide-react";
+import { Calendar, Eye, Clock, List, ChevronLeft, ChevronRight, Terminal, Pencil, ArrowUp } from "lucide-react";
+
 import { blogApi } from "@/lib/api";
 import { isAuthenticated } from "@/lib/auth";
 import type { Blog, BlogReference } from "@/types";
@@ -57,6 +58,8 @@ export function BlogDetailClient({ slug }: BlogDetailClientProps) {
     const [mobileTocOpen, setMobileTocOpen] = useState(false);
     const [activeHeading, setActiveHeading] = useState<string>("");
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [showScrollTop, setShowScrollTop] = useState(false);
+
 
     // Check login status on client side
     useEffect(() => {
@@ -112,6 +115,20 @@ export function BlogDetailClient({ slug }: BlogDetailClientProps) {
 
         fetchBlog();
     }, [slug]);
+
+    // Scroll to top visibility
+    useEffect(() => {
+        const handleScroll = () => {
+            setShowScrollTop(window.scrollY > 400);
+        };
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
+
+    const scrollToTop = () => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
 
     // Syntax highlighting is done server-side by the backend
 
@@ -347,28 +364,31 @@ export function BlogDetailClient({ slug }: BlogDetailClientProps) {
     }
 
     return (
-        <main className="cf-main">
-            <div className="grid gap-6 lg:gap-8 lg:grid-cols-[1fr_280px]">
-                {/* Main Content */}
-                <article className="min-w-0">
-                    {/* Article Panel */}
-                    <div className="cf-panel overflow-hidden">
-                        {/* Terminal Header */}
-                        <div className="cf-panel-header h-auto! py-3!">
-                            <div className="flex items-center gap-2 flex-1">
-                                <div className="cf-card-dots">
-                                    <span className="cf-card-dot red" />
-                                    <span className="cf-card-dot amber" />
-                                    <span className="cf-card-dot green" />
-                                </div>
-                                <span className="text-(--cf-text-muted) text-xs">
-                                    blog://posts/{blog.slug || blog.id}
-                                </span>
-                            </div>
-                        </div>
+        <>
+            <main className="cf-main">
 
-                        {/* Hero Image - Removed as per request */}
-                        {/* {blog.thumbnail && (
+
+                <div className="grid gap-6 lg:gap-8 lg:grid-cols-[1fr_280px]">
+                    {/* Main Content */}
+                    <article className="min-w-0">
+                        {/* Article Panel */}
+                        <div className="cf-panel overflow-hidden">
+                            {/* Terminal Header */}
+                            <div className="cf-panel-header h-auto! py-3!">
+                                <div className="flex items-center gap-2 flex-1">
+                                    <div className="cf-card-dots">
+                                        <span className="cf-card-dot red" />
+                                        <span className="cf-card-dot amber" />
+                                        <span className="cf-card-dot green" />
+                                    </div>
+                                    <span className="text-(--cf-text-muted) text-xs">
+                                        blog://posts/{blog.slug || blog.id}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Hero Image - Removed as per request */}
+                            {/* {blog.thumbnail && (
                             <div className="relative h-48 sm:h-64 md:h-80 overflow-hidden border-b border-(--cf-border)">
                                 <Image
                                     src={blog.thumbnail}
@@ -382,115 +402,115 @@ export function BlogDetailClient({ slug }: BlogDetailClientProps) {
                             </div>
                         )} */}
 
-                        {/* Article Header */}
-                        <div className="p-4 sm:p-6 border-b border-(--cf-border)">
-                            {/* Category */}
-                            {blog.category && (
-                                <Link
-                                    href={`/category/${blog.category.id}`}
-                                    className="cf-card-category inline-flex mb-3 hover:text-(--cf-cyan)"
-                                >
-                                    {blog.category.name}
-                                </Link>
-                            )}
-
-                            {/* Title */}
-                            <div className="flex items-start gap-3 mb-4">
-                                <h1 className="font-(--cf-font-display) text-xl sm:text-2xl md:text-3xl text-(--cf-text) leading-tight flex-1">
-                                    {blog.title}
-                                </h1>
-                                {isLoggedIn && (
+                            {/* Article Header */}
+                            <div className="p-4 sm:p-6 border-b border-(--cf-border)">
+                                {/* Category */}
+                                {blog.category && (
                                     <Link
-                                        href={`/admin/blogs/${blog.id}`}
-                                        className="cf-btn-icon shrink-0"
-                                        title="编辑文章"
+                                        href={`/category/${blog.category.id}`}
+                                        className="cf-card-category inline-flex mb-3 hover:text-(--cf-cyan)"
                                     >
-                                        <Pencil className="w-4 h-4" />
+                                        {blog.category.name}
                                     </Link>
                                 )}
-                            </div>
 
-                            {/* Meta */}
-                            <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs font-mono text-(--cf-text-muted)">
-                                <span className="flex items-center gap-1.5">
-                                    <Calendar className="w-3 h-3" />
-                                    {formatDate(blog.created_at)}
-                                </span>
-                                <span className="flex items-center gap-1.5">
-                                    <Clock className="w-3 h-3" />
-                                    {estimateReadingTime(blog.content || "")} MIN_READ
-                                </span>
-                                <span className="flex items-center gap-1.5">
-                                    <Eye className="w-3 h-3" />
-                                    {blog.view_count} VIEWS
-                                </span>
-                            </div>
-
-                            {/* Tags */}
-                            {blog.tags && blog.tags.length > 0 && (
-                                <div className="cf-tags mt-4">
-                                    {blog.tags.map((tag) => (
-                                        <Link key={tag.id} href={`/tag/${tag.id}`} className="cf-tag">
-                                            #{tag.name}
+                                {/* Title */}
+                                <div className="flex items-start gap-3 mb-4">
+                                    <h1 className="font-(--cf-font-display) text-xl sm:text-2xl md:text-3xl text-(--cf-text) leading-tight flex-1">
+                                        {blog.title}
+                                    </h1>
+                                    {isLoggedIn && (
+                                        <Link
+                                            href={`/admin/blogs/${blog.id}`}
+                                            className="cf-btn-icon shrink-0"
+                                            title="编辑文章"
+                                        >
+                                            <Pencil className="w-4 h-4" />
                                         </Link>
-                                    ))}
+                                    )}
                                 </div>
-                            )}
-                        </div>
 
-                        {/* Mobile TOC Toggle */}
-                        {tocItems.length > 0 && (
-                            <div className="lg:hidden p-4 border-b border-(--cf-border)">
-                                <button
-                                    onClick={() => setMobileTocOpen(!mobileTocOpen)}
-                                    className="cf-nav-link w-full flex items-center justify-center gap-2"
-                                >
-                                    <List className="w-4 h-4" />
-                                    {mobileTocOpen ? "HIDE_INDEX" : "SHOW_INDEX"}
-                                </button>
-                                {mobileTocOpen && (
-                                    <nav className="mt-4 space-y-1">
-                                        {tocItems.map((item) => (
-                                            <a
-                                                key={item.id}
-                                                href={`#${item.id}`}
-                                                onClick={() => {
-                                                    setMobileTocOpen(false);
-                                                    setActiveHeading(item.id);
-                                                }}
-                                                className={`block py-1.5 px-3 text-xs font-mono rounded transition-colors
-                                                    ${item.level > 2 ? "ml-4" : ""}
-                                                    ${activeHeading === item.id
-                                                        ? "text-(--cf-amber) bg-[rgba(240,165,0,0.1)]"
-                                                        : "text-(--cf-text-dim) hover:text-(--cf-text)"
-                                                    }`}
-                                            >
-                                                {item.text}
-                                            </a>
+                                {/* Meta */}
+                                <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs font-mono text-(--cf-text-muted)">
+                                    <span className="flex items-center gap-1.5">
+                                        <Calendar className="w-3 h-3" />
+                                        {formatDate(blog.created_at)}
+                                    </span>
+                                    <span className="flex items-center gap-1.5">
+                                        <Clock className="w-3 h-3" />
+                                        {estimateReadingTime(blog.content || "")} MIN_READ
+                                    </span>
+                                    <span className="flex items-center gap-1.5">
+                                        <Eye className="w-3 h-3" />
+                                        {blog.view_count} VIEWS
+                                    </span>
+                                </div>
+
+                                {/* Tags */}
+                                {blog.tags && blog.tags.length > 0 && (
+                                    <div className="cf-tags mt-4">
+                                        {blog.tags.map((tag) => (
+                                            <Link key={tag.id} href={`/tag/${tag.id}`} className="cf-tag">
+                                                #{tag.name}
+                                            </Link>
                                         ))}
-                                    </nav>
+                                    </div>
                                 )}
                             </div>
-                        )}
 
-                        {/* Summary */}
-                        {blog.summary && (
-                            <div className="p-4 sm:p-6 md:p-8 border-b border-(--cf-border) bg-(--cf-bg-inset)">
-                                <div className="flex items-center gap-2 text-xs font-mono text-(--cf-amber) mb-2">
-                                    <Terminal className="w-3.5 h-3.5" />
-                                    AI_SUMMARY
+                            {/* Mobile TOC Toggle */}
+                            {tocItems.length > 0 && (
+                                <div className="lg:hidden p-4 border-b border-(--cf-border)">
+                                    <button
+                                        onClick={() => setMobileTocOpen(!mobileTocOpen)}
+                                        className="cf-nav-link w-full flex items-center justify-center gap-2"
+                                    >
+                                        <List className="w-4 h-4" />
+                                        {mobileTocOpen ? "HIDE_INDEX" : "SHOW_INDEX"}
+                                    </button>
+                                    {mobileTocOpen && (
+                                        <nav className="mt-4 space-y-1">
+                                            {tocItems.map((item) => (
+                                                <a
+                                                    key={item.id}
+                                                    href={`#${item.id}`}
+                                                    onClick={() => {
+                                                        setMobileTocOpen(false);
+                                                        setActiveHeading(item.id);
+                                                    }}
+                                                    className={`block py-1.5 px-3 text-xs font-mono rounded transition-colors
+                                                    ${item.level > 2 ? "ml-4" : ""}
+                                                    ${activeHeading === item.id
+                                                            ? "text-(--cf-amber) bg-[rgba(240,165,0,0.1)]"
+                                                            : "text-(--cf-text-dim) hover:text-(--cf-text)"
+                                                        }`}
+                                                >
+                                                    {item.text}
+                                                </a>
+                                            ))}
+                                        </nav>
+                                    )}
                                 </div>
-                                <p className="text-sm text-(--cf-text-dim) leading-relaxed">
-                                    {blog.summary}
-                                </p>
-                            </div>
-                        )}
+                            )}
 
-                        {/* Article Content */}
-                        <BlogContentRenderer
-                            html={processedHtml}
-                            references={(blog as Blog & { references?: Record<string, BlogReference> }).references}
-                            className="p-4 sm:p-6 md:p-8
+                            {/* Summary */}
+                            {blog.summary && (
+                                <div className="p-4 sm:p-6 md:p-8 border-b border-(--cf-border) bg-(--cf-bg-inset)">
+                                    <div className="flex items-center gap-2 text-xs font-mono text-(--cf-amber) mb-2">
+                                        <Terminal className="w-3.5 h-3.5" />
+                                        AI_SUMMARY
+                                    </div>
+                                    <p className="text-sm text-(--cf-text-dim) leading-relaxed">
+                                        {blog.summary}
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Article Content */}
+                            <BlogContentRenderer
+                                html={processedHtml}
+                                references={(blog as Blog & { references?: Record<string, BlogReference> }).references}
+                                className="p-4 sm:p-6 md:p-8
                                 prose dark:prose-invert max-w-none
                                 prose-headings:font-(--cf-font-display) prose-headings:text-(--cf-text)
                                 prose-headings:scroll-mt-20
@@ -510,92 +530,118 @@ export function BlogDetailClient({ slug }: BlogDetailClientProps) {
                                 prose-table:w-full prose-table:border prose-table:border-(--cf-border) prose-table:border-collapse
                                 prose-th:bg-(--cf-bg-elevated) prose-th:border prose-th:border-(--cf-border) prose-th:text-(--cf-text) prose-th:px-3 prose-th:py-2
                                 prose-td:border prose-td:border-(--cf-border) prose-td:px-3 prose-td:py-2"
-                        />
-                    </div>
-
-                    {/* Navigation */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-                        {prevBlog ? (
-                            <Link
-                                href={prevBlog.slug ? `/blog/${prevBlog.slug}` : `/blog/${prevBlog.id}`}
-                                className="cf-panel group"
-                            >
-                                <div className="cf-panel-header">
-                                    <ChevronLeft className="w-3.5 h-3.5" />
-                                    PREV_POST
-                                </div>
-                                <div className="p-4">
-                                    <div className="font-mono text-sm text-(--cf-text-dim) group-hover:text-(--cf-amber) transition-colors line-clamp-2">
-                                        {prevBlog.title}
-                                    </div>
-                                </div>
-                            </Link>
-                        ) : (
-                            <div />
-                        )}
-
-                        {nextBlog && (
-                            <Link
-                                href={nextBlog.slug ? `/blog/${nextBlog.slug}` : `/blog/${nextBlog.id}`}
-                                className="cf-panel group"
-                            >
-                                <div className="cf-panel-header justify-end">
-                                    NEXT_POST
-                                    <ChevronRight className="w-3.5 h-3.5" />
-                                </div>
-                                <div className="p-4">
-                                    <div className="font-mono text-sm text-(--cf-text-dim) group-hover:text-(--cf-amber) transition-colors line-clamp-2 text-right">
-                                        {nextBlog.title}
-                                    </div>
-                                </div>
-                            </Link>
-                        )}
-                    </div>
-                </article>
-
-                {/* Sidebar - TOC */}
-                <aside className="hidden lg:block relative">
-                    <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto custom-scrollbar pr-4">
-                        <div className="text-xs font-mono text-[var(--cf-text-muted)] mb-6 flex items-center gap-2 uppercase tracking-widest opacity-60">
-                            <List className="w-3 h-3" />
-                            Index_Data
+                            />
                         </div>
 
-                        {tocItems.length === 0 ? (
-                            <div className="text-xs text-[var(--cf-text-muted)] font-mono pl-4 border-l border-[var(--cf-border)]">
-                                {"// NO_DATA"}
+                        {/* Navigation */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+                            {prevBlog ? (
+                                <Link
+                                    href={prevBlog.slug ? `/blog/${prevBlog.slug}` : `/blog/${prevBlog.id}`}
+                                    className="cf-panel group"
+                                >
+                                    <div className="cf-panel-header">
+                                        <ChevronLeft className="w-3.5 h-3.5" />
+                                        PREV_POST
+                                    </div>
+                                    <div className="p-4">
+                                        <div className="font-mono text-sm text-(--cf-text-dim) group-hover:text-(--cf-amber) transition-colors line-clamp-2">
+                                            {prevBlog.title}
+                                        </div>
+                                    </div>
+                                </Link>
+                            ) : (
+                                <div />
+                            )}
+
+                            {nextBlog && (
+                                <Link
+                                    href={nextBlog.slug ? `/blog/${nextBlog.slug}` : `/blog/${nextBlog.id}`}
+                                    className="cf-panel group"
+                                >
+                                    <div className="cf-panel-header justify-end">
+                                        NEXT_POST
+                                        <ChevronRight className="w-3.5 h-3.5" />
+                                    </div>
+                                    <div className="p-4">
+                                        <div className="font-mono text-sm text-(--cf-text-dim) group-hover:text-(--cf-amber) transition-colors line-clamp-2 text-right">
+                                            {nextBlog.title}
+                                        </div>
+                                    </div>
+                                </Link>
+                            )}
+                        </div>
+                    </article>
+
+                    {/* Sidebar - TOC */}
+                    <aside className="hidden lg:block relative">
+                        <div className="sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto custom-scrollbar pr-4">
+                            <div className="text-xs font-mono text-[var(--cf-text-muted)] mb-6 flex items-center gap-2 uppercase tracking-widest opacity-60">
+                                <List className="w-3 h-3" />
+                                Index_Data
                             </div>
-                        ) : (
-                            <nav className="relative border-l border-[var(--cf-border)] ml-1.5 space-y-1">
-                                {tocItems.map((item) => (
-                                    <a
-                                        key={item.id}
-                                        href={`#${item.id}`}
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth' });
-                                            setActiveHeading(item.id);
-                                        }}
-                                        className={`group flex items-center py-1 pl-4 -ml-px border-l-2 text-xs font-mono transition-all
+
+                            {tocItems.length === 0 ? (
+                                <div className="text-xs text-[var(--cf-text-muted)] font-mono pl-4 border-l border-[var(--cf-border)]">
+                                    {"// NO_DATA"}
+                                </div>
+                            ) : (
+                                <nav className="relative border-l border-[var(--cf-border)] ml-1.5 space-y-1">
+                                    {tocItems.map((item) => (
+                                        <a
+                                            key={item.id}
+                                            href={`#${item.id}`}
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth' });
+                                                setActiveHeading(item.id);
+                                            }}
+                                            className={`group flex items-center py-1 pl-4 -ml-px border-l-2 text-xs font-mono transition-all
                                             ${item.level > 2 ? "pl-8" : ""}
                                             ${activeHeading === item.id
-                                                ? "border-[var(--cf-amber)] text-[var(--cf-amber)]"
-                                                : "border-transparent text-[var(--cf-text-dim)] hover:text-[var(--cf-text)] hover:border-[var(--cf-text-dim)]"
-                                            }`}
-                                    >
-                                        <span className={`mr-2 opacity-50 text-[10px] transition-opacity ${activeHeading === item.id ? "opacity-100" : "opacity-0 group-hover:opacity-50"}`}>
-                                            {activeHeading === item.id ? ">" : "#"}
-                                        </span>
-                                        <span className="truncate">{item.text}</span>
-                                    </a>
-                                ))}
-                            </nav>
-                        )}
-                    </div>
-                </aside>
+                                                    ? "border-[var(--cf-amber)] text-[var(--cf-amber)]"
+                                                    : "border-transparent text-[var(--cf-text-dim)] hover:text-[var(--cf-text)] hover:border-[var(--cf-text-dim)]"
+                                                }`}
+                                        >
+                                            <span className={`mr-2 opacity-50 text-[10px] transition-opacity ${activeHeading === item.id ? "opacity-100" : "opacity-0 group-hover:opacity-50"}`}>
+                                                {activeHeading === item.id ? ">" : "#"}
+                                            </span>
+                                            <span className="truncate">{item.text}</span>
+                                        </a>
+                                    ))}
+                                </nav>
+                            )}
+                        </div>
+                    </aside>
+                </div>
+
+            </main>
+
+            {/* Fixed Controls - Bottom Right */}
+            <div className="fixed bottom-8 right-8 z-50 flex flex-col gap-3">
+                {/* Back Button */}
+                <button
+                    onClick={() => window.history.back()}
+                    className="flex items-center justify-center p-3 bg-[var(--cf-bg-panel)] border border-[var(--cf-border)] text-(--cf-text-dim) shadow-xl transition-all duration-300 hover:border-[var(--cf-amber)] hover:text-[var(--cf-amber)] hover:shadow-[var(--cf-glow-amber)] group"
+                    title="BACK_TO_STORAGE"
+                >
+                    <ChevronLeft className="w-5 h-5 transition-transform group-hover:-translate-x-1" />
+                </button>
+
+                {/* Scroll to Top Button */}
+                <button
+                    onClick={scrollToTop}
+                    className={`flex items-center justify-center p-3 bg-[var(--cf-bg-panel)] border border-[var(--cf-border)] text-[var(--cf-amber)] shadow-xl transition-all duration-300 hover:border-[var(--cf-amber)] hover:shadow-[var(--cf-glow-amber)] ${showScrollTop ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"
+                        }`}
+                    aria-label="Scroll to top"
+                    title="SCROLL_TO_TOP"
+                >
+                    <ArrowUp className="w-5 h-5" />
+                </button>
             </div>
-        </main>
+        </>
     );
+
 }
 
 function BlogDetailSkeleton() {

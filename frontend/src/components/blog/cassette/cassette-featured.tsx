@@ -25,9 +25,9 @@ export function CassetteFeatured({ blog }: CassetteFeaturedProps) {
     const blogUrl = blog.slug ? `/blog/${blog.slug}` : `/blog/${blog.id}`;
 
     return (
-        <article className="cf-featured group">
-            <div className="cf-featured-image-wrapper">
-                {blog.thumbnail ? (
+        <article className={`cf-featured group ${!blog.thumbnail ? 'no-image' : ''}`}>
+            {blog.thumbnail && (
+                <div className="cf-featured-image-wrapper">
                     <Image
                         src={blog.thumbnail}
                         alt={blog.title}
@@ -36,14 +36,8 @@ export function CassetteFeatured({ blog }: CassetteFeaturedProps) {
                         sizes="(max-width: 1024px) 100vw, 60vw"
                         priority
                     />
-                ) : (
-                    <div className="w-full h-full bg-[var(--cf-bg-inset)] flex items-center justify-center">
-                        <span className="text-[var(--cf-text-dim)] opacity-20 text-6xl font-bold font-mono rotate-[-15deg]">
-                            NO SIGNAL
-                        </span>
-                    </div>
-                )}
-            </div>
+                </div>
+            )}
 
             <div className="cf-featured-content">
                 <div className="cf-featured-meta">
