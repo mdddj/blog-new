@@ -35,7 +35,7 @@ export default function NewDocumentPage() {
     const [name, setName] = useState("");
     const [filename, setFilename] = useState("");
     const [content, setContent] = useState("");
-    const [directoryId, setDirectoryId] = useState<string>(directoryIdParam || "");
+    const [directoryId, setDirectoryId] = useState<string>(directoryIdParam || "none");
     const [sortOrder, setSortOrder] = useState(0);
 
     // Ref to track cursor position
@@ -170,7 +170,7 @@ export default function NewDocumentPage() {
                 name: name.trim(),
                 filename: filename.trim() || undefined,
                 content,
-                directory_id: directoryId ? parseInt(directoryId) : undefined,
+                directory_id: (directoryId && directoryId !== "none") ? parseInt(directoryId) : undefined,
                 sort_order: sortOrder,
             };
             const doc = await documentApi.create(data);
@@ -262,7 +262,7 @@ export default function NewDocumentPage() {
                                     <SelectValue placeholder="选择目录（可选）" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="">根目录</SelectItem>
+                                    <SelectItem value="none">根目录</SelectItem>
                                     {flattenDirectories(directories).map((dir) => (
                                         <SelectItem key={dir.id} value={String(dir.id)}>
                                             {"  ".repeat(dir.level || 0)}{dir.name}
