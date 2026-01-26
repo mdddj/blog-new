@@ -7,6 +7,7 @@ import { directoryApi, documentApi } from "@/lib/api";
 import type { DirectoryTreeNode, DocumentResponse } from "@/types";
 import { DocsTreeNav } from "@/components/docs/docs-tree-nav";
 import { DocsSearch } from "@/components/docs/docs-search";
+import { DocumentContentRenderer } from "@/components/docs/document-content-renderer";
 import {
     Calendar,
     Clock,
@@ -287,7 +288,9 @@ export default function DocDetailPage() {
                         </div>
 
                         {/* Content */}
-                        <div
+                        <DocumentContentRenderer
+                            html={processedHtml}
+                            references={docData.references}
                             className="p-6 md:p-8 prose dark:prose-invert max-w-none
                                 prose-headings:font-(--cf-font-display) prose-headings:text-(--cf-text)
                                 prose-headings:scroll-mt-24
@@ -307,7 +310,6 @@ export default function DocDetailPage() {
                                 prose-table:w-full prose-table:border prose-table:border-(--cf-border) prose-table:border-collapse
                                 prose-th:bg-(--cf-bg-elevated) prose-th:border prose-th:border-(--cf-border) prose-th:text-(--cf-text) prose-th:px-3 prose-th:py-2
                                 prose-td:border prose-td:border-(--cf-border) prose-td:px-3 prose-td:py-2"
-                            dangerouslySetInnerHTML={{ __html: processedHtml }}
                         />
                     </div>
                 </article>

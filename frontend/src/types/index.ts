@@ -144,6 +144,13 @@ export interface CreateDirectoryRequest {
 
 export type UpdateDirectoryRequest = Partial<CreateDirectoryRequest>;
 
+// Document Reference Types
+export interface DocumentReference {
+    id: string;        // 唯一标识，如 "ref-1"
+    title: string;     // 引用标题
+    content: string;   // 引用内容（Markdown）
+}
+
 // Document Types
 export interface Document {
     id: number;
@@ -154,6 +161,7 @@ export interface Document {
     sort_order: number;
     created_at: string;
     updated_at: string;
+    references?: Record<string, DocumentReference>;
 }
 
 // Document response with rendered HTML
@@ -167,6 +175,7 @@ export interface DocumentResponse {
     sort_order: number;
     created_at?: string;
     updated_at?: string;
+    references?: Record<string, DocumentReference>;
 }
 
 export interface CreateDocumentRequest {
@@ -175,9 +184,17 @@ export interface CreateDocumentRequest {
     content: string;
     directory_id?: number;
     sort_order?: number;
+    references?: Record<string, DocumentReference>;
 }
 
-export type UpdateDocumentRequest = Partial<CreateDocumentRequest>;
+export interface UpdateDocumentRequest {
+    name?: string;
+    filename?: string;
+    content?: string;
+    directory_id?: number;
+    sort_order?: number;
+    references?: Record<string, DocumentReference>;
+}
 
 
 // File Types

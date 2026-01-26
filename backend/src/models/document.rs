@@ -2,7 +2,16 @@
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use serde_json::Value as JsonValue;
 use sqlx::FromRow;
+
+/// Document reference item
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct DocumentReference {
+    pub id: String,
+    pub title: String,
+    pub content: String,
+}
 
 /// Document entity from database
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
@@ -15,6 +24,8 @@ pub struct Document {
     pub sort_order: i32,
     pub created_at: Option<DateTime<Utc>>,
     pub updated_at: Option<DateTime<Utc>>,
+    #[sqlx(default)]
+    pub references: Option<JsonValue>,
 }
 
 /// Document list item (without full content) for list display
@@ -36,6 +47,7 @@ pub struct CreateDocumentRequest {
     pub content: String,
     pub directory_id: Option<i64>,
     pub sort_order: Option<i32>,
+    pub references: Option<JsonValue>,
 }
 
 /// Update document request DTO
@@ -46,6 +58,7 @@ pub struct UpdateDocumentRequest {
     pub content: Option<String>,
     pub directory_id: Option<i64>,
     pub sort_order: Option<i32>,
+    pub references: Option<JsonValue>,
 }
 
 /// Document response DTO
@@ -60,6 +73,7 @@ pub struct DocumentResponse {
     pub sort_order: i32,
     pub created_at: Option<DateTime<Utc>>,
     pub updated_at: Option<DateTime<Utc>>,
+    pub references: Option<JsonValue>,
 }
 
 impl Document {
@@ -75,6 +89,7 @@ impl Document {
             sort_order: self.sort_order,
             created_at: self.created_at,
             updated_at: self.updated_at,
+            references: self.references,
         }
     }
 }

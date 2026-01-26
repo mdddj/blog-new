@@ -21,6 +21,9 @@ import {
     uploadImageToServer,
 } from "@/components/admin/markdown-editor";
 
+import { DocumentReferenceManager } from "@/components/docs";
+import type { DocumentReference } from "@/types";
+
 export default function NewDocumentPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -37,6 +40,8 @@ export default function NewDocumentPage() {
     const [content, setContent] = useState("");
     const [directoryId, setDirectoryId] = useState<string>(directoryIdParam || "none");
     const [sortOrder, setSortOrder] = useState(0);
+    const [references, setReferences] = useState<Record<string, DocumentReference>>({});
+    const [referenceManagerOpen, setReferenceManagerOpen] = useState(false);
 
     // Ref to track cursor position
     const cursorPosRef = useRef<number | null>(null);
@@ -125,6 +130,15 @@ export default function NewDocumentPage() {
         }
     }, []);
 
+    // Handle inserting reference into content
+    const handleInsertReference = useCallback((refId: string) => {
+        const refMarkdown = `:::ref[${refId}]`;
+        setContent((prev) => {
+            const { newContent } = insertTextAtCursor(prev, refMarkdown, cursorPosRef.current);
+            return newContent;
+        });
+    }, []);
+
     useEffect(() => {
         const fetchData = async () => {
             setIsLoading(true);
@@ -172,6 +186,7 @@ export default function NewDocumentPage() {
                 content,
                 directory_id: (directoryId && directoryId !== "none") ? parseInt(directoryId) : undefined,
                 sort_order: sortOrder,
+                references: Object.keys(references).length > 0 ? references : undefined,
             };
             const doc = await documentApi.create(data);
             toast.success("文档创建成功");
@@ -283,8 +298,18 @@ export default function NewDocumentPage() {
                     onInteraction={handleEditorInteraction}
                     isUploadingImage={isUploadingImage}
                     onImageUpload={handleToolbarImageUpload}
+                    onOpenReferenceManager={() => setReferenceManagerOpen(true)}
                 />
             </div>
+
+            {/* Reference Manager Dialog */}
+            <DocumentReferenceManager
+                open={referenceManagerOpen}
+                onOpenChange={setReferenceManagerOpen}
+                references={references}
+                onReferencesChange={setReferences}
+                onInsertReference={handleInsertReference}
+            />
         </div>
     );
 }

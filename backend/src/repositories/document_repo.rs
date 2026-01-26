@@ -53,7 +53,7 @@ impl DocumentRepository {
     pub async fn find_by_id(pool: &PgPool, id: i64) -> Result<Option<Document>, ApiError> {
         let document = sqlx::query_as::<_, Document>(
             r#"
-            SELECT id, name, filename, content, directory_id, sort_order, created_at, updated_at
+            SELECT id, name, filename, content, directory_id, sort_order, created_at, updated_at, "references"
             FROM documents
             WHERE id = $1
             "#,
@@ -130,9 +130,9 @@ impl DocumentRepository {
 
         let document = sqlx::query_as::<_, Document>(
             r#"
-            INSERT INTO documents (name, filename, content, directory_id, sort_order)
-            VALUES ($1, $2, $3, $4, $5)
-            RETURNING id, name, filename, content, directory_id, sort_order, created_at, updated_at
+            INSERT INTO documents (name, filename, content, directory_id, sort_order, "references")
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING id, name, filename, content, directory_id, sort_order, created_at, updated_at, "references"
             "#,
         )
         .bind(&req.name)
@@ -140,6 +140,7 @@ impl DocumentRepository {
         .bind(&req.content)
         .bind(req.directory_id)
         .bind(req.sort_order.unwrap_or(0))
+        .bind(&req.references)
         .fetch_one(pool)
         .await?;
 
@@ -178,9 +179,10 @@ impl DocumentRepository {
                 content = COALESCE($4, content),
                 directory_id = COALESCE($5, directory_id),
                 sort_order = COALESCE($6, sort_order),
+                "references" = COALESCE($7, "references"),
                 updated_at = NOW()
             WHERE id = $1
-            RETURNING id, name, filename, content, directory_id, sort_order, created_at, updated_at
+            RETURNING id, name, filename, content, directory_id, sort_order, created_at, updated_at, "references"
             "#,
         )
         .bind(id)
@@ -189,6 +191,7 @@ impl DocumentRepository {
         .bind(&req.content)
         .bind(req.directory_id)
         .bind(req.sort_order)
+        .bind(&req.references)
         .fetch_optional(pool)
         .await?;
 

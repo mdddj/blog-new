@@ -34,6 +34,9 @@ import {
     useAutoSave,
 } from "@/components/admin/markdown-editor";
 
+import { DocumentReferenceManager } from "@/components/docs";
+import type { DocumentReference } from "@/types";
+
 interface PageProps {
     params: Promise<{ id: string }>;
 }
@@ -55,6 +58,7 @@ const DocumentEditor = memo(function DocumentEditor({
     onToggleAutoSave,
     isUploadingImage,
     onImageUpload,
+    onOpenReferenceManager,
 }: {
     content: string;
     name: string;
@@ -71,6 +75,7 @@ const DocumentEditor = memo(function DocumentEditor({
     onToggleAutoSave: () => void;
     isUploadingImage: boolean;
     onImageUpload: (file: File, api: TextAreaTextApi) => Promise<void>;
+    onOpenReferenceManager?: () => void;
 }) {
     return (
         <div className="space-y-6">
@@ -115,6 +120,7 @@ const DocumentEditor = memo(function DocumentEditor({
                 onToggleAutoSave={onToggleAutoSave}
                 isUploadingImage={isUploadingImage}
                 onImageUpload={onImageUpload}
+                onOpenReferenceManager={onOpenReferenceManager}
             />
         </div>
     );
@@ -136,6 +142,8 @@ export default function EditDocumentPage({ params }: PageProps) {
     const [filename, setFilename] = useState("");
     const [content, setContent] = useState("");
     const [sortOrder, setSortOrder] = useState(0);
+    const [references, setReferences] = useState<Record<string, DocumentReference>>({});
+    const [referenceManagerOpen, setReferenceManagerOpen] = useState(false);
 
     // Auto-save functions - memoized to prevent re-creation
     const saveFunction = useCallback(async (data: UpdateDocumentRequest) => {
@@ -147,7 +155,8 @@ export default function EditDocumentPage({ params }: PageProps) {
         filename: filename.trim() || undefined,
         content,
         sort_order: sortOrder,
-    }), [name, filename, content, sortOrder]);
+        references: Object.keys(references).length > 0 ? references : undefined,
+    }), [name, filename, content, sortOrder, references]);
 
     // Auto-save hook
     const {
@@ -252,6 +261,15 @@ export default function EditDocumentPage({ params }: PageProps) {
         }
     }, []);
 
+    // Handle inserting reference into content
+    const handleInsertReference = useCallback((refId: string) => {
+        const refMarkdown = `:::ref[${refId}]`;
+        setContent((prev) => {
+            const { newContent } = insertTextAtCursor(prev, refMarkdown, cursorPosRef.current);
+            return newContent;
+        });
+    }, []);
+
     // Load document content - stable function
     const loadDocument = useCallback(async (docId: number) => {
         try {
@@ -260,6 +278,7 @@ export default function EditDocumentPage({ params }: PageProps) {
             setFilename(doc.filename || "");
             setContent(doc.content || "");
             setSortOrder(doc.sort_order || 0);
+            setReferences(doc.references || {});
             setCurrentDocId(docId);
             // Reset last saved content after loading
             setTimeout(() => resetLastSavedContent(), 0);
@@ -361,6 +380,7 @@ export default function EditDocumentPage({ params }: PageProps) {
                 filename: filename.trim() || undefined,
                 content,
                 sort_order: sortOrder,
+                references: Object.keys(references).length > 0 ? references : undefined,
             };
             await documentApi.update(currentDocId, data);
             resetLastSavedContent();
@@ -370,7 +390,7 @@ export default function EditDocumentPage({ params }: PageProps) {
         } finally {
             setIsSaving(false);
         }
-    }, [name, filename, content, sortOrder, currentDocId, resetLastSavedContent]);
+    }, [name, filename, content, sortOrder, references, currentDocId, resetLastSavedContent]);
 
     // Tree rendering - memoized to prevent re-creation
     const renderTreeNode = useCallback((node: TreeNode, level = 0) => (
@@ -493,10 +513,20 @@ export default function EditDocumentPage({ params }: PageProps) {
                             onToggleAutoSave={toggleAutoSave}
                             isUploadingImage={isUploadingImage}
                             onImageUpload={handleToolbarImageUpload}
+                            onOpenReferenceManager={() => setReferenceManagerOpen(true)}
                         />
                     </div>
                 </ResizablePanel>
             </ResizablePanelGroup>
+
+            {/* Reference Manager Dialog */}
+            <DocumentReferenceManager
+                open={referenceManagerOpen}
+                onOpenChange={setReferenceManagerOpen}
+                references={references}
+                onReferencesChange={setReferences}
+                onInsertReference={handleInsertReference}
+            />
         </div>
     );
 }
