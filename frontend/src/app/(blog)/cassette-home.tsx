@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { blogApi, categoryApi, tagApi } from "@/lib/api";
 import type { Blog, Category, Tag, PaginatedResponse } from "@/types";
@@ -11,18 +11,31 @@ import {
 } from "@/components/blog/cassette";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-export function CassetteHome() {
+export interface CassetteHomeInitialData {
+    blogs: Blog[];
+    pagination: { total: number; totalPages: number };
+    categories: Category[];
+    tags: Tag[];
+}
+
+interface CassetteHomeProps {
+    initialData?: CassetteHomeInitialData;
+}
+
+export function CassetteHome({ initialData }: CassetteHomeProps) {
     const searchParams = useSearchParams();
     const router = useRouter();
     const currentPage = Number(searchParams.get("page")) || 1;
     const pageSize = 9;
 
-    const [blogs, setBlogs] = useState<Blog[]>([]);
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [tags, setTags] = useState<Tag[]>([]);
-    const [pagination, setPagination] = useState({ total: 0, totalPages: 0 });
-    const [isLoading, setIsLoading] = useState(true);
-    const [sidebarLoading, setSidebarLoading] = useState(true);
+    const [blogs, setBlogs] = useState<Blog[]>(initialData?.blogs || []);
+    const [categories, setCategories] = useState<Category[]>(initialData?.categories || []);
+    const [tags, setTags] = useState<Tag[]>(initialData?.tags || []);
+    const [pagination, setPagination] = useState(initialData?.pagination || { total: 0, totalPages: 0 });
+    const [isLoading, setIsLoading] = useState(!initialData?.blogs);
+    const [sidebarLoading, setSidebarLoading] = useState(!initialData?.categories);
+
+    const isFirstRender = useRef(true);
 
     const fetchBlogs = useCallback(async () => {
         setIsLoading(true);
@@ -57,12 +70,32 @@ export function CassetteHome() {
     }, []);
 
     useEffect(() => {
-        fetchBlogs();
-    }, [fetchBlogs]);
+        if (isFirstRender.current && initialData?.blogs) {
+            setIsLoading(false);
+        } else {
+            fetchBlogs();
+        }
+    }, [fetchBlogs, initialData]);
 
     useEffect(() => {
-        fetchSidebarData();
-    }, [fetchSidebarData]);
+        if (isFirstRender.current && initialData?.categories) {
+            setSidebarLoading(false);
+            isFirstRender.current = false;
+        } else if (!initialData?.categories && categories.length === 0) {
+            fetchSidebarData();
+        }
+    }, [fetchSidebarData, initialData, categories.length]);
+
+    useEffect(() => {
+        if (!isFirstRender.current && initialData) {
+            setBlogs(initialData.blogs);
+            setPagination(initialData.pagination);
+            setCategories(initialData.categories);
+            setTags(initialData.tags);
+            setIsLoading(false);
+            setSidebarLoading(false);
+        }
+    }, [initialData]);
 
     const handlePageChange = (page: number) => {
         router.push(`/?page=${page}`);

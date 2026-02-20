@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Enable standalone output for Docker deployment
   output: 'standalone',
+
   images: {
     // Enable modern image formats for better compression
     formats: ['image/avif', 'image/webp'],

@@ -1,7 +1,6 @@
-"use client";
-
 import { Suspense } from "react";
 import { CassetteHome } from "./cassette-home";
+import { blogApi, categoryApi, tagApi } from "@/lib/api";
 
 function LoadingSkeleton() {
     return (
@@ -27,10 +26,34 @@ function LoadingSkeleton() {
     );
 }
 
-export default function HomePage() {
+export default async function HomePage(props: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+    const searchParams = await props.searchParams;
+    const page = Number(searchParams?.page) || 1;
+    const pageSize = 9;
+
+    let initialData = undefined;
+    try {
+        const [blogsRes, categoriesRes, tagsRes] = await Promise.all([
+            blogApi.list(page, pageSize),
+            categoryApi.list(),
+            tagApi.list(),
+        ]);
+        initialData = {
+            blogs: blogsRes.items,
+            pagination: {
+                total: blogsRes.total,
+                totalPages: blogsRes.total_pages,
+            },
+            categories: categoriesRes,
+            tags: tagsRes,
+        };
+    } catch (error) {
+        console.error("Failed to fetch initial data server-side:", error);
+    }
+
     return (
         <Suspense fallback={<LoadingSkeleton />}>
-            <CassetteHome />
+            <CassetteHome initialData={initialData} />
         </Suspense>
     );
 }

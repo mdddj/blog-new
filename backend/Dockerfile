@@ -4,7 +4,7 @@ FROM rust:1.92-slim-bookworm AS builder
 WORKDIR /app
 
 # Install build dependencies
-RUN apt-get update && apt-get install -y \
+RUN sed -i "s|deb.debian.org|mirrors.ustc.edu.cn|g" /etc/apt/sources.list.d/debian.sources 2>/dev/null || sed -i "s|deb.debian.org|mirrors.ustc.edu.cn|g" /etc/apt/sources.list && apt-get update && apt-get install -y \
     pkg-config \
     libssl-dev \
     && rm -rf /var/lib/apt/lists/*
@@ -36,7 +36,7 @@ FROM debian:bookworm-slim
 WORKDIR /app
 
 # Install runtime dependencies
-RUN apt-get update && apt-get install -y \
+RUN sed -i "s|deb.debian.org|mirrors.ustc.edu.cn|g" /etc/apt/sources.list.d/debian.sources 2>/dev/null || sed -i "s|deb.debian.org|mirrors.ustc.edu.cn|g" /etc/apt/sources.list && apt-get update && apt-get install -y \
     ca-certificates \
     libssl3 \
     curl \

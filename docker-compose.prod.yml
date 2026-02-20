@@ -77,12 +77,19 @@ services:
           memory: 256M
 
   backend:
-    image: liangdiandian/blog-backend:latest
+    image: blog-backend:latest
+    build:
+      extra_hosts:
+        - "host.docker.internal:host-gateway"
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: blog-backend
     restart: always
+    ports:
+      - "${BACKEND_PORT:-8088}:8088"
     environment:
       SERVER_HOST: 0.0.0.0
-      SERVER_PORT: 8080
+      SERVER_PORT: ${SERVER_PORT:-8088}
       SERVER_MAX_BODY_SIZE_MB: ${SERVER_MAX_BODY_SIZE_MB:-50}
       DATABASE_URL: postgres://${POSTGRES_USER:-bloguser}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-blog}
       DATABASE_MAX_CONNECTIONS: ${DATABASE_MAX_CONNECTIONS:-25}
@@ -119,13 +126,29 @@ services:
           memory: 64M
 
   frontend:
-    image: liangdiandian/blog-frontend:latest
+    image: blog-frontend:latest
+    build:
+      extra_hosts:
+        - "host.docker.internal:host-gateway"
+      context: ./frontend
+      dockerfile: Dockerfile
     container_name: blog-frontend
     restart: always
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
     environment:
       NODE_ENV: production
-      # 服务端内部 API 地址（Docker 网络）
-      INTERNAL_API_URL: http://backend:8080/api/v1
+      # 服务端内部 API 地址（Docker 网络，用于 SSR）
+      INTERNAL_API_URL: http://backend:8088/api/v1
+      # 客户端 API 地址（浏览器访问，需要配置为你的服务器地址）
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8088/api/v1}
+      # 禁用代理或添加内部主机到 NO_PROXY
+      HTTP_PROXY: ""
+      HTTPS_PROXY: ""
+      http_proxy: ""
+      https_proxy: ""
+      NO_PROXY: "*"
+      no_proxy: "*"
     depends_on:
       - backend
     networks:
@@ -136,61 +159,6 @@ services:
           memory: 256M
         reservations:
           memory: 128M
-
-  nginx:
-    image: nginx:alpine
-    container_name: blog-nginx
-    restart: always
-    ports:
-      - "${HTTP_PORT:-80}:80"
-    depends_on:
-      - frontend
-      - backend
-    networks:
-      - blog-network
-    command: |
-      sh -c 'cat > /etc/nginx/nginx.conf << "NGINX_EOF"
-      events {
-          worker_connections 1024;
-      }
-      http {
-          include /etc/nginx/mime.types;
-          default_type application/octet-stream;
-          access_log /var/log/nginx/access.log;
-          error_log /var/log/nginx/error.log;
-          gzip on;
-          gzip_vary on;
-          gzip_min_length 1024;
-          gzip_types text/plain text/css text/xml text/javascript application/javascript application/json application/xml;
-          upstream frontend { server frontend:3000; }
-          upstream backend { server backend:8080; }
-          server {
-              listen 80;
-              server_name _;
-              client_max_body_size 50M;
-              location /api/ {
-                  proxy_pass http://backend;
-                  proxy_http_version 1.1;
-                  proxy_set_header Host $$host;
-                  proxy_set_header X-Real-IP $$remote_addr;
-                  proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
-                  proxy_set_header X-Forwarded-Proto $$scheme;
-              }
-              location / {
-                  proxy_pass http://frontend;
-                  proxy_http_version 1.1;
-                  proxy_set_header Upgrade $$http_upgrade;
-                  proxy_set_header Connection "upgrade";
-                  proxy_set_header Host $$host;
-                  proxy_set_header X-Real-IP $$remote_addr;
-                  proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
-                  proxy_set_header X-Forwarded-Proto $$scheme;
-                  proxy_cache_bypass $$http_upgrade;
-              }
-          }
-      }
-      NGINX_EOF
-      nginx -g "daemon off;"'
 
 networks:
   blog-network:

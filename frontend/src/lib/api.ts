@@ -37,8 +37,8 @@ import type {
 
 const isServer = typeof window === "undefined";
 const API_BASE_URL = isServer
-    ? (process.env.INTERNAL_API_URL || (process.env.NEXT_PUBLIC_API_URL?.startsWith("http") ? process.env.NEXT_PUBLIC_API_URL : "http://127.0.0.1:8080/api/v1"))
-    : (process.env.NEXT_PUBLIC_API_URL || "/api/v1");
+    ? (process.env.INTERNAL_API_URL || "http://backend:8080/api/v1")
+    : (process.env.NEXT_PUBLIC_API_URL || "https://api.itbug.shop/api/v1");
 
 class ApiError extends Error {
     constructor(
@@ -96,7 +96,7 @@ export interface BatchConvertResult {
 
 export const blogApi = {
     list: (page = 1, pageSize = 10) =>
-        request<PaginatedResponse<Blog>>(`/blogs?page=${page}&page_size=${pageSize}`),
+        request<PaginatedResponse<Blog>>(`/blogs?page=${page}&page_size=${pageSize}`, { next: { revalidate: 60 } }),
 
     getById: (id: number) => request<Blog>(`/blogs/${id}`),
 
@@ -192,7 +192,7 @@ export const aiApi = {
 
 // Category API
 export const categoryApi = {
-    list: () => request<Category[]>("/categories"),
+    list: () => request<Category[]>("/categories", { next: { revalidate: 60 } }),
 
     getBlogs: (id: number, page = 1, pageSize = 10) =>
         request<PaginatedResponse<Blog>>(`/categories/${id}/blogs?page=${page}&page_size=${pageSize}`),
@@ -215,7 +215,7 @@ export const categoryApi = {
 
 // Tag API
 export const tagApi = {
-    list: () => request<Tag[]>("/tags"),
+    list: () => request<Tag[]>("/tags", { next: { revalidate: 60 } }),
 
     getBlogs: (id: number, page = 1, pageSize = 10) =>
         request<PaginatedResponse<Blog>>(`/tags/${id}/blogs?page=${page}&page_size=${pageSize}`),
