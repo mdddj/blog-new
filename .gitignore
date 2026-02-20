@@ -32,3 +32,4 @@ npm-debug.log*
 # Data files (optional, uncomment if needed)
 # *.sql
 # *.json
+sql/
