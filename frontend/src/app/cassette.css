@@ -13,39 +13,55 @@
 :root,
 .dark {
     /* Cassette Futurism Color Palette - Minimalist Dark */
-    --cf-bg-deep: #050505;       /* Almost Black */
-    --cf-bg-panel: #0a0a0a;      /* Very Dark Grey */
-    --cf-bg-elevated: #111111;   /* Dark Grey */
-    --cf-bg-inset: #000000;      /* Pure Black */
-    
-    --cf-amber: #ffae00;         /* Sharp Amber */
-    --cf-amber-dim: #996900;     /* Muted Amber */
-    --cf-amber-glow: #ffcc00;    /* Bright Amber */
-    
-    --cf-green: #00ff41;         /* Terminal Green */
+    --cf-bg-deep: #050505;
+    /* Almost Black */
+    --cf-bg-panel: #0a0a0a;
+    /* Very Dark Grey */
+    --cf-bg-elevated: #111111;
+    /* Dark Grey */
+    --cf-bg-inset: #000000;
+    /* Pure Black */
+
+    --cf-amber: #ffae00;
+    /* Sharp Amber */
+    --cf-amber-dim: #996900;
+    /* Muted Amber */
+    --cf-amber-glow: #ffcc00;
+    /* Bright Amber */
+
+    --cf-green: #00ff41;
+    /* Terminal Green */
     --cf-green-dim: #008f24;
-    
-    --cf-cyan: #00f0ff;          /* Cyber Cyan */
+
+    --cf-cyan: #00f0ff;
+    /* Cyber Cyan */
     --cf-cyan-dim: #008fa3;
-    
-    --cf-red: #ff2a2a;           /* Alert Red */
+
+    --cf-red: #ff2a2a;
+    /* Alert Red */
     --cf-red-dim: #991919;
-    
-    --cf-text: #ffffff;          /* Pure White for max contrast */
-    --cf-text-dim: #888888;      /* Neutral Grey */
-    --cf-text-muted: #444444;    /* Darker Grey */
-    
-    --cf-border: #333333;        /* Subtle Border */
+
+    --cf-text: #ffffff;
+    /* Pure White for max contrast */
+    --cf-text-dim: #888888;
+    /* Neutral Grey */
+    --cf-text-muted: #444444;
+    /* Darker Grey */
+
+    --cf-border: #333333;
+    /* Subtle Border */
     --cf-border-light: #555555;
-    
+
     --cf-header-bg: rgba(10, 10, 10, 0.8);
-    
+
     --cf-grid-color: rgba(255, 174, 0, 0.07);
     --cf-grid-size: 40px;
 
     /* Effects - Minimalist */
-    --cf-scanline-opacity: 0.15; /* More visible */
-    --cf-noise-opacity: 0.04;    /* More visible */
+    --cf-scanline-opacity: 0.15;
+    /* More visible */
+    --cf-noise-opacity: 0.04;
+    /* More visible */
     --cf-glow-amber: 0 0 10px rgba(255, 174, 0, 0.4);
     --cf-glow-green: 0 0 10px rgba(0, 255, 65, 0.4);
     --cf-glow-cyan: 0 0 10px rgba(0, 240, 255, 0.4);
@@ -60,32 +76,40 @@ html.light {
     --cf-bg-panel: #ffffff;
     --cf-bg-elevated: #f8f8f8;
     --cf-bg-inset: #e5e5e5;
-    
-    --cf-amber: #d65d0e;         /* Burnt Orange */
+
+    --cf-amber: #d65d0e;
+    /* Burnt Orange */
     --cf-amber-dim: #af4600;
     --cf-amber-glow: #e07a34;
-    
-    --cf-green: #458588;         /* Teal Green */
+
+    --cf-green: #458588;
+    /* Teal Green */
     --cf-green-dim: #2f5e60;
-    
-    --cf-cyan: #076678;          /* Dark Cyan */
+
+    --cf-cyan: #076678;
+    /* Dark Cyan */
     --cf-cyan-dim: #054854;
-    
-    --cf-red: #cc241d;           /* Brick Red */
+
+    --cf-red: #cc241d;
+    /* Brick Red */
     --cf-red-dim: #9d1c16;
-    
-    --cf-text: #050505;          /* Pure Black */
-    --cf-text-dim: #404040;      /* Dark Grey */
-    --cf-text-muted: #737373;    /* Medium Grey */
-    
-    --cf-border: #bdae93;        /* Parchment Border */
+
+    --cf-text: #050505;
+    /* Pure Black */
+    --cf-text-dim: #404040;
+    /* Dark Grey */
+    --cf-text-muted: #737373;
+    /* Medium Grey */
+
+    --cf-border: #bdae93;
+    /* Parchment Border */
     --cf-border-light: #a89984;
-    
+
     --cf-header-bg: rgba(255, 255, 255, 0.8);
-    
+
     --cf-grid-color: rgba(0, 0, 0, 0.03);
     --cf-grid-size: 40px;
-    
+
     --cf-scanline-opacity: 0.03;
     --cf-noise-opacity: 0.02;
     --cf-glow-amber: none;
@@ -96,21 +120,20 @@ html.light {
 /* Shared variables */
 :root {
     /* Fonts */
-    --cf-font-display: 'Syncopate', 'Orbitron', sans-serif; /* Wide, futuristic */
-    --cf-font-mono: 'Space Mono', monospace;                /* Clean mono */
-    --cf-font-body: 'Space Mono', system-ui, monospace;     /* Consistent mono look */
-    
+    --cf-font-display: 'Syncopate', 'Orbitron', sans-serif;
+    /* Wide, futuristic */
+    --cf-font-mono: 'Space Mono', monospace;
+    /* Clean mono */
+    --cf-font-body: 'Space Mono', system-ui, monospace;
+    /* Consistent mono look */
+
     /* Effects */
-    --cf-scanline: linear-gradient(
-        rgba(18, 16, 16, 0) 50%,
-        rgba(0, 0, 0, 0.25) 50%
-    ), linear-gradient(
-        90deg,
-        rgba(255, 0, 0, 0.06),
-        rgba(0, 255, 0, 0.02),
-        rgba(0, 0, 255, 0.06)
-    );
-    
+    --cf-scanline: linear-gradient(rgba(18, 16, 16, 0) 50%,
+            rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg,
+            rgba(255, 0, 0, 0.06),
+            rgba(0, 255, 0, 0.02),
+            rgba(0, 0, 255, 0.06));
+
     --cf-noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
 }
 
@@ -120,19 +143,19 @@ html.light {
 .cassette-theme {
     background-color: var(--cf-bg-deep);
     /* Retro Grid Background */
-    background-image: 
+    background-image:
         linear-gradient(var(--cf-grid-color) 1px, transparent 1px),
         linear-gradient(90deg, var(--cf-grid-color) 1px, transparent 1px),
         radial-gradient(circle at 50% 0%, rgba(255, 174, 0, 0.05) 0%, transparent 70%);
-    background-size: 
-        var(--cf-grid-size) var(--cf-grid-size), 
+    background-size:
+        var(--cf-grid-size) var(--cf-grid-size),
         var(--cf-grid-size) var(--cf-grid-size),
         100% 100%;
-    background-position: 
+    background-position:
         center top,
         center top,
         center top;
-        
+
     color: var(--cf-text);
     font-family: var(--cf-font-body);
     min-height: 100vh;
@@ -160,7 +183,8 @@ html.light {
     --border: var(--cf-border);
     --input: var(--cf-border);
     --ring: var(--cf-amber);
-    --radius: 0; /* Sharp corners for retro feel */
+    --radius: 0;
+    /* Sharp corners for retro feel */
 }
 
 /* Scanline overlay */
@@ -323,14 +347,15 @@ html.light {
 }
 
 @keyframes cf-entry-zoom {
-    0% { 
-        opacity: 0; 
-        transform: scale(0.99) translateY(20px); 
+    0% {
+        opacity: 0;
+        transform: scale(0.99) translateY(20px);
         filter: blur(4px);
     }
-    100% { 
-        opacity: 1; 
-        transform: none; 
+
+    100% {
+        opacity: 1;
+        transform: none;
         filter: none;
     }
 }
@@ -400,8 +425,8 @@ html.light {
 .cf-card:hover {
     border-color: var(--cf-amber);
     transform: translateY(-4px) scale(1.01);
-    box-shadow: 
-        0 10px 30px -10px rgba(0,0,0,0.5),
+    box-shadow:
+        0 10px 30px -10px rgba(0, 0, 0, 0.5),
         0 0 15px rgba(255, 174, 0, 0.1);
     z-index: 10;
 }
@@ -415,7 +440,8 @@ html.light {
 .cf-card-image-wrapper {
     position: relative;
     width: 100%;
-    padding-top: 56.25%; /* 16:9 Aspect Ratio */
+    padding-top: 56.25%;
+    /* 16:9 Aspect Ratio */
     overflow: hidden;
     background: var(--cf-bg-inset);
     border-bottom: 1px solid var(--cf-border);
@@ -461,6 +487,8 @@ html.light {
     line-height: 1.4;
     margin-bottom: 1rem;
     letter-spacing: 0.02em;
+    overflow-wrap: anywhere;
+    word-break: break-all;
 }
 
 .cf-card-excerpt {
@@ -468,11 +496,15 @@ html.light {
     font-size: 0.85rem;
     color: var(--cf-text-dim);
     line-height: 1.6;
-    margin-bottom: auto; /* Push tags to bottom */
+    margin-bottom: auto;
+    /* Push tags to bottom */
     display: -webkit-box;
     -webkit-line-clamp: 3;
+    line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    overflow-wrap: anywhere;
+    word-break: break-all;
 }
 
 .cf-tags {
@@ -490,6 +522,8 @@ html.light {
     padding: 0.2rem 0.5rem;
     text-transform: uppercase;
     transition: all 0.2s ease;
+    overflow-wrap: anywhere;
+    word-break: break-all;
 }
 
 .cf-tag:hover {
@@ -608,11 +642,11 @@ html.light {
 }
 
 .cf-grid-3 {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .cf-grid-2-1 {
-    grid-template-columns: 3fr 1fr;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 1fr);
 }
 
 /* ============================================
@@ -696,32 +730,75 @@ html.light {
    ANIMATIONS & EFFECTS
    ============================================ */
 @keyframes cf-glitch {
-    0% { transform: translate(0) }
-    20% { transform: translate(-2px, 2px) }
-    40% { transform: translate(-2px, -2px) }
-    60% { transform: translate(2px, 2px) }
-    80% { transform: translate(2px, -2px) }
-    100% { transform: translate(0) }
+    0% {
+        transform: translate(0)
+    }
+
+    20% {
+        transform: translate(-2px, 2px)
+    }
+
+    40% {
+        transform: translate(-2px, -2px)
+    }
+
+    60% {
+        transform: translate(2px, 2px)
+    }
+
+    80% {
+        transform: translate(2px, -2px)
+    }
+
+    100% {
+        transform: translate(0)
+    }
 }
 
 @keyframes cf-scan {
-    0% { background-position: 0 -100vh; }
-    100% { background-position: 0 100vh; }
+    0% {
+        background-position: 0 -100vh;
+    }
+
+    100% {
+        background-position: 0 100vh;
+    }
 }
 
 @keyframes cf-pulse-glow {
-    0%, 100% { box-shadow: 0 0 5px var(--cf-amber-dim); }
-    50% { box-shadow: 0 0 15px var(--cf-amber); }
+
+    0%,
+    100% {
+        box-shadow: 0 0 5px var(--cf-amber-dim);
+    }
+
+    50% {
+        box-shadow: 0 0 15px var(--cf-amber);
+    }
 }
 
 @keyframes cf-blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
 }
 
 @keyframes cf-slide-up {
-    0% { opacity: 0; transform: translateY(20px); }
-    100% { opacity: 1; transform: translateY(0); }
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .cf-animate-slide-up {
@@ -762,14 +839,12 @@ html.light {
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(
-        45deg,
-        transparent 0%,
-        transparent 45%,
-        rgba(255, 174, 0, 0.03) 50%,
-        transparent 55%,
-        transparent 100%
-    );
+    background: linear-gradient(45deg,
+            transparent 0%,
+            transparent 45%,
+            rgba(255, 174, 0, 0.03) 50%,
+            transparent 55%,
+            transparent 100%);
     background-size: 200% 200%;
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -808,9 +883,20 @@ html.light {
     border: 1px solid var(--cf-border);
 }
 
-.cf-card-dot.red { background: var(--cf-red); box-shadow: 0 0 5px var(--cf-red); }
-.cf-card-dot.amber { background: var(--cf-amber); box-shadow: 0 0 5px var(--cf-amber); }
-.cf-card-dot.green { background: var(--cf-green); box-shadow: 0 0 5px var(--cf-green); }
+.cf-card-dot.red {
+    background: var(--cf-red);
+    box-shadow: 0 0 5px var(--cf-red);
+}
+
+.cf-card-dot.amber {
+    background: var(--cf-amber);
+    box-shadow: 0 0 5px var(--cf-amber);
+}
+
+.cf-card-dot.green {
+    background: var(--cf-green);
+    box-shadow: 0 0 5px var(--cf-green);
+}
 
 /* Buttons */
 .cf-btn-primary {
@@ -835,24 +921,55 @@ html.light {
    RESPONSIVE
    ============================================ */
 @media (max-width: 1024px) {
-    .cf-grid-3 { grid-template-columns: repeat(2, 1fr); }
-    .cf-grid-2-1 { grid-template-columns: 1fr; }
-    .cf-featured { grid-template-columns: 1fr; }
-    .cf-featured-image-wrapper { height: 250px; border-right: none; border-bottom: 1px solid var(--cf-border); }
-    .cf-sidebar { border-left: none; padding-left: 0; margin-top: 2rem; }
+    .cf-grid-3 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .cf-grid-2-1 {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .cf-featured {
+        grid-template-columns: 1fr;
+    }
+
+    .cf-featured-image-wrapper {
+        height: 250px;
+        border-right: none;
+        border-bottom: 1px solid var(--cf-border);
+    }
+
+    .cf-sidebar {
+        border-left: none;
+        padding-left: 0;
+        margin-top: 2rem;
+    }
 }
 
 @media (max-width: 640px) {
-    .cf-grid-3 { grid-template-columns: 1fr; }
-    .cf-nav { display: none; }
-    .cf-header-inner { padding: 0 1rem; }
-    .cf-main { padding: 2rem 1rem; }
+    .cf-grid-3 {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .cf-nav {
+        display: none;
+    }
+
+    .cf-header-inner {
+        padding: 0 1rem;
+    }
+
+    .cf-main {
+        padding: 2rem 1rem;
+    }
 }
 
 /* ============================================
    UTILITIES
    ============================================ */
-.cf-text-amber { color: var(--cf-amber); }
+.cf-text-amber {
+    color: var(--cf-amber);
+}
 
 /* ============================================
    SCROLLBAR

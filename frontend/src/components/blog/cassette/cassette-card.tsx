@@ -20,11 +20,15 @@ export function CassetteCard({ blog, variant = "default" }: CassetteCardProps) {
     };
 
     const excerpt = (blog.excerpt || blog.html || blog.content || "")
+        .replace(/<pre[^>]*>[\s\S]*?<\/pre>/gi, "") // Remove code blocks entirely from excerpt
+        .replace(/<code[^>]*>[\s\S]*?<\/code>/gi, "") // Remove inline code from excerpt
         .replace(/<[^>]*>/g, "")
+        .replace(/\s+/g, " ") // Collapse multiple whitespaces
+        .trim()
         .substring(0, 120);
 
     const blogUrl = blog.slug ? `/blog/${blog.slug}` : `/blog/${blog.id}`;
-    
+
     // Format ID to look like a serial number, e.g. 00042
     const serialId = blog.id.toString().padStart(5, '0');
 
