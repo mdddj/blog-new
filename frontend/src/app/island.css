@@ -1,0 +1,388 @@
+/* Island Design System: blog frontend only */
+
+.island-root {
+    --is-bg: #f4f7f4;
+    --is-bg-alt: #e9efe8;
+    --is-surface: #fcfffb;
+    --is-surface-soft: #f3f8f2;
+    --is-border: #d7e3d4;
+    --is-border-strong: #b6cab2;
+    --is-text: #1f2c22;
+    --is-text-muted: #587160;
+    --is-text-faint: #7d9586;
+    --is-primary: #2d7355;
+    --is-primary-soft: #dceddf;
+    --is-accent: #138a8f;
+    --is-danger: #a84343;
+    --is-shadow: 0 20px 60px rgba(31, 44, 34, 0.1);
+    --is-shadow-soft: 0 12px 36px rgba(31, 44, 34, 0.06);
+    --is-radius: 20px;
+    --is-radius-sm: 14px;
+    --is-font-title: "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", serif;
+    --is-font-body: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+
+    min-height: 100vh;
+    color: var(--is-text);
+    font-family: var(--is-font-body);
+    background:
+        radial-gradient(1200px 600px at 10% -20%, rgba(45, 115, 85, 0.18), transparent 65%),
+        radial-gradient(900px 500px at 100% 10%, rgba(19, 138, 143, 0.13), transparent 62%),
+        radial-gradient(1200px 700px at 50% 130%, rgba(106, 161, 114, 0.12), transparent 65%),
+        linear-gradient(180deg, var(--is-bg), var(--is-bg-alt));
+}
+
+.dark .island-root {
+    --is-bg: #0f1713;
+    --is-bg-alt: #13211b;
+    --is-surface: #17261f;
+    --is-surface-soft: #1b2d24;
+    --is-border: #284335;
+    --is-border-strong: #36614a;
+    --is-text: #d8ebdf;
+    --is-text-muted: #9fc0ad;
+    --is-text-faint: #7da391;
+    --is-primary: #68bc93;
+    --is-primary-soft: #1c3a2c;
+    --is-accent: #6abfd0;
+    --is-danger: #d58484;
+    --is-shadow: 0 26px 70px rgba(0, 0, 0, 0.4);
+    --is-shadow-soft: 0 18px 48px rgba(0, 0, 0, 0.28);
+}
+
+.island-shell {
+    position: relative;
+    min-height: 100vh;
+}
+
+.island-wave {
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    opacity: 0.4;
+    background-image:
+        radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2), transparent 35%),
+        repeating-radial-gradient(circle at 50% 110%, rgba(255, 255, 255, 0.08) 0, rgba(255, 255, 255, 0.08) 1px, transparent 1px, transparent 22px);
+}
+
+.dark .island-wave {
+    opacity: 0.22;
+    background-image:
+        radial-gradient(circle at 30% 30%, rgba(145, 209, 173, 0.15), transparent 35%),
+        repeating-radial-gradient(circle at 50% 110%, rgba(127, 194, 166, 0.09) 0, rgba(127, 194, 166, 0.09) 1px, transparent 1px, transparent 22px);
+}
+
+.island-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    backdrop-filter: blur(14px);
+    background: color-mix(in oklab, var(--is-bg) 72%, transparent);
+    border-bottom: 1px solid color-mix(in oklab, var(--is-border) 75%, transparent);
+}
+
+.island-container {
+    width: min(1260px, calc(100vw - 2rem));
+    margin-inline: auto;
+}
+
+.island-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 0;
+}
+
+.island-brand {
+    font-family: var(--is-font-title);
+    font-size: 1.15rem;
+    letter-spacing: 0.03em;
+    color: var(--is-text);
+}
+
+.island-brand small {
+    display: block;
+    font-family: var(--is-font-body);
+    color: var(--is-text-faint);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+}
+
+.island-nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.island-nav-link {
+    border-radius: 999px;
+    border: 1px solid transparent;
+    color: var(--is-text-muted);
+    font-size: 0.88rem;
+    padding: 0.42rem 0.86rem;
+    transition: all 0.2s ease;
+}
+
+.island-nav-link:hover,
+.island-nav-link[aria-current="page"] {
+    border-color: var(--is-border-strong);
+    color: var(--is-text);
+    background: color-mix(in oklab, var(--is-surface) 78%, transparent);
+}
+
+.island-action-btn {
+    border: 1px solid var(--is-border);
+    color: var(--is-text-muted);
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: color-mix(in oklab, var(--is-surface) 75%, transparent);
+    transition: all 0.2s ease;
+}
+
+.island-action-btn:hover {
+    border-color: var(--is-border-strong);
+    color: var(--is-text);
+}
+
+.island-main {
+    position: relative;
+    z-index: 1;
+    padding: 2rem 0 2.8rem;
+}
+
+.island-page {
+    display: grid;
+    gap: 1.3rem;
+}
+
+.island-grid {
+    display: grid;
+    gap: 1.2rem;
+}
+
+.island-grid-2 {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.island-panel {
+    background: color-mix(in oklab, var(--is-surface) 92%, transparent);
+    border: 1px solid var(--is-border);
+    border-radius: var(--is-radius);
+    box-shadow: var(--is-shadow-soft);
+}
+
+.island-panel-soft {
+    background: color-mix(in oklab, var(--is-surface-soft) 94%, transparent);
+    border: 1px solid var(--is-border);
+    border-radius: var(--is-radius);
+}
+
+.island-section-title {
+    font-family: var(--is-font-title);
+    font-size: clamp(1.15rem, 2.4vw, 1.6rem);
+    letter-spacing: 0.01em;
+    color: var(--is-text);
+}
+
+.island-subtle {
+    color: var(--is-text-muted);
+    font-size: 0.94rem;
+}
+
+.island-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: 999px;
+    border: 1px solid var(--is-border);
+    background: color-mix(in oklab, var(--is-surface-soft) 88%, transparent);
+    padding: 0.25rem 0.64rem;
+    color: var(--is-text-muted);
+    font-size: 0.78rem;
+}
+
+.island-link {
+    color: var(--is-primary);
+    text-decoration: none;
+    transition: opacity 0.18s ease;
+}
+
+.island-link:hover {
+    opacity: 0.82;
+}
+
+.island-card {
+    border-radius: var(--is-radius);
+    border: 1px solid var(--is-border);
+    background: color-mix(in oklab, var(--is-surface) 95%, transparent);
+    overflow: clip;
+    transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.island-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--is-border-strong);
+    box-shadow: var(--is-shadow-soft);
+}
+
+.island-card-title {
+    font-family: var(--is-font-title);
+    font-size: 1.08rem;
+    line-height: 1.45;
+    color: var(--is-text);
+}
+
+.island-card-excerpt {
+    color: var(--is-text-muted);
+    line-height: 1.8;
+    font-size: 0.92rem;
+}
+
+.island-divider {
+    border: 0;
+    border-top: 1px solid var(--is-border);
+}
+
+.island-meta {
+    color: var(--is-text-faint);
+    font-size: 0.78rem;
+}
+
+.island-content {
+    max-width: 76ch;
+    margin-inline: auto;
+    font-size: clamp(1rem, 1vw + 0.72rem, 1.08rem);
+    line-height: 1.95;
+}
+
+.island-content h1,
+.island-content h2,
+.island-content h3,
+.island-content h4,
+.island-content h5,
+.island-content h6 {
+    font-family: var(--is-font-title);
+    line-height: 1.45;
+    color: var(--is-text);
+}
+
+.island-content p,
+.island-content li,
+.island-content blockquote {
+    color: var(--is-text-muted);
+}
+
+.island-content a {
+    color: var(--is-primary);
+}
+
+.island-content code {
+    border: 1px solid var(--is-border);
+    background: color-mix(in oklab, var(--is-surface-soft) 88%, transparent);
+    color: var(--is-accent);
+    padding: 0.1rem 0.35rem;
+    border-radius: 8px;
+}
+
+.island-content pre {
+    border: 1px solid var(--is-border);
+    background: color-mix(in oklab, var(--is-surface-soft) 90%, transparent);
+    border-radius: 14px;
+    overflow-x: auto;
+}
+
+.island-content pre code {
+    border: 0;
+    background: transparent;
+    padding: 0;
+}
+
+.island-content blockquote {
+    margin: 1.4rem 0;
+    padding: 0.7rem 1rem;
+    border-left: 3px solid var(--is-primary);
+    background: color-mix(in oklab, var(--is-primary-soft) 72%, transparent);
+    border-radius: 0 12px 12px 0;
+}
+
+.island-toc {
+    position: sticky;
+    top: 6.2rem;
+    border-radius: var(--is-radius-sm);
+}
+
+.island-toc-link {
+    display: block;
+    border-left: 2px solid transparent;
+    padding: 0.26rem 0.4rem 0.26rem 0.72rem;
+    color: var(--is-text-muted);
+    font-size: 0.82rem;
+    line-height: 1.45;
+    transition: all 0.2s ease;
+}
+
+.island-toc-link:hover {
+    color: var(--is-text);
+}
+
+.island-toc-link.active {
+    color: var(--is-primary);
+    border-left-color: var(--is-primary);
+    background: color-mix(in oklab, var(--is-primary-soft) 56%, transparent);
+}
+
+.island-footer {
+    border-top: 1px solid color-mix(in oklab, var(--is-border) 80%, transparent);
+    margin-top: 1rem;
+    background: color-mix(in oklab, var(--is-bg) 80%, transparent);
+}
+
+.island-footer-inner {
+    padding: 1.2rem 0 2rem;
+    display: grid;
+    gap: 1rem;
+}
+
+.island-focus-ring:focus-visible {
+    outline: 2px solid var(--is-primary);
+    outline-offset: 2px;
+}
+
+.island-skeleton {
+    background: linear-gradient(90deg, color-mix(in oklab, var(--is-surface-soft) 70%, transparent), color-mix(in oklab, var(--is-surface) 98%, transparent), color-mix(in oklab, var(--is-surface-soft) 70%, transparent));
+    background-size: 260% 100%;
+    animation: islandShimmer 1.6s ease infinite;
+}
+
+@keyframes islandShimmer {
+    from {
+        background-position: 100% 0;
+    }
+    to {
+        background-position: -100% 0;
+    }
+}
+
+@media (min-width: 980px) {
+    .island-grid-2 {
+        grid-template-columns: minmax(0, 1fr) 300px;
+        align-items: start;
+    }
+}
+
+@media (max-width: 860px) {
+    .island-header-row {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .island-nav {
+        width: 100%;
+    }
+}

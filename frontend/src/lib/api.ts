@@ -39,6 +39,16 @@ const isServer = typeof window === "undefined";
 const API_BASE_URL = isServer
     ? (process.env.INTERNAL_API_URL || "http://backend:8080/api/v1")
     : (process.env.NEXT_PUBLIC_API_URL || "https://api.itbug.shop/api/v1");
+const PUBLIC_FALLBACK_API_URL = process.env.NEXT_PUBLIC_FALLBACK_API_URL || "https://api.itbug.shop/api/v1";
+
+function shouldUseFallback(baseUrl: string, method: string, hasToken: boolean) {
+    if (hasToken || method !== "GET") return false;
+    return (
+        baseUrl.includes("localhost") ||
+        baseUrl.includes("127.0.0.1") ||
+        baseUrl.includes("backend:")
+    );
+}
 
 class ApiError extends Error {
     constructor(
@@ -60,8 +70,9 @@ async function request<T>(
     endpoint: string,
     options: RequestInit = {}
 ): Promise<T> {
-    const url = `${API_BASE_URL}${endpoint}`;
+    const method = (options.method || "GET").toUpperCase();
     const token = await getAuthToken();
+    const canFallback = shouldUseFallback(API_BASE_URL, method, Boolean(token));
 
     const headers: HeadersInit = {
         "Content-Type": "application/json",
@@ -72,10 +83,22 @@ async function request<T>(
         (headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;
     }
 
-    const response = await fetch(url, {
+    const fetchWith = (base: string) => fetch(`${base}${endpoint}`, {
         ...options,
         headers,
     });
+
+    let response: Response;
+    try {
+        response = await fetchWith(API_BASE_URL);
+    } catch (error) {
+        if (!canFallback) throw error;
+        response = await fetchWith(PUBLIC_FALLBACK_API_URL);
+    }
+
+    if (!response.ok && canFallback && API_BASE_URL !== PUBLIC_FALLBACK_API_URL) {
+        response = await fetchWith(PUBLIC_FALLBACK_API_URL);
+    }
 
     const data: ApiResponse<T> = await response.json();
 

@@ -1,49 +1,39 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Archive, Calendar, ChevronDown, ChevronRight, FileText } from "lucide-react";
+import { Archive, ChevronDown, ChevronRight } from "lucide-react";
 import { archiveApi } from "@/lib/api";
-import type { ArchiveResponse, ArchiveYear, ArchiveMonth, ArchiveBlog } from "@/types";
+import type { ArchiveMonth, ArchiveResponse, ArchiveYear } from "@/types";
 
 export default function ArchivePage() {
-    const [archiveData, setArchiveData] = useState<ArchiveResponse | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const [data, setData] = useState<ArchiveResponse | null>(null);
+    const [loading, setLoading] = useState(true);
     const [expandedYears, setExpandedYears] = useState<Set<number>>(new Set());
     const [expandedMonths, setExpandedMonths] = useState<Set<string>>(new Set());
 
-    const fetchArchives = useCallback(async () => {
-        setIsLoading(true);
+    const fetchData = useCallback(async () => {
+        setLoading(true);
         try {
-            const data = await archiveApi.list();
-            setArchiveData(data);
-            // Expand the first year by default
-            if (data.years.length > 0) {
-                setExpandedYears(new Set([data.years[0].year]));
-                // Expand the first month of the first year
-                if (data.years[0].months.length > 0) {
-                    setExpandedMonths(new Set([`${data.years[0].year}-${data.years[0].months[0].month}`]));
-                }
+            const result = await archiveApi.list();
+            setData(result);
+            if (result.years.length > 0) {
+                setExpandedYears(new Set([result.years[0].year]));
             }
-        } catch (error) {
-            console.error("Failed to fetch archives:", error);
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
     }, []);
 
     useEffect(() => {
-        fetchArchives();
-    }, [fetchArchives]);
+        fetchData();
+    }, [fetchData]);
 
     const toggleYear = (year: number) => {
         setExpandedYears((prev) => {
             const next = new Set(prev);
-            if (next.has(year)) {
-                next.delete(year);
-            } else {
-                next.add(year);
-            }
+            if (next.has(year)) next.delete(year);
+            else next.add(year);
             return next;
         });
     };
@@ -52,114 +42,101 @@ export default function ArchivePage() {
         const key = `${year}-${month}`;
         setExpandedMonths((prev) => {
             const next = new Set(prev);
-            if (next.has(key)) {
-                next.delete(key);
-            } else {
-                next.add(key);
-            }
+            if (next.has(key)) next.delete(key);
+            else next.add(key);
             return next;
         });
     };
 
-    const getMonthName = (month: number): string => {
-        const monthNames = [
-            "一月", "二月", "三月", "四月", "五月", "六月",
-            "七月", "八月", "九月", "十月", "十一月", "十二月"
-        ];
-        return monthNames[month - 1] || `${month}月`;
-    };
-
-    const formatDate = (dateStr: string): string => {
-        const date = new Date(dateStr);
-        return `${date.getMonth() + 1}月${date.getDate()}日`;
-    };
+    const formatMonth = (month: number) => `${month} 月`;
+    const formatDate = (input: string) =>
+        new Date(input).toLocaleDateString("zh-CN", { month: "2-digit", day: "2-digit" }).replace(/\//g, "-");
 
     return (
-        <main className="cf-main">
-            <div className="cf-section-header">
-                <h1 className="cf-section-title">
-                    ARCHIVES
-                </h1>
-                <span className="cf-section-badge">
-                    {archiveData?.total || 0} RECS
-                </span>
-            </div>
+        <main className="island-main">
+            <div className="island-container island-page">
+                <section className="island-panel px-6 py-5">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <h1 className="island-section-title">时间归档</h1>
+                            <p className="island-subtle mt-2">按年份与月份回看全部内容。</p>
+                        </div>
+                        <span className="island-chip">{data?.total || 0} 篇文章</span>
+                    </div>
+                </section>
 
-            {isLoading ? (
-                <ArchiveSkeleton />
-            ) : !archiveData || archiveData.years.length === 0 ? (
-                <EmptyArchive />
-            ) : (
-                <div className="space-y-4">
-                    {archiveData.years.map((yearData) => (
-                        <YearGroup
-                            key={yearData.year}
-                            yearData={yearData}
-                            isExpanded={expandedYears.has(yearData.year)}
-                            expandedMonths={expandedMonths}
-                            onToggleYear={() => toggleYear(yearData.year)}
-                            onToggleMonth={(month) => toggleMonth(yearData.year, month)}
-                            getMonthName={getMonthName}
-                            formatDate={formatDate}
-                        />
-                    ))}
-                </div>
-            )}
+                {loading ? (
+                    <div className="island-grid">
+                        {Array.from({ length: 3 }).map((_, idx) => (
+                            <div key={idx} className="island-panel island-skeleton h-28" />
+                        ))}
+                    </div>
+                ) : !data || data.years.length === 0 ? (
+                    <section className="island-panel p-10 text-center">
+                        <Archive className="mx-auto h-10 w-10 text-[var(--is-text-faint)]" />
+                        <p className="mt-3 text-sm text-[var(--is-text-muted)]">暂无归档内容</p>
+                    </section>
+                ) : (
+                    <section className="island-grid">
+                        {data.years.map((yearData) => (
+                            <YearBlock
+                                key={yearData.year}
+                                yearData={yearData}
+                                isExpanded={expandedYears.has(yearData.year)}
+                                expandedMonths={expandedMonths}
+                                onToggleYear={() => toggleYear(yearData.year)}
+                                onToggleMonth={(month) => toggleMonth(yearData.year, month)}
+                                formatMonth={formatMonth}
+                                formatDate={formatDate}
+                            />
+                        ))}
+                    </section>
+                )}
+            </div>
         </main>
     );
 }
 
-
-interface YearGroupProps {
-    yearData: ArchiveYear;
-    isExpanded: boolean;
-    expandedMonths: Set<string>;
-    onToggleYear: () => void;
-    onToggleMonth: (month: number) => void;
-    getMonthName: (month: number) => string;
-    formatDate: (dateStr: string) => string;
-}
-
-function YearGroup({
+function YearBlock({
     yearData,
     isExpanded,
     expandedMonths,
     onToggleYear,
     onToggleMonth,
-    getMonthName,
+    formatMonth,
     formatDate,
-}: YearGroupProps) {
+}: {
+    yearData: ArchiveYear;
+    isExpanded: boolean;
+    expandedMonths: Set<string>;
+    onToggleYear: () => void;
+    onToggleMonth: (month: number) => void;
+    formatMonth: (month: number) => string;
+    formatDate: (input: string) => string;
+}) {
     return (
-        <div className="cf-panel bg-(--cf-bg-panel) border border-(--cf-border)">
-            <div 
-                className="cf-panel-header cursor-pointer hover:bg-(--cf-bg-inset) transition-colors p-3 flex justify-between items-center"
+        <div className="island-panel overflow-hidden">
+            <button
+                className="flex w-full items-center justify-between px-5 py-4 text-left island-focus-ring"
                 onClick={onToggleYear}
+                type="button"
             >
-                <div className="flex items-center gap-2">
-                    {isExpanded ? (
-                        <ChevronDown className="h-4 w-4 text-(--cf-amber)" />
-                    ) : (
-                        <ChevronRight className="h-4 w-4 text-(--cf-text-dim)" />
-                    )}
-                    <Calendar className="h-4 w-4 text-(--cf-amber)" />
-                    <span className="font-(--cf-font-display) text-lg font-bold tracking-widest text-(--cf-text)">
-                        {yearData.year}
-                    </span>
-                </div>
-                <div className="cf-tag">
-                    {yearData.count} POSTS
-                </div>
-            </div>
+                <span className="flex items-center gap-2 text-[var(--is-text)]">
+                    {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                    <strong>{yearData.year} 年</strong>
+                </span>
+                <span className="island-chip">{yearData.count} 篇</span>
+            </button>
             {isExpanded && (
-                <div className="p-4 border-t border-(--cf-border)">
-                    <div className="space-y-4">
+                <div className="border-t border-[var(--is-border)] px-4 py-3">
+                    <div className="grid gap-3">
                         {yearData.months.map((monthData) => (
-                            <MonthGroup
+                            <MonthBlock
                                 key={monthData.month}
                                 monthData={monthData}
                                 isExpanded={expandedMonths.has(`${yearData.year}-${monthData.month}`)}
                                 onToggle={() => onToggleMonth(monthData.month)}
-                                getMonthName={getMonthName}
+                                formatMonth={formatMonth}
                                 formatDate={formatDate}
                             />
                         ))}
@@ -170,105 +147,48 @@ function YearGroup({
     );
 }
 
-interface MonthGroupProps {
-    monthData: ArchiveMonth;
-    isExpanded: boolean;
-    onToggle: () => void;
-    getMonthName: (month: number) => string;
-    formatDate: (dateStr: string) => string;
-}
-
-function MonthGroup({
+function MonthBlock({
     monthData,
     isExpanded,
     onToggle,
-    getMonthName,
+    formatMonth,
     formatDate,
-}: MonthGroupProps) {
+}: {
+    monthData: ArchiveMonth;
+    isExpanded: boolean;
+    onToggle: () => void;
+    formatMonth: (month: number) => string;
+    formatDate: (input: string) => string;
+}) {
     return (
-        <div className="border border-(--cf-border) bg-(--cf-bg-inset)">
-            <div
-                className="flex items-center justify-between p-3 cursor-pointer hover:bg-(--cf-bg-elevated) transition-colors"
+        <div className="rounded-xl border border-[var(--is-border)] bg-[var(--is-surface-soft)]">
+            <button
+                className="flex w-full items-center justify-between px-4 py-3 text-left island-focus-ring"
                 onClick={onToggle}
+                type="button"
             >
-                <div className="flex items-center gap-2">
-                    {isExpanded ? (
-                        <ChevronDown className="h-3 w-3 text-(--cf-text-dim)" />
-                    ) : (
-                        <ChevronRight className="h-3 w-3 text-(--cf-text-dim)" />
-                    )}
-                    <span className="font-mono text-sm text-(--cf-text) uppercase tracking-wide">
-                        {getMonthName(monthData.month)}
-                    </span>
-                </div>
-                <span className="text-xs font-mono text-(--cf-text-muted)">
-                    {monthData.count} ITEMS
+                <span className="flex items-center gap-2 text-sm text-[var(--is-text-muted)]">
+                    {isExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                    {formatMonth(monthData.month)}
                 </span>
-            </div>
-            {isExpanded && monthData.blogs.length > 0 && (
-                <div className="border-t border-(--cf-border) p-2">
-                    <ul className="space-y-1">
-                        {monthData.blogs.map((blog) => (
-                            <BlogItem key={blog.id} blog={blog} formatDate={formatDate} />
-                        ))}
-                    </ul>
-                </div>
+                <span className="text-xs text-[var(--is-text-faint)]">{monthData.count} 篇</span>
+            </button>
+
+            {isExpanded && (
+                <ul className="grid gap-1 border-t border-[var(--is-border)] p-2">
+                    {monthData.blogs.map((blog) => (
+                        <li key={blog.id}>
+                            <Link
+                                href={blog.slug ? `/blog/${blog.slug}` : `/blog/${blog.id}`}
+                                className="flex items-center gap-3 rounded-lg px-2 py-2 text-sm text-[var(--is-text-muted)] transition hover:bg-[var(--is-surface)] hover:text-[var(--is-text)] island-focus-ring"
+                            >
+                                <span className="text-xs text-[var(--is-text-faint)]">{formatDate(blog.created_at)}</span>
+                                <span className="truncate">{blog.title}</span>
+                            </Link>
+                        </li>
+                    ))}
+                </ul>
             )}
-        </div>
-    );
-}
-
-interface BlogItemProps {
-    blog: ArchiveBlog;
-    formatDate: (dateStr: string) => string;
-}
-
-function BlogItem({ blog, formatDate }: BlogItemProps) {
-    const href = blog.slug ? `/blog/${blog.slug}` : `/blog/${blog.id}`;
-
-    return (
-        <li className="group">
-            <Link
-                href={href}
-                className="flex items-center gap-3 p-2 hover:bg-(--cf-bg-elevated) transition-colors"
-            >
-                <span className="text-xs font-mono text-(--cf-text-muted) whitespace-nowrap border-r border-(--cf-border) pr-3">
-                    {formatDate(blog.created_at)}
-                </span>
-                <span className="text-sm font-mono text-(--cf-text-dim) group-hover:text-(--cf-amber) transition-colors truncate">
-                    {blog.title}
-                </span>
-            </Link>
-        </li>
-    );
-}
-
-function EmptyArchive() {
-    return (
-        <div className="cf-panel p-12 text-center">
-            <Archive className="h-16 w-16 text-(--cf-text-muted) mx-auto mb-4 opacity-50" />
-            <p className="font-mono text-(--cf-text-dim)">NO_DATA_FOUND</p>
-        </div>
-    );
-}
-
-function ArchiveSkeleton() {
-    return (
-        <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-                <div key={i} className="cf-panel border border-(--cf-border) bg-(--cf-bg-panel)">
-                    <div className="cf-panel-header p-3 flex justify-between">
-                        <div className="h-6 w-32 bg-(--cf-bg-elevated) animate-pulse rounded" />
-                        <div className="h-5 w-16 bg-(--cf-bg-elevated) animate-pulse rounded" />
-                    </div>
-                    <div className="p-4 border-t border-(--cf-border)">
-                        <div className="space-y-3">
-                            <div className="h-10 w-full bg-(--cf-bg-inset) animate-pulse rounded" />
-                            <div className="h-10 w-full bg-(--cf-bg-inset) animate-pulse rounded" />
-                        </div>
-                    </div>
-                </div>
-            ))}
         </div>
     );
 }

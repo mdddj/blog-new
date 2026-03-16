@@ -1,33 +1,25 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Tag as TagIcon } from "lucide-react";
-import { tagApi, categoryApi } from "@/lib/api";
-import type { Tag, Category } from "@/types";
-import { CassetteSidebar } from "@/components/blog/cassette";
+import { Hash } from "lucide-react";
+import { categoryApi, tagApi } from "@/lib/api";
+import type { Category, Tag } from "@/types";
+import { IslandSidebar } from "@/components/blog/island";
 
 export default function TagsPage() {
     const [tags, setTags] = useState<Tag[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [sidebarLoading, setSidebarLoading] = useState(true);
+    const [loading, setLoading] = useState(true);
 
     const fetchData = useCallback(async () => {
-        setIsLoading(true);
-        setSidebarLoading(true);
+        setLoading(true);
         try {
-            const [tagsData, categoriesData] = await Promise.all([
-                tagApi.list(),
-                categoryApi.list()
-            ]);
-            setTags(tagsData);
-            setCategories(categoriesData);
-        } catch (error) {
-            console.error("Failed to fetch data:", error);
+            const [tagData, categoryData] = await Promise.all([tagApi.list(), categoryApi.list()]);
+            setTags(tagData);
+            setCategories(categoryData);
         } finally {
-            setIsLoading(false);
-            setSidebarLoading(false);
+            setLoading(false);
         }
     }, []);
 
@@ -35,129 +27,81 @@ export default function TagsPage() {
         fetchData();
     }, [fetchData]);
 
-    const totalBlogs = tags.reduce((sum, tag) => sum + (tag.blog_count || 0), 0);
-
-    // Calculate tag sizes based on blog count for tag cloud effect
-    const maxCount = Math.max(...tags.map((t) => t.blog_count || 0), 1);
-    const minCount = Math.min(...tags.map((t) => t.blog_count || 0), 0);
-
-    const getTagSize = (count: number): string => {
-        if (maxCount === minCount) return "text-sm";
-        const ratio = (count - minCount) / (maxCount - minCount);
-        if (ratio > 0.8) return "text-xl font-bold text-(--cf-amber)";
-        if (ratio > 0.6) return "text-lg font-semibold text-(--cf-text)";
-        if (ratio > 0.4) return "text-base font-medium text-(--cf-text-dim)";
-        if (ratio > 0.2) return "text-sm text-(--cf-text-muted)";
-        return "text-xs text-(--cf-text-muted) opacity-70";
-    };
+    const maxCount = useMemo(() => Math.max(...tags.map((tag) => tag.blog_count || 0), 1), [tags]);
+    const totalBlogRefs = tags.reduce((sum, item) => sum + (item.blog_count || 0), 0);
 
     return (
-        <main className="cf-main">
-            <div className="cf-grid cf-grid-2-1">
-                {/* Main Content */}
-                <div className="space-y-8">
-                    <div className="cf-panel p-6 border-b border-(--cf-border)">
-                        <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 flex items-center justify-center bg-(--cf-bg-inset) border border-(--cf-border)">
-                                <TagIcon className="w-6 h-6 text-(--cf-text-muted)" />
-                            </div>
-                            <div>
-                                <h1 className="font-(--cf-font-display) text-2xl text-(--cf-text)">
-                                    TAG_CLOUD
-                                </h1>
-                                <p className="font-mono text-xs text-(--cf-text-dim) mt-1">
-                                    {`CLOUD_SIZE: ${tags.length.toString().padStart(2, "0")} // TOTAL_MATCHES: ${totalBlogs}`}
-                                </p>
-                            </div>
+        <main className="island-main">
+            <div className="island-container island-page">
+                <section className="island-panel px-6 py-5">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                            <h1 className="island-section-title">标签云</h1>
+                            <p className="island-subtle mt-2">用关键词快速穿越文章脉络。</p>
+                        </div>
+                        <div className="flex gap-2">
+                            <span className="island-chip">{tags.length} 个标签</span>
+                            <span className="island-chip">{totalBlogRefs} 次关联</span>
                         </div>
                     </div>
+                </section>
 
-                    {isLoading ? (
-                        <TagCloudSkeleton />
-                    ) : tags.length === 0 ? (
-                        <div className="cf-panel p-12 text-center">
-                            <TagIcon className="h-16 w-16 text-(--cf-text-muted) mx-auto mb-4 opacity-50" />
-                            <p className="font-mono text-(--cf-text-dim)">NO_TAGS_FOUND</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-8">
-                            {/* Cloud View */}
-                            <div className="cf-panel bg-(--cf-bg-panel) border border-(--cf-border) p-6 md:p-10">
-                                <div className="flex flex-wrap gap-4 items-center justify-center">
-                                    {tags.map((tag) => (
-                                        <Link key={tag.id} href={`/tag/${tag.id}`}>
-                                            <span
-                                                className={`font-mono transition-all duration-200 hover:text-(--cf-cyan) hover:scale-110 inline-block cursor-pointer ${getTagSize(
-                                                    tag.blog_count || 0
-                                                )}`}
-                                            >
-                                                #{tag.name}
-                                                <span className="text-[10px] align-super opacity-50 ml-0.5">
-                                                    {tag.blog_count}
-                                                </span>
-                                            </span>
-                                        </Link>
-                                    ))}
-                                </div>
+                <section className="island-grid island-grid-2">
+                    <div className="island-grid">
+                        {loading ? (
+                            <div className="island-panel island-skeleton h-72" />
+                        ) : tags.length === 0 ? (
+                            <div className="island-panel p-10 text-center text-sm text-[var(--is-text-muted)]">
+                                暂无标签
                             </div>
-
-                            {/* List View */}
-                            <div className="cf-panel">
-                                <div className="cf-panel-header">
-                                    <span>TAG_LIST</span>
+                        ) : (
+                            <>
+                                <div className="island-panel p-5 sm:p-8">
+                                    <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+                                        {tags.map((tag) => {
+                                            const ratio = (tag.blog_count || 0) / maxCount;
+                                            const size = 0.86 + ratio * 0.75;
+                                            return (
+                                                <Link
+                                                    key={tag.id}
+                                                    href={`/tag/${tag.id}`}
+                                                    className="island-focus-ring rounded-full border border-[var(--is-border)] bg-[var(--is-surface-soft)] px-3 py-1.5 text-[var(--is-text-muted)] transition hover:border-[var(--is-border-strong)] hover:text-[var(--is-text)]"
+                                                    style={{ fontSize: `${size}rem` }}
+                                                >
+                                                    #{tag.name}
+                                                </Link>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
-                                <div className="p-4 grid gap-2 sm:grid-cols-2 md:grid-cols-3">
-                                    {tags
-                                        .sort((a, b) => (b.blog_count || 0) - (a.blog_count || 0))
-                                        .map((tag) => (
-                                            <Link
-                                                key={tag.id}
-                                                href={`/tag/${tag.id}`}
-                                                className="flex items-center justify-between p-2 border border-(--cf-border) bg-(--cf-bg-inset) hover:border-(--cf-amber) transition-colors group"
-                                            >
-                                                <div className="flex items-center gap-2">
-                                                    <TagIcon className="h-3 w-3 text-(--cf-text-muted)" />
-                                                    <span className="font-mono text-sm text-(--cf-text-dim) group-hover:text-(--cf-text)">
+
+                                <div className="island-panel p-4">
+                                    <div className="grid gap-2 sm:grid-cols-2">
+                                        {tags
+                                            .slice()
+                                            .sort((a, b) => (b.blog_count || 0) - (a.blog_count || 0))
+                                            .map((tag) => (
+                                                <Link
+                                                    key={tag.id}
+                                                    href={`/tag/${tag.id}`}
+                                                    className="flex items-center justify-between rounded-xl border border-[var(--is-border)] bg-[var(--is-surface-soft)] px-3 py-2 text-sm text-[var(--is-text-muted)] transition hover:border-[var(--is-border-strong)] hover:text-[var(--is-text)]"
+                                                >
+                                                    <span className="flex items-center gap-2">
+                                                        <Hash className="h-3.5 w-3.5" />
                                                         {tag.name}
                                                     </span>
-                                                </div>
-                                                <span className="cf-tag text-xs">
-                                                    {tag.blog_count || 0}
-                                                </span>
-                                            </Link>
-                                        ))}
+                                                    <span className="text-xs text-[var(--is-text-faint)]">{tag.blog_count || 0}</span>
+                                                </Link>
+                                            ))}
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
+                            </>
+                        )}
+                    </div>
 
-                {/* Sidebar */}
-                <div className="hidden lg:block">
-                    <CassetteSidebar
-                        categories={categories}
-                        tags={tags}
-                        isLoading={sidebarLoading}
-                    />
-                </div>
+                    <IslandSidebar categories={categories} tags={tags} title="标签关联分类" />
+                </section>
             </div>
         </main>
-    );
-}
-
-function TagCloudSkeleton() {
-    const widths = [80, 100, 70, 90, 110, 75, 95, 85, 105, 65, 115, 88];
-    return (
-        <div className="cf-panel p-10 border border-(--cf-border)">
-            <div className="flex flex-wrap gap-4 items-center justify-center">
-                {widths.map((width, i) => (
-                    <div
-                        key={i}
-                        className="h-6 bg-(--cf-bg-elevated) animate-pulse rounded"
-                        style={{ width: `${width}px` }}
-                    />
-                ))}
-            </div>
-        </div>
     );
 }

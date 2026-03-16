@@ -1,24 +1,22 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-import { Briefcase, Github, ExternalLink, Download } from "lucide-react";
+import { BriefcaseBusiness, Download, ExternalLink, Github } from "lucide-react";
 import { projectApi } from "@/lib/api";
 import type { Project } from "@/types";
 
 export default function ProjectsPage() {
     const [projects, setProjects] = useState<Project[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [loading, setLoading] = useState(true);
 
     const fetchProjects = useCallback(async () => {
-        setIsLoading(true);
+        setLoading(true);
         try {
-            const data = await projectApi.list();
-            setProjects(data);
-        } catch (error) {
-            console.error("Failed to fetch projects:", error);
+            const result = await projectApi.list();
+            setProjects(result);
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
     }, []);
 
@@ -27,131 +25,70 @@ export default function ProjectsPage() {
     }, [fetchProjects]);
 
     return (
-        <main className="cf-main">
-            <div className="cf-section-header">
-                <h1 className="cf-section-title">
-                    PROJECTS
-                </h1>
-                <span className="cf-section-badge">
-                    {projects.length} ITEMS
-                </span>
-            </div>
-
-            {isLoading ? (
-                <ProjectsGridSkeleton />
-            ) : projects.length === 0 ? (
-                <div className="cf-panel p-12 text-center">
-                    <Briefcase className="h-16 w-16 text-(--cf-text-muted) mx-auto mb-4 opacity-50" />
-                    <p className="font-mono text-(--cf-text-dim)">NO_PROJECTS_FOUND</p>
-                </div>
-            ) : (
-                <div className="cf-grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {projects.map((project) => (
-                        <ProjectCard key={project.id} project={project} />
-                    ))}
-                </div>
-            )}
-        </main>
-    );
-}
-
-
-function ProjectCard({ project }: { project: Project }) {
-    const hasLinks = project.github_url || project.preview_url || project.download_url;
-
-    return (
-        <div className="cf-card group h-full">
-            <div className="cf-card-header">
-                <span>PROJ_{project.id.toString().padStart(3, '0')}</span>
-                <span className="text-(--cf-cyan)">Active</span>
-            </div>
-            
-            <div className="cf-card-content">
-                <div className="flex items-start gap-4 mb-4">
-                    {project.logo ? (
-                        <div className="relative w-14 h-14 shrink-0 bg-(--cf-bg-inset) border border-(--cf-border) p-1">
-                            <Image
-                                src={project.logo}
-                                alt={project.name}
-                                fill
-                                className="object-cover grayscale group-hover:grayscale-0 transition-all"
-                                sizes="56px"
-                            />
+        <main className="island-main">
+            <div className="island-container island-page">
+                <section className="island-panel px-6 py-5">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <h1 className="island-section-title">项目礁石</h1>
+                            <p className="island-subtle mt-2">记录正在打磨与持续维护的项目。</p>
                         </div>
-                    ) : (
-                        <div className="w-14 h-14 shrink-0 flex items-center justify-center bg-(--cf-bg-inset) border border-(--cf-border)">
-                            <Briefcase className="h-6 w-6 text-(--cf-text-muted)" />
-                        </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                        <h3 className="font-(--cf-font-display) text-lg text-(--cf-text) group-hover:text-(--cf-amber) transition-colors truncate">
-                            {project.name}
-                        </h3>
+                        <span className="island-chip">{projects.length} 个项目</span>
                     </div>
-                </div>
-                
-                <p className="text-sm font-mono text-(--cf-text-dim) line-clamp-3 mb-6 flex-1">
-                    {project.description || "// NO_DESCRIPTION"}
-                </p>
-                
-                {hasLinks && (
-                    <div className="flex flex-wrap gap-2 mt-auto pt-4 border-t border-(--cf-border)">
-                        {project.github_url && (
-                            <a
-                                href={project.github_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="cf-btn-icon w-8 h-8 rounded-none"
-                                title="GitHub"
-                            >
-                                <Github className="h-4 w-4" />
-                            </a>
-                        )}
-                        {project.preview_url && (
-                            <a
-                                href={project.preview_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="cf-btn-icon w-8 h-8 rounded-none"
-                                title="Preview"
-                            >
-                                <ExternalLink className="h-4 w-4" />
-                            </a>
-                        )}
-                        {project.download_url && (
-                            <a
-                                href={project.download_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="cf-btn-icon w-8 h-8 rounded-none"
-                                title="Download"
-                            >
-                                <Download className="h-4 w-4" />
-                            </a>
-                        )}
+                </section>
+
+                {loading ? (
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {Array.from({ length: 6 }).map((_, idx) => (
+                            <div key={idx} className="island-panel island-skeleton h-64" />
+                        ))}
+                    </div>
+                ) : projects.length === 0 ? (
+                    <div className="island-panel p-10 text-center text-sm text-[var(--is-text-muted)]">暂无项目数据</div>
+                ) : (
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {projects.map((project) => (
+                            <article key={project.id} className="island-card p-4 sm:p-5">
+                                <div className="flex items-center gap-3">
+                                    {project.logo ? (
+                                        <div className="relative h-14 w-14 overflow-hidden rounded-xl border border-[var(--is-border)] bg-[var(--is-surface-soft)]">
+                                            <Image src={project.logo} alt={project.name} fill sizes="56px" className="object-cover" />
+                                        </div>
+                                    ) : (
+                                        <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-[var(--is-border)] bg-[var(--is-surface-soft)] text-[var(--is-text-faint)]">
+                                            <BriefcaseBusiness className="h-4 w-4" />
+                                        </div>
+                                    )}
+                                    <h2 className="font-[var(--is-font-title)] text-lg text-[var(--is-text)]">{project.name}</h2>
+                                </div>
+
+                                {project.description && <p className="mt-3 line-clamp-4 text-sm leading-7 text-[var(--is-text-muted)]">{project.description}</p>}
+
+                                <div className="mt-4 flex flex-wrap gap-2">
+                                    {project.github_url && (
+                                        <a href={project.github_url} target="_blank" rel="noopener noreferrer" className="island-chip island-focus-ring">
+                                            <Github className="h-3.5 w-3.5" />
+                                            GitHub
+                                        </a>
+                                    )}
+                                    {project.preview_url && (
+                                        <a href={project.preview_url} target="_blank" rel="noopener noreferrer" className="island-chip island-focus-ring">
+                                            <ExternalLink className="h-3.5 w-3.5" />
+                                            预览
+                                        </a>
+                                    )}
+                                    {project.download_url && (
+                                        <a href={project.download_url} target="_blank" rel="noopener noreferrer" className="island-chip island-focus-ring">
+                                            <Download className="h-3.5 w-3.5" />
+                                            下载
+                                        </a>
+                                    )}
+                                </div>
+                            </article>
+                        ))}
                     </div>
                 )}
             </div>
-        </div>
-    );
-}
-
-function ProjectsGridSkeleton() {
-    return (
-        <div className="cf-grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="cf-card h-64 animate-pulse">
-                    <div className="cf-card-header bg-(--cf-bg-inset)" />
-                    <div className="cf-card-content">
-                        <div className="flex gap-4 mb-4">
-                            <div className="w-14 h-14 bg-(--cf-bg-elevated)" />
-                            <div className="flex-1 h-6 bg-(--cf-bg-elevated)" />
-                        </div>
-                        <div className="h-20 bg-(--cf-bg-elevated) mb-4" />
-                        <div className="h-8 w-1/2 bg-(--cf-bg-elevated)" />
-                    </div>
-                </div>
-            ))}
-        </div>
+        </main>
     );
 }

@@ -1,14 +1,18 @@
 import { NextResponse } from "next/server";
 
 // 服务端使用内部 API URL（Docker 网络），客户端使用公开 URL
-const API_BASE_URL = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
+const API_BASE_URL = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || "https://api.itbug.shop/api/v1";
+const PUBLIC_FALLBACK_API_URL = process.env.NEXT_PUBLIC_FALLBACK_API_URL || "https://api.itbug.shop/api/v1";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
     try {
         // 获取站点配置
-        const configRes = await fetch(`${API_BASE_URL}/config`, {
-            cache: "no-store",
-        });
+        let configRes = await fetch(`${API_BASE_URL}/config`, { cache: "no-store" });
+        if (!configRes.ok && API_BASE_URL !== PUBLIC_FALLBACK_API_URL) {
+            configRes = await fetch(`${PUBLIC_FALLBACK_API_URL}/config`, { cache: "no-store" });
+        }
 
         if (configRes.ok) {
             const data = await configRes.json();

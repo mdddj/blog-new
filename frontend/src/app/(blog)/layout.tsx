@@ -1,23 +1,29 @@
-import "@/app/cassette.css";
-import { CassetteHeader } from "@/components/blog/cassette/cassette-header";
-import { CassetteFooter } from "@/components/blog/cassette/cassette-footer";
-import { CassetteBackground } from "@/components/blog/cassette/cassette-background";
+import "@/app/island.css";
+import { IslandHeader, IslandFooter } from "@/components/blog/island";
 import { SiteConfigProvider } from "@/contexts/site-config-context";
 import { AnalyticsScript } from "@/components/analytics-script";
+import { siteConfigApi, type PublicSiteConfig } from "@/lib/api";
 
-export default function BlogLayout({
+export default async function BlogLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
+    let initialConfig: PublicSiteConfig | undefined;
+    try {
+        initialConfig = await siteConfigApi.getPublic();
+    } catch (error) {
+        console.error("Failed to fetch site config in blog layout:", error);
+    }
+
     return (
-        <SiteConfigProvider>
+        <SiteConfigProvider initialConfig={initialConfig}>
             <AnalyticsScript />
-            <div className="cassette-theme flex flex-col min-h-screen">
-                <CassetteBackground />
-                <CassetteHeader />
+            <div className="island-root island-shell">
+                <div className="island-wave" />
+                <IslandHeader />
                 <div className="flex-1">{children}</div>
-                <CassetteFooter />
+                <IslandFooter />
             </div>
         </SiteConfigProvider>
     );
