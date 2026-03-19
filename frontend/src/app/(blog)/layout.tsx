@@ -19,7 +19,14 @@ export default async function BlogLayout({
   return (
     <SiteConfigProvider initialConfig={initialConfig}>
       <AnalyticsScript />
-      <div className="island-root island-shell">
+      <div
+        className="island-root island-shell"
+        style={{
+          display: "grid",
+          gridTemplateRows: "auto minmax(0, 1fr) auto",
+          minHeight: "100dvh",
+        }}
+      >
         <a
           href="#island-main-content"
           className="island-skip-link island-focus-ring"
@@ -28,7 +35,7 @@ export default async function BlogLayout({
         </a>
         <div className="island-wave" />
         <IslandHeader />
-        <div id="island-main-content" className="flex-1">
+        <div id="island-main-content" className="min-h-0">
           {children}
         </div>
         <IslandFooter />

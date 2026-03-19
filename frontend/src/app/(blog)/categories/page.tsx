@@ -3,10 +3,10 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { FolderTree } from "lucide-react";
+import { FolderTree, Hash, LibraryBig } from "lucide-react";
 import { categoryApi, tagApi } from "@/lib/api";
 import type { Category, Tag } from "@/types";
-import { IslandSidebar } from "@/components/blog/island";
+import { IslandPageHeader, IslandSidebar } from "@/components/blog/island";
 
 export default function CategoriesPage() {
     const [categories, setCategories] = useState<Category[]>([]);
@@ -33,21 +33,50 @@ export default function CategoriesPage() {
     return (
         <main className="island-main">
             <div className="island-container island-page">
-                <section className="island-panel px-6 py-5">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div>
-                            <h1 className="island-section-title">分类群岛</h1>
-                            <p className="island-subtle mt-2">按主题浏览文章，快速定位你关注的知识岛屿。</p>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                            <span className="island-chip">分类 {categories.length}</span>
-                            <span className="island-chip">文章 {totalBlogs}</span>
-                        </div>
-                    </div>
-                </section>
+                <IslandPageHeader
+                    eyebrow="分类索引"
+                    chips={["按主题浏览", "直接进入文章"]}
+                    title="按主题查看全部分类。"
+                    description="每个分类都直接对应一组文章入口，适合从主题而不是时间开始浏览。"
+                    stats={[
+                        {
+                            label: "Categories",
+                            value: categories.length,
+                            description: "当前分类数量",
+                            icon: <FolderTree className="h-3.5 w-3.5" />,
+                        },
+                        {
+                            label: "Posts",
+                            value: totalBlogs,
+                            description: "已收录文章",
+                            icon: <LibraryBig className="h-3.5 w-3.5" />,
+                        },
+                        {
+                            label: "Tags",
+                            value: tags.length,
+                            description: "可交叉浏览标签",
+                            icon: <Hash className="h-3.5 w-3.5" />,
+                        },
+                    ]}
+                />
 
                 <section className="island-grid island-grid-2">
                     <div className="island-grid">
+                        <div className="island-panel-soft px-5 py-4 sm:px-6">
+                            <div className="flex flex-wrap items-center justify-between gap-3">
+                                <div>
+                                    <p className="text-xs uppercase tracking-[0.24em] text-[var(--is-text-faint)]">
+                                        Category List
+                                    </p>
+                                    <h2 className="mt-2 island-section-title">全部分类</h2>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    <span className="island-chip">共 {categories.length} 个分类</span>
+                                    <span className="island-chip">累计 {totalBlogs} 篇文章</span>
+                                </div>
+                            </div>
+                        </div>
+
                         {loading ? (
                             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                                 {Array.from({ length: 6 }).map((_, idx) => (
@@ -57,7 +86,7 @@ export default function CategoriesPage() {
                         ) : categories.length === 0 ? (
                             <div className="island-panel p-10 text-center">
                                 <FolderTree className="mx-auto h-10 w-10 text-[var(--is-text-faint)]" />
-                                <p className="mt-3 text-sm text-[var(--is-text-muted)]">暂时没有可用分类</p>
+                                <p className="mt-3 text-sm text-[var(--is-text-muted)]">还没有可展示的分类。</p>
                             </div>
                         ) : (
                             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

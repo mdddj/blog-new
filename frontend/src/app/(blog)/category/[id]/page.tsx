@@ -3,10 +3,10 @@
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, FolderOpen } from "lucide-react";
+import { ChevronLeft, FolderOpen, Hash } from "lucide-react";
 import { categoryApi, tagApi } from "@/lib/api";
 import type { Blog, Category, PaginatedResponse, Tag } from "@/types";
-import { IslandPostCard, IslandSidebar } from "@/components/blog/island";
+import { IslandPageHeader, IslandPostCard, IslandSidebar } from "@/components/blog/island";
 import { Pagination } from "@/components/blog/pagination";
 
 function CategoryPageContent() {
@@ -59,29 +59,68 @@ function CategoryPageContent() {
     return (
         <main className="island-main">
             <div className="island-container island-page">
-                <section className="island-panel px-6 py-5">
-                    <Link href="/categories" className="mb-3 inline-flex items-center gap-1.5 text-sm text-[var(--is-text-muted)] island-focus-ring hover:text-[var(--is-text)]">
-                        <ChevronLeft className="h-4 w-4" />
-                        返回分类总览
-                    </Link>
-
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--is-border)] bg-[var(--is-surface-soft)] text-[var(--is-text-faint)]">
-                                <FolderOpen className="h-4 w-4" />
-                            </div>
-                            <div>
-                                <h1 className="island-section-title">{currentCategory?.name || "分类详情"}</h1>
-                                <p className="island-subtle">{pagination.total} 篇文章</p>
-                            </div>
-                        </div>
-                        <span className="island-chip">分类 ID: {categoryId}</span>
-                    </div>
-                    {currentCategory?.intro && <p className="mt-3 text-sm leading-7 text-[var(--is-text-muted)]">{currentCategory.intro}</p>}
-                </section>
+                <IslandPageHeader
+                    pretitle={
+                        <Link
+                            href="/categories"
+                            className="inline-flex items-center gap-1.5 text-sm text-[var(--is-text-muted)] island-focus-ring hover:text-[var(--is-text)]"
+                        >
+                            <ChevronLeft className="h-4 w-4" />
+                            返回分类索引
+                        </Link>
+                    }
+                    eyebrow="分类文章"
+                    chips={[currentPage === 1 ? "按时间顺序展开" : `当前第 ${currentPage} 页`]}
+                    title={currentCategory?.name || "分类文章"}
+                    description={
+                        currentCategory?.intro ||
+                        "这个分类下的文章已经按时间顺序展开，直接进入阅读即可。"
+                    }
+                    stats={[
+                        {
+                            label: "Posts",
+                            value: pagination.total,
+                            description: "当前分类文章数",
+                            icon: <FolderOpen className="h-3.5 w-3.5" />,
+                        },
+                        {
+                            label: "Page",
+                            value: (
+                                <>
+                                    {currentPage}
+                                    <span className="text-base text-[var(--is-text-faint)]">
+                                        /{Math.max(1, pagination.totalPages)}
+                                    </span>
+                                </>
+                            ),
+                            description: "分页位置",
+                        },
+                        {
+                            label: "Tags",
+                            value: tags.length,
+                            description: "侧栏可用标签",
+                            icon: <Hash className="h-3.5 w-3.5" />,
+                        },
+                    ]}
+                />
 
                 <section className="island-grid island-grid-2">
                     <div className="island-grid">
+                        <div className="island-panel-soft px-5 py-4 sm:px-6">
+                            <div className="flex flex-wrap items-center justify-between gap-3">
+                                <div>
+                                    <p className="text-xs uppercase tracking-[0.24em] text-[var(--is-text-faint)]">
+                                        Category Posts
+                                    </p>
+                                    <h2 className="mt-2 island-section-title">分类文章</h2>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    <span className="island-chip">共 {pagination.total} 篇</span>
+                                    <span className="island-chip">当前第 {currentPage} 页</span>
+                                </div>
+                            </div>
+                        </div>
+
                         {loading ? (
                             <div className="grid gap-4 sm:grid-cols-2">
                                 {Array.from({ length: 4 }).map((_, idx) => (
@@ -89,7 +128,7 @@ function CategoryPageContent() {
                                 ))}
                             </div>
                         ) : blogs.length === 0 ? (
-                            <div className="island-panel p-10 text-center text-sm text-[var(--is-text-muted)]">这个分类下暂时没有文章。</div>
+                            <div className="island-panel p-10 text-center text-sm text-[var(--is-text-muted)]">这个分类下还没有文章。</div>
                         ) : (
                             <div className="grid gap-4 sm:grid-cols-2">
                                 {blogs.map((blog) => (
@@ -109,7 +148,7 @@ function CategoryPageContent() {
                         )}
                     </div>
 
-                    {sideLoading ? <div className="island-panel island-skeleton h-96" /> : <IslandSidebar categories={categories} tags={tags} title="其他分类" />}
+                    {sideLoading ? <div className="island-panel island-skeleton h-96" /> : <IslandSidebar categories={categories} tags={tags} title="分类导航" />}
                 </section>
             </div>
         </main>

@@ -5,6 +5,7 @@
 mod config;
 mod error;
 mod handlers;
+mod mcp;
 mod middleware;
 mod models;
 mod repositories;
@@ -93,6 +94,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Build router with public and admin routes
     let app = Router::new()
+        .merge(mcp::router(state.clone()))
         .nest("/api/v1", routes::create_routes())
         .nest("/api/v1/admin", routes::create_admin_routes(state.clone()))
         .layer(DefaultBodyLimit::max(

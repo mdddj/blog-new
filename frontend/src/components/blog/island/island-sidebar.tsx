@@ -16,8 +16,8 @@ export function IslandSidebar({ categories, tags, title = "岛屿索引" }: Isla
     const { config } = useSiteConfig();
 
     return (
-        <aside className="island-grid">
-            <section className="island-panel p-4 sm:p-5">
+        <aside className="island-sidebar-stack">
+            <section className="island-panel island-sidebar-card">
                 <div className="mb-3 flex items-center gap-2 text-sm text-[var(--is-text-muted)]">
                     <UserRound className="h-4 w-4" />
                     <span>{config.owner_name || "作者"} </span>
@@ -30,11 +30,11 @@ export function IslandSidebar({ categories, tags, title = "岛屿索引" }: Isla
                             <UserRound className="h-5 w-5" />
                         </div>
                     )}
-                    <p className="text-sm leading-7 text-[var(--is-text-muted)] line-clamp-3">{config.owner_bio || "欢迎来到这片安静的知识群岛。"}</p>
+                    <p className="text-sm leading-7 text-[var(--is-text-muted)] line-clamp-3">{config.owner_bio || "欢迎浏览这里整理的文章与资料。"}</p>
                 </div>
             </section>
 
-            <section className="island-panel p-4 sm:p-5">
+            <section className="island-panel island-sidebar-card">
                 <h3 className="mb-3 flex items-center gap-2 text-sm font-medium text-[var(--is-text-muted)]">
                     <Folder className="h-4 w-4" />
                     {title}
@@ -50,7 +50,7 @@ export function IslandSidebar({ categories, tags, title = "岛屿索引" }: Isla
                 </div>
             </section>
 
-            <section className="island-panel p-4 sm:p-5">
+            <section className="island-panel island-sidebar-card">
                 <h3 className="mb-3 flex items-center gap-2 text-sm font-medium text-[var(--is-text-muted)]">
                     <Hash className="h-4 w-4" />
                     热门标签

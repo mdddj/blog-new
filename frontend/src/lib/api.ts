@@ -36,11 +36,37 @@ import type {
 } from "@/types";
 
 const isServer = typeof window === "undefined";
+function normalizeApiBaseUrl(url: string): string {
+  const trimmed = url.trim().replace(/\/+$/, "");
+  if (!trimmed) return trimmed;
+  if (trimmed.endsWith("/api/v1")) return trimmed;
+  return `${trimmed}/api/v1`;
+}
+
+function getBrowserApiBaseUrl(): string {
+  const hostname = window.location.hostname;
+  const isLocalHost =
+    hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
+
+  if (isLocalHost) {
+    return normalizeApiBaseUrl(
+      process.env.NEXT_PUBLIC_LOCAL_API_URL || "http://127.0.0.1:8080/api/v1",
+    );
+  }
+
+  return normalizeApiBaseUrl(
+    process.env.NEXT_PUBLIC_API_URL || "https://api.itbug.shop/api/v1",
+  );
+}
+
 const API_BASE_URL = isServer
-  ? process.env.INTERNAL_API_URL || "http://backend:8080/api/v1"
-  : process.env.NEXT_PUBLIC_API_URL || "https://api.itbug.shop/api/v1";
-const PUBLIC_FALLBACK_API_URL =
-  process.env.NEXT_PUBLIC_FALLBACK_API_URL || "https://api.itbug.shop/api/v1";
+  ? normalizeApiBaseUrl(
+      process.env.INTERNAL_API_URL || "http://backend:8080/api/v1",
+    )
+  : getBrowserApiBaseUrl();
+const PUBLIC_FALLBACK_API_URL = normalizeApiBaseUrl(
+  process.env.NEXT_PUBLIC_FALLBACK_API_URL || "https://api.itbug.shop/api/v1",
+);
 
 function shouldUseFallback(baseUrl: string, method: string, hasToken: boolean) {
   if (hasToken || method !== "GET") return false;
@@ -102,7 +128,28 @@ async function request<T>(
     response = await fetchWith(PUBLIC_FALLBACK_API_URL);
   }
 
-  const data: ApiResponse<T> = await response.json();
+  const responseText = await response.text();
+  let data: ApiResponse<T> | null = null;
+
+  if (responseText) {
+    try {
+      data = JSON.parse(responseText) as ApiResponse<T>;
+    } catch {
+      const details = responseText.slice(0, 300);
+      throw new ApiError(
+        response.status || -1,
+        "API 返回了非 JSON 响应",
+        details,
+      );
+    }
+  }
+
+  if (!data) {
+    if (response.ok) {
+      return undefined as T;
+    }
+    throw new ApiError(response.status || -1, "API 返回了空响应");
+  }
 
   if (!response.ok || data.code !== 0) {
     throw new ApiError(data.code, data.message);
@@ -552,6 +599,21 @@ export interface SiteConfig {
   updated_at: string;
 }
 
+export interface McpSettings {
+  enabled: boolean;
+  endpoint: string;
+  token_initialized: boolean;
+  token_masked?: string | null;
+  token_last_rotated_at?: string | null;
+}
+
+export interface RotateMcpTokenResponse {
+  endpoint: string;
+  token: string;
+  token_masked: string;
+  token_last_rotated_at: string;
+}
+
 export interface PublicSiteConfig {
   site_title: string;
   site_subtitle: string;
@@ -586,6 +648,21 @@ export const siteConfigApi = {
     request<{ success: boolean; message: string }>("/admin/config", {
       method: "PUT",
       body: JSON.stringify({ configs }),
+    }),
+};
+
+export const mcpApi = {
+  getSettings: () => request<McpSettings>("/admin/mcp/settings"),
+
+  updateSettings: (enabled: boolean) =>
+    request<McpSettings>("/admin/mcp/settings", {
+      method: "PUT",
+      body: JSON.stringify({ enabled }),
+    }),
+
+  rotateToken: () =>
+    request<RotateMcpTokenResponse>("/admin/mcp/token/rotate", {
+      method: "POST",
     }),
 };
 

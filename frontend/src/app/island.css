@@ -1,88 +1,143 @@
-/* Island Design System: blog frontend only */
+/* Editorial Design System with Liquid Glass accents: blog frontend only */
 
 .island-root {
-    --is-bg: #f4f7f4;
-    --is-bg-alt: #e9efe8;
-    --is-surface: #fcfffb;
-    --is-surface-soft: #f3f8f2;
-    --is-border: #d7e3d4;
-    --is-border-strong: #b6cab2;
-    --is-text: #1f2c22;
-    --is-text-muted: #587160;
-    --is-text-faint: #7d9586;
-    --is-primary: #2d7355;
-    --is-primary-soft: #dceddf;
-    --is-accent: #138a8f;
-    --is-danger: #a84343;
-    --is-shadow: 0 20px 60px rgba(31, 44, 34, 0.1);
-    --is-shadow-soft: 0 12px 36px rgba(31, 44, 34, 0.06);
-    --is-radius: 20px;
-    --is-radius-sm: 14px;
+    --is-bg: #f6efe2;
+    --is-bg-alt: #efe3d0;
+    --is-surface: rgba(255, 251, 245, 0.48);
+    --is-surface-soft: rgba(248, 240, 230, 0.38);
+    --is-surface-strong: rgba(255, 252, 246, 0.66);
+    --is-border: rgba(255, 255, 255, 0.28);
+    --is-border-strong: rgba(255, 255, 255, 0.46);
+    --is-text: #22160f;
+    --is-text-muted: #584435;
+    --is-text-faint: #8e7461;
+    --is-primary: #8d3c20;
+    --is-primary-soft: rgba(141, 60, 32, 0.12);
+    --is-accent: #0f5d63;
+    --is-accent-soft: rgba(15, 93, 99, 0.1);
+    --is-danger: #a73d3d;
+    --is-glass-highlight: rgba(255, 255, 255, 0.72);
+    --is-glass-shadow: rgba(54, 27, 12, 0.14);
+    --is-shadow: 0 28px 80px rgba(61, 34, 21, 0.12);
+    --is-shadow-soft: 0 18px 44px rgba(61, 34, 21, 0.08);
+    --is-radius: 28px;
+    --is-radius-sm: 18px;
     --is-font-title:
-        "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong", serif;
+        "Noto Serif SC", "Source Han Serif SC", "Songti SC", "STSong",
+        "Iowan Old Style", serif;
     --is-font-body:
-        "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
-        sans-serif;
+        "IBM Plex Sans", "Noto Sans SC", "Source Han Sans SC", "PingFang SC",
+        "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
 
     min-height: 100vh;
     color: var(--is-text);
     font-family: var(--is-font-body);
     background:
         radial-gradient(
-            1200px 600px at 10% -20%,
-            rgba(45, 115, 85, 0.18),
-            transparent 65%
+            860px 520px at 0% 0%,
+            rgba(141, 60, 32, 0.16),
+            transparent 70%
         ),
         radial-gradient(
-            900px 500px at 100% 10%,
-            rgba(19, 138, 143, 0.13),
-            transparent 62%
+            780px 460px at 100% 8%,
+            rgba(15, 93, 99, 0.14),
+            transparent 68%
         ),
         radial-gradient(
-            1200px 700px at 50% 130%,
-            rgba(106, 161, 114, 0.12),
-            transparent 65%
+            1200px 700px at 50% 30%,
+            rgba(255, 255, 255, 0.42),
+            transparent 72%
         ),
         linear-gradient(180deg, var(--is-bg), var(--is-bg-alt));
 }
 
 .dark .island-root {
-    --is-bg: #0f1713;
-    --is-bg-alt: #13211b;
-    --is-surface: #17261f;
-    --is-surface-soft: #1b2d24;
-    --is-border: #284335;
-    --is-border-strong: #36614a;
-    --is-text: #d8ebdf;
-    --is-text-muted: #9fc0ad;
-    --is-text-faint: #7da391;
-    --is-primary: #68bc93;
-    --is-primary-soft: #1c3a2c;
-    --is-accent: #6abfd0;
-    --is-danger: #d58484;
-    --is-shadow: 0 26px 70px rgba(0, 0, 0, 0.4);
-    --is-shadow-soft: 0 18px 48px rgba(0, 0, 0, 0.28);
+    --is-bg: #120f0d;
+    --is-bg-alt: #171311;
+    --is-surface: rgba(39, 28, 23, 0.42);
+    --is-surface-soft: rgba(52, 37, 31, 0.34);
+    --is-surface-strong: rgba(46, 33, 27, 0.58);
+    --is-border: rgba(255, 255, 255, 0.1);
+    --is-border-strong: rgba(255, 255, 255, 0.22);
+    --is-text: #f5ead7;
+    --is-text-muted: #d1bea9;
+    --is-text-faint: #ae9983;
+    --is-primary: #f18b5d;
+    --is-primary-soft: rgba(241, 139, 93, 0.14);
+    --is-accent: #74d7db;
+    --is-accent-soft: rgba(116, 215, 219, 0.12);
+    --is-danger: #ef8f8f;
+    --is-glass-highlight: rgba(255, 255, 255, 0.18);
+    --is-glass-shadow: rgba(0, 0, 0, 0.32);
+    --is-shadow: 0 28px 90px rgba(0, 0, 0, 0.42);
+    --is-shadow-soft: 0 20px 50px rgba(0, 0, 0, 0.28);
 }
 
 .island-shell {
     position: relative;
     min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.island-root::before,
+.island-root::after {
+    content: "";
+    position: fixed;
+    z-index: 0;
+    pointer-events: none;
+    border-radius: 999px;
+    filter: blur(18px) saturate(120%);
+    opacity: 0.85;
+    mix-blend-mode: screen;
+    animation: islandBlobFloat 18s ease-in-out infinite;
+}
+
+.island-root::before {
+    top: 5rem;
+    right: 6vw;
+    width: 19rem;
+    height: 19rem;
+    animation-delay: -2s;
+    background:
+        radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.72), transparent 34%),
+        radial-gradient(circle at 70% 38%, rgba(122, 225, 235, 0.46), transparent 38%),
+        radial-gradient(circle at 52% 66%, rgba(250, 171, 122, 0.42), transparent 44%);
+}
+
+.island-root::after {
+    bottom: 8rem;
+    right: 18vw;
+    width: 12rem;
+    height: 12rem;
+    animation-duration: 16s;
+    animation-delay: -6s;
+    background:
+        radial-gradient(circle at 28% 28%, rgba(255, 255, 255, 0.6), transparent 34%),
+        radial-gradient(circle at 72% 42%, rgba(116, 215, 219, 0.4), transparent 40%),
+        radial-gradient(circle at 50% 72%, rgba(255, 197, 160, 0.34), transparent 44%);
+}
+
+.dark .island-root::before,
+.dark .island-root::after {
+    opacity: 0.48;
+    mix-blend-mode: lighten;
 }
 
 .island-skip-link {
     position: fixed;
-    top: 0.65rem;
-    left: 0.8rem;
-    z-index: 80;
+    top: 0.85rem;
+    left: 0.85rem;
+    z-index: 90;
     transform: translateY(-160%);
     border: 1px solid var(--is-border-strong);
     border-radius: 999px;
-    background: var(--is-surface);
+    background: var(--is-surface-strong);
     color: var(--is-text);
-    padding: 0.5rem 0.95rem;
-    font-size: 0.86rem;
+    padding: 0.58rem 0.95rem;
+    font-size: 0.84rem;
     box-shadow: var(--is-shadow-soft);
-    transition: transform 0.22s ease;
+    transition: transform 0.24s ease;
 }
 
 .island-skip-link:focus-visible {
@@ -94,36 +149,81 @@
     position: fixed;
     inset: 0;
     z-index: 0;
-    opacity: 0.4;
+    opacity: 0.88;
     background-image:
         radial-gradient(
-            circle at 30% 30%,
-            rgba(255, 255, 255, 0.2),
-            transparent 35%
+            900px 260px at 20% 15%,
+            rgba(255, 255, 255, 0.34),
+            transparent 72%
         ),
-        repeating-radial-gradient(
-            circle at 50% 110%,
-            rgba(255, 255, 255, 0.08) 0,
-            rgba(255, 255, 255, 0.08) 1px,
-            transparent 1px,
-            transparent 22px
+        radial-gradient(
+            760px 220px at 84% 22%,
+            rgba(140, 234, 240, 0.2),
+            transparent 68%
+        ),
+        linear-gradient(
+            to right,
+            rgba(90, 57, 37, 0.045) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            to bottom,
+            rgba(90, 57, 37, 0.045) 1px,
+            transparent 1px
+        ),
+        radial-gradient(
+            circle at 14% 16%,
+            rgba(141, 60, 32, 0.08),
+            transparent 24%
+        ),
+        radial-gradient(
+            circle at 84% 18%,
+            rgba(15, 93, 99, 0.08),
+            transparent 22%
         );
+    background-size:
+        auto,
+        auto,
+        32px 32px,
+        32px 32px,
+        auto,
+        auto;
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.92), transparent 95%);
+    filter: saturate(118%);
 }
 
 .dark .island-wave {
-    opacity: 0.22;
+    opacity: 0.58;
     background-image:
         radial-gradient(
-            circle at 30% 30%,
-            rgba(145, 209, 173, 0.15),
-            transparent 35%
+            900px 260px at 20% 15%,
+            rgba(255, 255, 255, 0.12),
+            transparent 72%
         ),
-        repeating-radial-gradient(
-            circle at 50% 110%,
-            rgba(127, 194, 166, 0.09) 0,
-            rgba(127, 194, 166, 0.09) 1px,
-            transparent 1px,
-            transparent 22px
+        radial-gradient(
+            760px 220px at 84% 22%,
+            rgba(116, 215, 219, 0.12),
+            transparent 68%
+        ),
+        linear-gradient(
+            to right,
+            rgba(255, 239, 219, 0.035) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            to bottom,
+            rgba(255, 239, 219, 0.035) 1px,
+            transparent 1px
+        ),
+        radial-gradient(
+            circle at 14% 16%,
+            rgba(241, 139, 93, 0.08),
+            transparent 24%
+        ),
+        radial-gradient(
+            circle at 84% 18%,
+            rgba(116, 215, 219, 0.08),
+            transparent 22%
         );
 }
 
@@ -131,44 +231,58 @@
     position: sticky;
     top: 0;
     z-index: 40;
-    backdrop-filter: blur(14px);
-    background: color-mix(in oklab, var(--is-bg) 72%, transparent);
-    border-bottom: 1px solid
-        color-mix(in oklab, var(--is-border) 75%, transparent);
+    backdrop-filter: blur(26px) saturate(160%);
+    -webkit-backdrop-filter: blur(26px) saturate(160%);
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(in oklab, var(--is-surface-strong) 84%, transparent),
+            color-mix(in oklab, var(--is-surface) 70%, transparent)
+        );
+    border-bottom: 1px solid color-mix(in oklab, var(--is-border-strong) 92%, transparent);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.36),
+        0 12px 28px rgba(24, 17, 14, 0.05);
 }
 
 .island-container {
-    width: min(1260px, calc(100vw - 2rem));
+    width: min(1320px, calc(100vw - 2rem));
     margin-inline: auto;
 }
 
 .island-header-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
-    justify-content: space-between;
-    gap: 0.9rem;
-    padding: 0.7rem 0;
+    gap: 1rem;
+    padding: 0.9rem 0;
 }
 
 .island-brand {
-    font-family: var(--is-font-title);
-    font-size: 1.15rem;
-    letter-spacing: 0.03em;
+    display: inline-grid;
+    gap: 0.18rem;
+    min-width: 0;
+    padding: 0.55rem 0.8rem 0.55rem 0;
     color: var(--is-text);
+    font-family: var(--is-font-title);
+    font-size: 1.26rem;
+    letter-spacing: 0.02em;
 }
 
 .island-brand small {
     display: block;
-    font-family: var(--is-font-body);
     color: var(--is-text-faint);
-    font-size: 0.72rem;
-    letter-spacing: 0.04em;
+    font-family: var(--is-font-body);
+    font-size: 0.74rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
 }
 
 .island-nav {
     display: flex;
     align-items: center;
-    gap: 0.45rem;
+    justify-content: center;
+    gap: 0.42rem;
     min-width: 0;
 }
 
@@ -176,40 +290,83 @@
     border-radius: 999px;
     border: 1px solid transparent;
     color: var(--is-text-muted);
-    font-size: 0.88rem;
-    padding: 0.5rem 0.9rem;
-    min-height: 2.3rem;
+    font-size: 0.86rem;
+    padding: 0.58rem 0.92rem;
+    min-height: 2.35rem;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
     white-space: nowrap;
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        background-color 0.2s ease,
+        color 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 .island-nav-link:hover,
 .island-nav-link[aria-current="page"] {
+    transform: translateY(-1px);
     border-color: var(--is-border-strong);
     color: var(--is-text);
-    background: color-mix(in oklab, var(--is-surface) 78%, transparent);
+    background: color-mix(in oklab, var(--is-surface-strong) 88%, transparent);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.34),
+        0 10px 18px rgba(23, 17, 13, 0.08);
 }
 
 .island-action-btn {
     border: 1px solid var(--is-border);
     color: var(--is-text-muted);
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 2.7rem;
+    height: 2.7rem;
     border-radius: 999px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     position: relative;
-    background: color-mix(in oklab, var(--is-surface) 75%, transparent);
-    transition: all 0.2s ease;
+    overflow: hidden;
+    backdrop-filter: blur(22px) saturate(150%);
+    -webkit-backdrop-filter: blur(22px) saturate(150%);
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(in oklab, var(--is-surface-strong) 82%, transparent),
+            color-mix(in oklab, var(--is-surface-soft) 74%, transparent)
+        );
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.34),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.08),
+        0 8px 20px rgba(20, 15, 12, 0.08);
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        color 0.18s ease,
+        background-color 0.18s ease;
 }
 
 .island-action-btn:hover {
+    transform: translateY(-1px);
     border-color: var(--is-border-strong);
     color: var(--is-text);
+}
+
+.island-action-btn::before {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    border-radius: inherit;
+    background:
+        radial-gradient(circle at 24% 20%, rgba(255, 255, 255, 0.7), transparent 34%),
+        linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.22),
+            transparent 48%,
+            rgba(255, 255, 255, 0.08)
+        );
+    opacity: 0.82;
+    pointer-events: none;
 }
 
 .island-mobile-nav-toggle {
@@ -219,12 +376,12 @@
 .island-main {
     position: relative;
     z-index: 1;
-    padding: 2rem 0 2.8rem;
+    padding: 1.7rem 0 3rem;
 }
 
 .island-page {
     display: grid;
-    gap: 1.3rem;
+    gap: 1.4rem;
 }
 
 .island-grid {
@@ -236,29 +393,90 @@
     grid-template-columns: minmax(0, 1fr);
 }
 
+.island-panel,
+.island-panel-soft,
+.island-card {
+    position: relative;
+    overflow: clip;
+}
+
+.island-panel::before,
+.island-panel-soft::before,
+.island-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    mask-image: linear-gradient(160deg, rgba(0, 0, 0, 0.9), transparent 48%);
+}
+
+.island-panel::after,
+.island-panel-soft::after,
+.island-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background:
+        radial-gradient(
+            80% 60% at 0% 0%,
+            rgba(255, 255, 255, 0.32),
+            transparent 54%
+        ),
+        linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.14),
+            transparent 34%,
+            rgba(255, 255, 255, 0.04)
+        );
+    opacity: 0.95;
+}
+
 .island-panel {
-    background: color-mix(in oklab, var(--is-surface) 92%, transparent);
+    background: linear-gradient(
+        180deg,
+        color-mix(in oklab, var(--is-surface-strong) 84%, transparent),
+        color-mix(in oklab, var(--is-surface-soft) 72%, transparent)
+    );
     border: 1px solid var(--is-border);
     border-radius: var(--is-radius);
-    box-shadow: var(--is-shadow-soft);
+    backdrop-filter: blur(28px) saturate(155%);
+    -webkit-backdrop-filter: blur(28px) saturate(155%);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.34),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.08),
+        0 20px 44px var(--is-glass-shadow);
 }
 
 .island-panel-soft {
-    background: color-mix(in oklab, var(--is-surface-soft) 94%, transparent);
+    background: linear-gradient(
+        180deg,
+        color-mix(in oklab, var(--is-surface-soft) 72%, transparent),
+        color-mix(in oklab, var(--is-surface) 58%, transparent)
+    );
     border: 1px solid var(--is-border);
-    border-radius: var(--is-radius);
+    border-radius: calc(var(--is-radius) - 6px);
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.26),
+        0 12px 28px rgba(22, 15, 11, 0.05);
 }
 
 .island-section-title {
     font-family: var(--is-font-title);
-    font-size: clamp(1.15rem, 2.4vw, 1.6rem);
+    font-size: clamp(1.2rem, 2.4vw, 1.75rem);
+    line-height: 1.25;
     letter-spacing: 0.01em;
     color: var(--is-text);
 }
 
 .island-subtle {
     color: var(--is-text-muted);
-    font-size: 0.94rem;
+    font-size: 0.95rem;
 }
 
 .island-chip {
@@ -267,10 +485,15 @@
     gap: 0.35rem;
     border-radius: 999px;
     border: 1px solid var(--is-border);
-    background: color-mix(in oklab, var(--is-surface-soft) 88%, transparent);
-    padding: 0.25rem 0.64rem;
+    background: color-mix(in oklab, var(--is-surface-soft) 76%, transparent);
+    padding: 0.28rem 0.72rem;
     color: var(--is-text-muted);
-    font-size: 0.78rem;
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    backdrop-filter: blur(14px) saturate(145%);
+    -webkit-backdrop-filter: blur(14px) saturate(145%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
 .island-link {
@@ -286,8 +509,18 @@
 .island-card {
     border-radius: var(--is-radius);
     border: 1px solid var(--is-border);
-    background: color-mix(in oklab, var(--is-surface) 95%, transparent);
-    overflow: clip;
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(in oklab, var(--is-surface-strong) 82%, transparent),
+            color-mix(in oklab, var(--is-surface) 62%, transparent)
+        );
+    backdrop-filter: blur(24px) saturate(155%);
+    -webkit-backdrop-filter: blur(24px) saturate(155%);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.32),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.08),
+        0 18px 36px rgba(22, 15, 11, 0.08);
     transition:
         transform 0.25s ease,
         border-color 0.25s ease,
@@ -295,9 +528,11 @@
 }
 
 .island-card:hover {
-    transform: translateY(-3px);
+    transform: translateY(-4px);
     border-color: var(--is-border-strong);
-    box-shadow: var(--is-shadow-soft);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.36),
+        0 26px 56px rgba(22, 15, 11, 0.14);
 }
 
 .island-card:active {
@@ -306,15 +541,15 @@
 
 .island-card-title {
     font-family: var(--is-font-title);
-    font-size: 1.08rem;
-    line-height: 1.45;
+    font-size: clamp(1.08rem, 2vw, 1.38rem);
+    line-height: 1.36;
     color: var(--is-text);
 }
 
 .island-card-excerpt {
     color: var(--is-text-muted);
-    line-height: 1.8;
-    font-size: 0.92rem;
+    line-height: 1.82;
+    font-size: 0.94rem;
 }
 
 .island-divider {
@@ -325,13 +560,14 @@
 .island-meta {
     color: var(--is-text-faint);
     font-size: 0.78rem;
+    letter-spacing: 0.03em;
 }
 
 .island-content {
     max-width: 76ch;
     margin-inline: auto;
     font-size: clamp(1rem, 1vw + 0.72rem, 1.08rem);
-    line-height: 2.02;
+    line-height: 2;
     text-wrap: pretty;
 }
 
@@ -342,7 +578,7 @@
 .island-content h5,
 .island-content h6 {
     font-family: var(--is-font-title);
-    line-height: 1.45;
+    line-height: 1.4;
     color: var(--is-text);
 }
 
@@ -366,48 +602,52 @@
 
 .island-content code {
     border: 1px solid var(--is-border);
-    background: color-mix(in oklab, var(--is-surface-soft) 88%, transparent);
-    color: var(--is-accent);
-    padding: 0.1rem 0.35rem;
+    background: color-mix(in oklab, var(--is-primary-soft) 55%, var(--is-surface));
+    color: var(--is-primary);
+    padding: 0.12rem 0.38rem;
     border-radius: 8px;
 }
 
 .island-content pre {
     border: 1px solid var(--is-border);
-    background: color-mix(in oklab, var(--is-surface-soft) 90%, transparent);
-    border-radius: 14px;
+    background: color-mix(in oklab, var(--is-surface-soft) 96%, transparent);
+    border-radius: 18px;
     overflow-x: auto;
-    padding: 0.95rem 1rem;
+    padding: 0;
 }
 
 .island-content pre code {
     border: 0;
     background: transparent;
     padding: 0;
+    color: inherit;
 }
 
 .island-content blockquote {
-    margin: 1.4rem 0;
-    padding: 0.7rem 1rem;
+    margin: 1.5rem 0;
+    padding: 0.9rem 1.1rem;
     border-left: 3px solid var(--is-primary);
-    background: color-mix(in oklab, var(--is-primary-soft) 72%, transparent);
-    border-radius: 0 12px 12px 0;
+    background: color-mix(in oklab, var(--is-primary-soft) 64%, transparent);
+    border-radius: 0 16px 16px 0;
 }
 
 .island-toc {
     position: sticky;
-    top: 6.2rem;
+    top: 6.6rem;
     border-radius: var(--is-radius-sm);
 }
 
 .island-toc-link {
     display: block;
     border-left: 2px solid transparent;
-    padding: 0.26rem 0.4rem 0.26rem 0.72rem;
+    padding: 0.38rem 0.45rem 0.38rem 0.8rem;
     color: var(--is-text-muted);
     font-size: 0.82rem;
     line-height: 1.45;
-    transition: all 0.2s ease;
+    transition:
+        color 0.2s ease,
+        border-color 0.2s ease,
+        background-color 0.2s ease;
 }
 
 .island-toc-link:hover {
@@ -417,17 +657,29 @@
 .island-toc-link.active {
     color: var(--is-primary);
     border-left-color: var(--is-primary);
-    background: color-mix(in oklab, var(--is-primary-soft) 56%, transparent);
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(in oklab, var(--is-primary-soft) 92%, transparent),
+            color-mix(in oklab, var(--is-surface) 64%, transparent)
+        );
 }
 
 .island-footer {
-    border-top: 1px solid color-mix(in oklab, var(--is-border) 80%, transparent);
-    margin-top: 1rem;
-    background: color-mix(in oklab, var(--is-bg) 80%, transparent);
+    border-top: 1px solid color-mix(in oklab, var(--is-border) 92%, transparent);
+    margin-top: auto;
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(in oklab, var(--is-surface) 54%, transparent),
+            color-mix(in oklab, var(--is-surface-soft) 42%, transparent)
+        );
 }
 
 .island-footer-inner {
-    padding: 1.2rem 0 2rem;
+    padding: 1.3rem 0 2.2rem;
     display: grid;
     gap: 1rem;
 }
@@ -449,24 +701,270 @@
     transform-origin: left center;
     transform: scaleX(0);
     background: linear-gradient(90deg, var(--is-accent), var(--is-primary));
-    box-shadow: 0 0 14px color-mix(in oklab, var(--is-primary) 45%, transparent);
+    box-shadow: 0 0 14px color-mix(in oklab, var(--is-primary) 42%, transparent);
     transition: transform 0.12s linear;
 }
 
 .island-focus-ring:focus-visible {
     outline: 2px solid var(--is-primary);
-    outline-offset: 2px;
+    outline-offset: 3px;
 }
 
 .island-skeleton {
     background: linear-gradient(
         90deg,
-        color-mix(in oklab, var(--is-surface-soft) 70%, transparent),
-        color-mix(in oklab, var(--is-surface) 98%, transparent),
-        color-mix(in oklab, var(--is-surface-soft) 70%, transparent)
+        color-mix(in oklab, var(--is-surface-soft) 72%, transparent),
+        color-mix(in oklab, var(--is-surface-strong) 95%, transparent),
+        color-mix(in oklab, var(--is-surface-soft) 72%, transparent)
     );
     background-size: 260% 100%;
     animation: islandShimmer 1.6s ease infinite;
+}
+
+.island-home-hero {
+    display: grid;
+    gap: 1rem;
+}
+
+.island-home-intro {
+    padding: 1.5rem;
+    overflow: hidden;
+}
+
+.island-home-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    color: var(--is-primary);
+    font-size: 0.78rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+}
+
+.island-home-kicker::before {
+    content: "";
+    width: 2.6rem;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.6;
+}
+
+.island-home-title {
+    font-family: var(--is-font-title);
+    font-size: clamp(2.2rem, 5vw, 4.6rem);
+    line-height: 0.96;
+    letter-spacing: -0.04em;
+    color: var(--is-text);
+}
+
+.island-home-lead {
+    max-width: 52rem;
+    color: var(--is-text-muted);
+    font-size: 1rem;
+    line-height: 1.9;
+}
+
+.island-home-metrics {
+    display: grid;
+    gap: 0.85rem;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+
+.island-home-metric {
+    padding: 1rem 1.05rem;
+    border-radius: 20px;
+    border: 1px solid var(--is-border);
+    background: color-mix(in oklab, var(--is-surface-soft) 66%, transparent);
+    backdrop-filter: blur(18px) saturate(145%);
+    -webkit-backdrop-filter: blur(18px) saturate(145%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.island-home-metric strong {
+    display: block;
+    font-size: 1.5rem;
+    font-family: var(--is-font-title);
+    color: var(--is-text);
+}
+
+.island-home-metric span {
+    display: block;
+    margin-top: 0.2rem;
+    color: var(--is-text-faint);
+    font-size: 0.8rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.island-featured-grid {
+    display: grid;
+    gap: 0;
+}
+
+.island-featured-copy {
+    padding: 1.55rem;
+}
+
+.island-featured-media {
+    min-height: 260px;
+}
+
+.island-page-header {
+    padding: 1.4rem;
+}
+
+.island-page-header-grid {
+    display: grid;
+    gap: 1.2rem;
+}
+
+.island-page-header-copy {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.island-page-header-stats {
+    display: grid;
+    gap: 0.8rem;
+}
+
+.island-page-header-stat {
+    padding: 1rem 1.05rem;
+}
+
+.island-sidebar-stack {
+    display: grid;
+    gap: 1rem;
+}
+
+.island-sidebar-card {
+    padding: 1.1rem 1.15rem;
+}
+
+.island-story {
+    overflow: hidden;
+}
+
+.island-story-header {
+    display: grid;
+    gap: 1.2rem;
+    padding: 1.4rem;
+    border-bottom: 1px solid var(--is-border);
+}
+
+.island-story-header-text-only {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.island-story-header-text-only > .island-story-copy {
+    width: min(76ch, 100%);
+    margin-inline: auto;
+}
+
+.island-story-copy {
+    display: grid;
+    gap: 1rem;
+    align-content: start;
+}
+
+.island-story-topline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+}
+
+.island-story-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--is-text-faint);
+    font-size: 0.74rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.island-story-kicker::before {
+    content: "";
+    width: 1.6rem;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.5;
+}
+
+.island-story-title-wrap {
+    max-width: 50rem;
+}
+
+h1.island-story-title {
+    font-family: var(--is-font-title);
+    font-size: clamp(3.2rem, 8.2vw, 6.8rem);
+    line-height: 0.92;
+    letter-spacing: -0.075em;
+    color: var(--is-text);
+    text-wrap: balance;
+}
+
+.island-story-meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+}
+
+.island-story-meta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.42rem;
+    min-height: 2.1rem;
+    border-radius: 999px;
+    border: 1px solid var(--is-border);
+    padding: 0.42rem 0.85rem;
+    background: color-mix(in oklab, var(--is-surface-soft) 74%, transparent);
+    color: var(--is-text-muted);
+    font-size: 0.76rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    backdrop-filter: blur(14px) saturate(145%);
+    -webkit-backdrop-filter: blur(14px) saturate(145%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.island-story-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    padding-top: 0.2rem;
+}
+
+.island-story-cover {
+    position: relative;
+    min-height: 250px;
+    overflow: hidden;
+    border-radius: calc(var(--is-radius) - 8px);
+    border: 1px solid var(--is-border);
+    background: color-mix(in oklab, var(--is-surface-soft) 76%, transparent);
+    backdrop-filter: blur(18px) saturate(145%);
+    -webkit-backdrop-filter: blur(18px) saturate(145%);
+}
+
+.island-story-summary {
+    border-radius: 20px;
+    border: 1px solid var(--is-border);
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(in oklab, var(--is-primary-soft) 76%, var(--is-surface)),
+            color-mix(in oklab, var(--is-accent-soft) 18%, var(--is-surface-soft))
+        );
+    padding: 1rem 1.1rem;
+    backdrop-filter: blur(20px) saturate(145%);
+    -webkit-backdrop-filter: blur(20px) saturate(145%);
+}
+
+.island-story-nav {
+    display: grid;
+    gap: 0.9rem;
 }
 
 @keyframes islandShimmer {
@@ -478,35 +976,72 @@
     }
 }
 
+@keyframes islandBlobFloat {
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0) scale(1);
+    }
+    25% {
+        transform: translate3d(18px, -16px, 0) scale(1.06);
+    }
+    50% {
+        transform: translate3d(-10px, 20px, 0) scale(0.96);
+    }
+    75% {
+        transform: translate3d(14px, 8px, 0) scale(1.02);
+    }
+}
+
 @media (min-width: 980px) {
     .island-grid-2 {
-        grid-template-columns: minmax(0, 1fr) 300px;
+        grid-template-columns: minmax(0, 1fr) 320px;
         align-items: start;
+    }
+
+    .island-home-hero {
+        grid-template-columns: minmax(0, 1.2fr) minmax(360px, 0.92fr);
+        align-items: stretch;
+    }
+
+    .island-featured-grid {
+        grid-template-columns: minmax(0, 1fr);
+        height: 100%;
+    }
+
+    .island-page-header-grid {
+        grid-template-columns: minmax(0, 1fr) 300px;
+        align-items: end;
+    }
+
+    .island-page-header-stats {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+
+    .island-story-header {
+        grid-template-columns: minmax(0, 1.18fr) minmax(260px, 0.82fr);
+        align-items: start;
+    }
+
+    .island-story-nav {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
 @media (max-width: 1080px) {
     .island-container {
-        width: min(1260px, calc(100vw - 1.4rem));
+        width: min(1320px, calc(100vw - 1.4rem));
     }
 
     .island-nav {
-        gap: 0.32rem;
-    }
-
-    .island-nav-link {
-        padding: 0.45rem 0.72rem;
-        font-size: 0.84rem;
+        justify-content: flex-start;
     }
 }
 
 @media (max-width: 860px) {
     .island-header-row {
-        display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
-        align-items: center;
-        gap: 0.66rem;
-        padding: 0.66rem 0;
+        gap: 0.75rem;
+        padding: 0.78rem 0;
     }
 
     .island-nav {
@@ -516,13 +1051,15 @@
         overflow: hidden;
         opacity: 0;
         pointer-events: none;
+        flex-direction: column;
+        align-items: stretch;
         transition:
             max-height 0.24s ease,
             opacity 0.22s ease;
     }
 
     .island-nav.is-open {
-        max-height: 13rem;
+        max-height: 20rem;
         opacity: 1;
         pointer-events: auto;
     }
@@ -530,9 +1067,9 @@
     .island-nav-link {
         width: 100%;
         justify-content: flex-start;
-        border-radius: 14px;
+        border-radius: 16px;
         border-color: var(--is-border);
-        background: color-mix(in oklab, var(--is-surface) 88%, transparent);
+        background: color-mix(in oklab, var(--is-surface) 94%, transparent);
     }
 
     .island-mobile-nav-toggle {
@@ -540,11 +1077,50 @@
     }
 
     .island-brand {
-        font-size: 1.02rem;
+        font-size: 1.12rem;
+        padding-right: 0.2rem;
     }
 
     .island-brand small {
         font-size: 0.68rem;
+        letter-spacing: 0.16em;
+    }
+
+    .island-home-intro,
+    .island-page-header,
+    .island-story-header,
+    .island-featured-copy {
+        padding: 1.15rem;
+    }
+
+    .island-story-topline {
+        align-items: flex-start;
+        justify-content: flex-start;
+    }
+
+    h1.island-story-title {
+        font-size: clamp(2.6rem, 11vw, 4.2rem);
+        line-height: 0.96;
+    }
+
+    .island-featured-media {
+        min-height: 220px;
+    }
+
+    .island-story-cover {
+        min-height: 220px;
+    }
+
+    .island-root::before {
+        width: 14rem;
+        height: 14rem;
+        right: -2rem;
+    }
+
+    .island-root::after {
+        width: 8rem;
+        height: 8rem;
+        right: 4vw;
     }
 }
 
@@ -553,7 +1129,9 @@
     .island-action-btn,
     .island-nav-link,
     .island-skeleton,
-    .island-reading-progress > span {
+    .island-reading-progress > span,
+    .island-root::before,
+    .island-root::after {
         transition: none !important;
         animation: none !important;
     }

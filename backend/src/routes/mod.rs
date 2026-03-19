@@ -16,6 +16,7 @@ pub mod document;
 pub mod file;
 pub mod friend_link;
 pub mod health;
+pub mod mcp;
 pub mod project;
 pub mod search;
 pub mod site_config;
@@ -84,6 +85,8 @@ pub fn create_admin_routes(state: AppState) -> Router<AppState> {
         .merge(site_config::admin_routes())
         // AI admin routes
         .merge(ai::admin_routes())
+        // MCP admin routes
+        .merge(mcp::admin_routes())
         // Other admin routes will be added here as features are implemented
         .layer(middleware::from_fn_with_state(state, auth_middleware))
 }

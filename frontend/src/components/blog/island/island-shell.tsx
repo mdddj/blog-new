@@ -155,7 +155,7 @@ export function IslandHeader() {
             onClick={() => setMobileNavOpen(false)}
           >
             {config.site_title || "海岛博客"}
-            <small>{config.site_subtitle || "在潮汐之间安静阅读"}</small>
+            <small>{config.site_subtitle || "Notes, essays, projects and field reports"}</small>
           </Link>
 
           <nav
@@ -177,6 +177,9 @@ export function IslandHeader() {
           </nav>
 
           <div className="flex items-center gap-2">
+            <div className="hidden items-center gap-2 xl:flex">
+              <SocialIcons />
+            </div>
             <Link
               href="/search"
               className="island-action-btn island-focus-ring"
@@ -222,11 +225,17 @@ export function IslandFooter() {
   return (
     <footer className="island-footer">
       <div className="island-container island-footer-inner">
-        <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
-          <div className="flex flex-wrap items-center gap-2 text-[var(--is-text-muted)]">
-            <span>
-              © {currentYear} {config.site_title || "海岛博客"}
-            </span>
+        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+          <div className="grid gap-2 text-sm">
+            <div className="font-[var(--is-font-title)] text-lg text-[var(--is-text)]">
+              {config.site_title || "海岛博客"}
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-[var(--is-text-muted)]">
+              <span>© {currentYear}</span>
+              <span>{config.site_subtitle || "Editorial archive for ideas in motion"}</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-[var(--is-text-muted)]">
+              <span>由文章、项目、文档与友链共同组成</span>
             {config.icp_number && (
               <Link
                 href="https://beian.miit.gov.cn/"
@@ -246,6 +255,8 @@ export function IslandFooter() {
               </Link>
             )}
           </div>
+          </div>
+
           <SocialIcons />
         </div>
 

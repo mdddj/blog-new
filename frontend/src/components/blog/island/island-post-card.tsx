@@ -41,7 +41,7 @@ export function IslandPostCard({
       className="island-card group block island-focus-ring"
     >
       {blog.thumbnail && (
-        <div className="relative h-48 w-full overflow-hidden border-b border-[var(--is-border)]">
+        <div className="relative h-52 w-full overflow-hidden border-b border-[var(--is-border)]">
           <Image
             src={blog.thumbnail}
             alt={blog.title}
@@ -53,7 +53,7 @@ export function IslandPostCard({
       )}
 
       <div className="p-4 sm:p-5">
-        <div className="mb-2 flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-wide text-[var(--is-text-faint)]">
+        <div className="mb-3 flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.2em] text-[var(--is-text-faint)]">
           {blog.category && (
             <span className="island-chip">{blog.category.name}</span>
           )}
@@ -101,13 +101,20 @@ export function IslandPostCard({
 export function IslandFeaturedPost({ blog }: { blog: Blog }) {
   const href = blog.slug ? `/blog/${blog.slug}` : `/blog/${blog.id}`;
   const excerpt = buildExcerpt(blog).slice(0, 200);
+  const hasThumbnail = Boolean(blog.thumbnail);
 
   return (
-    <section className="island-panel overflow-hidden">
-      <div className="grid gap-0 md:grid-cols-[1.15fr_1fr]">
-        <div className="p-6 md:p-8">
+    <section className="island-panel island-featured-grid overflow-hidden">
+      <div
+        className={
+          hasThumbnail
+            ? "grid gap-0 md:grid-cols-[1fr]"
+            : "grid gap-0"
+        }
+      >
+        <div className="island-featured-copy">
           <div className="mb-4 inline-flex items-center gap-2 island-chip bg-[var(--is-primary-soft)] text-[var(--is-primary)]">
-            本期主岛
+            Cover Story
           </div>
           <h1 className="island-section-title !text-2xl md:!text-3xl lg:!text-4xl">
             <Link href={href} scroll className="island-focus-ring">
@@ -122,26 +129,31 @@ export function IslandFeaturedPost({ blog }: { blog: Blog }) {
             {blog.category && (
               <span className="island-chip">{blog.category.name}</span>
             )}
+            <span className="island-chip">
+              {Math.max(
+                1,
+                Math.ceil((blog.content || blog.html || "").length / 700),
+              )}{" "}
+              min read
+            </span>
           </div>
         </div>
 
-        <Link
-          href={href}
-          scroll
-          className="relative block min-h-64 border-t border-[var(--is-border)] md:min-h-0 md:border-l md:border-t-0 island-focus-ring"
-        >
-          {blog.thumbnail ? (
+        {hasThumbnail ? (
+          <Link
+            href={href}
+            scroll
+            className="relative block island-featured-media border-t border-[var(--is-border)] island-focus-ring"
+          >
             <Image
-              src={blog.thumbnail}
+              src={blog.thumbnail!}
               alt={blog.title}
               fill
               sizes="(max-width: 768px) 100vw, 44vw"
               className="object-cover"
             />
-          ) : (
-            <div className="h-full w-full bg-[var(--is-surface-soft)]" />
-          )}
-        </Link>
+          </Link>
+        ) : null}
       </div>
     </section>
   );

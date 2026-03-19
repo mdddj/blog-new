@@ -19,6 +19,7 @@ impl SearchRepository {
         keyword: &str,
         page: i64,
         page_size: i64,
+        published_only: bool,
     ) -> Result<(Vec<SearchResultItem>, i64), ApiError> {
         if keyword.is_empty() {
             return Ok((Vec::new(), 0));
@@ -35,18 +36,27 @@ impl SearchRepository {
             .join(" & ");
 
         // Count total matching results
-        let total = sqlx::query_scalar::<_, i64>(
+        let total_query = if published_only {
             r#"
             SELECT COUNT(*)
             FROM blogs
             WHERE is_published = true
-              AND to_tsvector('simple', coalesce(title, '') || ' ' || coalesce(content, '')) 
+              AND to_tsvector('simple', coalesce(title, '') || ' ' || coalesce(content, ''))
                   @@ to_tsquery('simple', $1)
-            "#,
-        )
-        .bind(&search_query)
-        .fetch_one(pool)
-        .await?;
+            "#
+        } else {
+            r#"
+            SELECT COUNT(*)
+            FROM blogs
+            WHERE to_tsvector('simple', coalesce(title, '') || ' ' || coalesce(content, ''))
+                  @@ to_tsquery('simple', $1)
+            "#
+        };
+
+        let total = sqlx::query_scalar::<_, i64>(total_query)
+            .bind(&search_query)
+            .fetch_one(pool)
+            .await?;
 
         if total == 0 {
             return Ok((Vec::new(), 0));
@@ -55,23 +65,9 @@ impl SearchRepository {
         // Search with ranking
         // ts_rank calculates relevance score
         // ts_headline generates excerpt with highlighted keywords
-        let rows = sqlx::query_as::<
-            _,
-            (
-                i64,                   // id
-                String,                // title
-                Option<String>,        // slug
-                Option<String>,        // author
-                String,                // content (for excerpt generation)
-                Option<String>,        // thumbnail
-                Option<i64>,           // category_id
-                i64,                   // view_count
-                Option<DateTime<Utc>>, // created_at
-                f32,                   // rank
-            ),
-        >(
+        let data_query = if published_only {
             r#"
-            SELECT 
+            SELECT
                 b.id,
                 b.title,
                 b.slug,
@@ -87,12 +83,50 @@ impl SearchRepository {
                 ) as rank
             FROM blogs b
             WHERE b.is_published = true
-              AND to_tsvector('simple', coalesce(b.title, '') || ' ' || coalesce(b.content, '')) 
+              AND to_tsvector('simple', coalesce(b.title, '') || ' ' || coalesce(b.content, ''))
                   @@ to_tsquery('simple', $1)
             ORDER BY rank DESC, b.created_at DESC
             LIMIT $2 OFFSET $3
-            "#,
-        )
+            "#
+        } else {
+            r#"
+            SELECT
+                b.id,
+                b.title,
+                b.slug,
+                b.author,
+                b.content,
+                b.thumbnail,
+                b.category_id,
+                b.view_count,
+                b.created_at,
+                ts_rank(
+                    to_tsvector('simple', coalesce(b.title, '') || ' ' || coalesce(b.content, '')),
+                    to_tsquery('simple', $1)
+                ) as rank
+            FROM blogs b
+            WHERE to_tsvector('simple', coalesce(b.title, '') || ' ' || coalesce(b.content, ''))
+                  @@ to_tsquery('simple', $1)
+            ORDER BY rank DESC, b.created_at DESC
+            LIMIT $2 OFFSET $3
+            "#
+        };
+
+        let rows = sqlx::query_as::<
+            _,
+            (
+                i64,                   // id
+                String,                // title
+                Option<String>,        // slug
+                Option<String>,        // author
+                String,                // content (for excerpt generation)
+                Option<String>,        // thumbnail
+                Option<i64>,           // category_id
+                i64,                   // view_count
+                Option<DateTime<Utc>>, // created_at
+                f32,                   // rank
+            ),
+        >(data_query)
         .bind(&search_query)
         .bind(page_size)
         .bind(offset)

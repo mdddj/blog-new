@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Save, Loader2, Globe, User, Link2, Shield, Database, Sparkles } from "lucide-react";
+import { Save, Loader2, Globe, User, Link2, Shield, Database, Sparkles, PlugZap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
@@ -13,6 +13,7 @@ import {
     FooterTab,
     StorageTab,
     AiConfigTab,
+    McpConfigTab,
 } from "./settings-tabs";
 
 export default function SettingsPage() {
@@ -125,6 +126,10 @@ export default function SettingsPage() {
                         <Sparkles className="h-4 w-4" />
                         AI配置
                     </TabsTrigger>
+                    <TabsTrigger value="mcp" className="gap-2">
+                        <PlugZap className="h-4 w-4" />
+                        MCP配置
+                    </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="site">
@@ -144,6 +149,9 @@ export default function SettingsPage() {
                 </TabsContent>
                 <TabsContent value="ai">
                     <AiConfigTab getValue={getValue} setValue={setValue} />
+                </TabsContent>
+                <TabsContent value="mcp">
+                    <McpConfigTab />
                 </TabsContent>
             </Tabs>
         </div>

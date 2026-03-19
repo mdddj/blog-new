@@ -6,12 +6,18 @@ function LoadingSkeleton() {
     return (
         <main className="island-main">
             <div className="island-container island-page">
-                <div className="island-panel island-skeleton h-[320px]" />
+                <div className="island-home-hero">
+                    <div className="island-panel island-skeleton min-h-[360px]" />
+                    <div className="island-panel island-skeleton min-h-[360px]" />
+                </div>
                 <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
-                    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                        {Array.from({ length: 6 }).map((_, i) => (
-                            <div key={i} className="island-panel island-skeleton h-60" />
-                        ))}
+                    <div className="grid gap-4">
+                        <div className="island-panel island-skeleton h-24" />
+                        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                            {Array.from({ length: 9 }).map((_, i) => (
+                                <div key={i} className="island-panel island-skeleton h-60" />
+                            ))}
+                        </div>
                     </div>
                     <div className="island-panel island-skeleton h-96" />
                 </div>

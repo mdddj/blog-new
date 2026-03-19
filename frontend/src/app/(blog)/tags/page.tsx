@@ -2,10 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Hash } from "lucide-react";
+import { FolderTree, Hash, LibraryBig } from "lucide-react";
 import { categoryApi, tagApi } from "@/lib/api";
 import type { Category, Tag } from "@/types";
-import { IslandSidebar } from "@/components/blog/island";
+import { IslandPageHeader, IslandSidebar } from "@/components/blog/island";
 
 export default function TagsPage() {
     const [tags, setTags] = useState<Tag[]>([]);
@@ -33,18 +33,32 @@ export default function TagsPage() {
     return (
         <main className="island-main">
             <div className="island-container island-page">
-                <section className="island-panel px-6 py-5">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div>
-                            <h1 className="island-section-title">标签云</h1>
-                            <p className="island-subtle mt-2">用关键词快速穿越文章脉络。</p>
-                        </div>
-                        <div className="flex gap-2">
-                            <span className="island-chip">{tags.length} 个标签</span>
-                            <span className="island-chip">{totalBlogRefs} 次关联</span>
-                        </div>
-                    </div>
-                </section>
+                <IslandPageHeader
+                    eyebrow="标签索引"
+                    chips={["按关键词浏览", "保留频率排序"]}
+                    title="按关键词查看全部标签。"
+                    description="标签按文章关联次数整理，适合从关键词快速进入相关内容。"
+                    stats={[
+                        {
+                            label: "Tags",
+                            value: tags.length,
+                            description: "当前标签数量",
+                            icon: <Hash className="h-3.5 w-3.5" />,
+                        },
+                        {
+                            label: "Matches",
+                            value: totalBlogRefs,
+                            description: "文章关联次数",
+                            icon: <LibraryBig className="h-3.5 w-3.5" />,
+                        },
+                        {
+                            label: "Categories",
+                            value: categories.length,
+                            description: "可切换浏览分类",
+                            icon: <FolderTree className="h-3.5 w-3.5" />,
+                        },
+                    ]}
+                />
 
                 <section className="island-grid island-grid-2">
                     <div className="island-grid">
@@ -56,6 +70,21 @@ export default function TagsPage() {
                             </div>
                         ) : (
                             <>
+                                <div className="island-panel-soft px-5 py-4 sm:px-6">
+                                    <div className="flex flex-wrap items-center justify-between gap-3">
+                                        <div>
+                                            <p className="text-xs uppercase tracking-[0.24em] text-[var(--is-text-faint)]">
+                                                Tag Overview
+                                            </p>
+                                            <h2 className="mt-2 island-section-title">标签概览</h2>
+                                        </div>
+                                        <div className="flex flex-wrap gap-2">
+                                            <span className="island-chip">共 {tags.length} 个标签</span>
+                                            <span className="island-chip">累计 {totalBlogRefs} 次关联</span>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div className="island-panel p-5 sm:p-8">
                                     <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3">
                                         {tags.map((tag) => {
@@ -72,6 +101,18 @@ export default function TagsPage() {
                                                 </Link>
                                             );
                                         })}
+                                    </div>
+                                </div>
+
+                                <div className="island-panel-soft px-5 py-4 sm:px-6">
+                                    <div className="flex flex-wrap items-center justify-between gap-3">
+                                        <div>
+                                            <p className="text-xs uppercase tracking-[0.24em] text-[var(--is-text-faint)]">
+                                                Sorted View
+                                            </p>
+                                            <h2 className="mt-2 island-section-title">按文章数量查看</h2>
+                                        </div>
+                                        <span className="island-chip">从高到低排序</span>
                                     </div>
                                 </div>
 
@@ -99,7 +140,7 @@ export default function TagsPage() {
                         )}
                     </div>
 
-                    <IslandSidebar categories={categories} tags={tags} title="标签关联分类" />
+                    <IslandSidebar categories={categories} tags={tags} title="分类导航" />
                 </section>
             </div>
         </main>

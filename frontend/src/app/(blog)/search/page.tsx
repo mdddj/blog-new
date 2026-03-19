@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Loader2, Search } from "lucide-react";
 import { searchApi } from "@/lib/api";
 import type { PaginatedResponse, SearchResult } from "@/types";
+import { IslandPageHeader } from "@/components/blog/island";
 import { Pagination } from "@/components/blog/pagination";
 
 function escapeRegex(str: string) {
@@ -80,14 +81,59 @@ function SearchContent() {
         }
     };
 
+    const headerStats = queryParam
+        ? [
+            {
+                label: "Keyword",
+                value: <span className="line-clamp-1 text-xl sm:text-2xl">{queryParam}</span>,
+                description: "当前关键词",
+            },
+            {
+                label: "Results",
+                value: pagination.total,
+                description: "匹配内容数",
+            },
+            {
+                label: "Page",
+                value: (
+                    <>
+                        {currentPage}
+                        <span className="text-base text-[var(--is-text-faint)]">
+                            /{Math.max(1, pagination.totalPages)}
+                        </span>
+                    </>
+                ),
+                description: "当前页码",
+            },
+        ]
+        : [
+            {
+                label: "Search",
+                value: "全站",
+                description: "标题与正文均参与匹配",
+            },
+            {
+                label: "Status",
+                value: "待输入",
+                description: "提交关键词后显示结果",
+            },
+        ];
+
     return (
         <main className="island-main">
             <div className="island-container island-page">
-                <section className="island-panel px-6 py-5">
-                    <h1 className="island-section-title">站内搜索</h1>
-                    <p className="island-subtle mt-2">输入关键词，在整座博客群岛内快速定位内容。</p>
-
-                    <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-2 sm:flex-row">
+                <IslandPageHeader
+                    eyebrow="内容搜索"
+                    chips={[queryParam ? "已提交关键词" : "输入关键词后开始"]}
+                    title={queryParam ? `搜索 “${queryParam}”` : "搜索文章与笔记"}
+                    description={
+                        queryParam
+                            ? "结果会按相关文章直接展开，你可以继续换词缩小范围。"
+                            : "直接检索文章标题、摘要和正文内容。"
+                    }
+                    stats={headerStats}
+                >
+                    <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:flex-row">
                         <div className="relative flex-1">
                             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--is-text-faint)]" />
                             <input
@@ -104,7 +150,7 @@ function SearchContent() {
                             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "搜索"}
                         </button>
                     </form>
-                </section>
+                </IslandPageHeader>
 
                 {loading ? (
                     <div className="grid gap-3">
@@ -115,10 +161,19 @@ function SearchContent() {
                 ) : searched ? (
                     results.length > 0 ? (
                         <section className="island-grid">
-                            <div className="island-panel px-5 py-4">
-                                <p className="text-sm text-[var(--is-text-muted)]">
-                                    找到 <strong className="text-[var(--is-text)]">{pagination.total}</strong> 条结果
-                                </p>
+                            <div className="island-panel-soft px-5 py-4 sm:px-6">
+                                <div className="flex flex-wrap items-center justify-between gap-3">
+                                    <div>
+                                        <p className="text-xs uppercase tracking-[0.24em] text-[var(--is-text-faint)]">
+                                            Search Results
+                                        </p>
+                                        <h2 className="mt-2 island-section-title">搜索结果</h2>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        <span className="island-chip">共 {pagination.total} 条结果</span>
+                                        <span className="island-chip">当前第 {currentPage} 页</span>
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="island-grid">
@@ -151,7 +206,7 @@ function SearchContent() {
                         </section>
                     ) : (
                         <div className="island-panel p-10 text-center text-sm text-[var(--is-text-muted)]">
-                            没有匹配内容，试试更通用的关键词。
+                            没有找到相关内容，换个更通用的关键词再试一次。
                         </div>
                     )
                 ) : (
@@ -168,8 +223,12 @@ function Loading() {
     return (
         <main className="island-main">
             <div className="island-container island-page">
-                <div className="island-panel island-skeleton h-36" />
-                <div className="island-panel island-skeleton h-56" />
+                <div className="island-panel island-skeleton h-[220px]" />
+                <div className="grid gap-3">
+                    {Array.from({ length: 3 }).map((_, idx) => (
+                        <div key={idx} className="island-panel island-skeleton h-28" />
+                    ))}
+                </div>
             </div>
         </main>
     );

@@ -188,6 +188,11 @@ pub mod cache_keys {
     pub fn site_config() -> String {
         "site:config".to_string()
     }
+
+    /// MCP runtime config cache key
+    pub fn mcp_runtime_config() -> String {
+        "mcp:runtime-config".to_string()
+    }
 }
 
 /// Cache TTL constants
@@ -214,4 +219,7 @@ pub mod cache_ttl {
 
     /// Site config TTL: 10 minutes
     pub const SITE_CONFIG: Duration = Duration::from_secs(10 * 60);
+
+    /// MCP runtime config TTL: 30 seconds
+    pub const MCP_RUNTIME_CONFIG: Duration = Duration::from_secs(30);
 }
