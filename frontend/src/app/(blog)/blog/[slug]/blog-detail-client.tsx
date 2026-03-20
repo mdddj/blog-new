@@ -178,7 +178,7 @@ export function BlogDetailClient({ slug }: { slug: string }) {
                   <div className="flex flex-wrap items-center gap-3">
                     <button
                       type="button"
-                      className="island-action-btn island-focus-ring"
+                      className="island-action-btn island-focus-ring cursor-pointer"
                       onClick={() => {
                         if (window.history.length > 1) {
                           router.back();
