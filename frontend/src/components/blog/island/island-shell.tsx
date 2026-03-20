@@ -177,9 +177,6 @@ export function IslandHeader() {
           </nav>
 
           <div className="flex items-center gap-2">
-            <div className="hidden items-center gap-2 xl:flex">
-              <SocialIcons />
-            </div>
             <Link
               href="/search"
               className="island-action-btn island-focus-ring"

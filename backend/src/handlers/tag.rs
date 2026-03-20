@@ -127,7 +127,7 @@ pub async fn create_tag(
     }
 
     // Check if tag name already exists
-    if TagRepository::name_exists(&state.db, name).await? {
+    if TagRepository::name_exists(&state.db, name, None).await? {
         return Err(ApiError::ValidationError(format!(
             "Tag with name '{}' already exists",
             name

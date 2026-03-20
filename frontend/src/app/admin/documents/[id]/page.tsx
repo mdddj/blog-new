@@ -31,6 +31,7 @@ import {
 import { DocumentReferenceManager } from "@/components/docs";
 import type { DocumentReference } from "@/types";
 import { useDocumentEditor } from "@/hooks/use-document-editor";
+import { sanitizeReferenceRecord } from "@/lib/reference-utils";
 import {
     DocumentPageHeader,
     DocumentInfoCard,
@@ -170,7 +171,7 @@ export default function EditDocumentPage({ params }: PageProps) {
             setFilename(doc.filename || "");
             setContent(doc.content || "");
             setSortOrder(doc.sort_order || 0);
-            setReferences(doc.references || {});
+            setReferences(sanitizeReferenceRecord<DocumentReference>(doc.references));
             setCurrentDocId(docId);
             // Reset last saved content after loading
             setTimeout(() => resetLastSavedContent(), 0);

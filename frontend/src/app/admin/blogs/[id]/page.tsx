@@ -22,6 +22,7 @@ import {
 
 import { useDocumentEditor } from "@/hooks/use-document-editor";
 import { useBlogForm } from "@/hooks/use-blog-form";
+import { sanitizeReferenceRecord } from "@/lib/reference-utils";
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -123,7 +124,7 @@ export default function EditBlogPage({ params }: PageProps) {
                 setCategoryId(blogData.category?.id ? String(blogData.category.id) : "");
                 setSelectedTagIds(blogData.tags.map((t) => t.id));
                 setIsPublished(blogData.is_published ?? false);
-                setReferences(blogData.references || {});
+                setReferences(sanitizeReferenceRecord<BlogReference>(blogData.references));
                 resetLastSavedContent();
 
                 // Check if AI is enabled

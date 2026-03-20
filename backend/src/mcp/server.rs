@@ -15,12 +15,18 @@ use serde_json::{json, Value};
 use crate::error::ApiError;
 use crate::mcp::auth::mcp_auth_middleware;
 use crate::models::blog::{CreateBlogRequest, UpdateBlogRequest};
+use crate::models::category::{CreateCategoryRequest, UpdateCategoryRequest};
+use crate::models::directory::{CreateDirectoryRequest, UpdateDirectoryRequest};
+use crate::models::document::{CreateDocumentRequest, UpdateDocumentRequest};
 use crate::models::friend_link::{CreateFriendLinkRequest, UpdateFriendLinkRequest};
 use crate::models::project::{CreateProjectRequest, UpdateProjectRequest};
+use crate::models::tag::{CreateTagRequest, UpdateTagRequest};
 use crate::repositories::{
-    blog_repo::BlogRepository, friend_link_repo::FriendLinkRepository,
-    project_repo::ProjectRepository, search_repo::SearchRepository,
-    site_config_repo::SiteConfigRepo, text_repo::TextRepository,
+    blog_repo::BlogRepository, category_repo::CategoryRepository,
+    directory_repo::DirectoryRepository, document_repo::DocumentRepository,
+    friend_link_repo::FriendLinkRepository, project_repo::ProjectRepository,
+    search_repo::SearchRepository, site_config_repo::SiteConfigRepo, tag_repo::TagRepository,
+    text_repo::TextRepository,
 };
 use crate::services::{
     ai_service::AiService, blog_service::BlogService, cache_service::cache_keys,
@@ -75,6 +81,18 @@ struct BlogIdArgs {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+struct SetBlogCategoryArgs {
+    blog_id: i64,
+    category_id: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+struct BlogTagIdsArgs {
+    blog_id: i64,
+    tag_ids: Vec<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 struct ListTextsArgs {
     keyword: Option<String>,
 }
@@ -109,6 +127,113 @@ impl ListBlogsArgs {
     fn published_only(&self) -> Option<bool> {
         self.published_only.or(Some(true))
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+struct CreateCategoryArgs {
+    name: String,
+    intro: Option<String>,
+    logo: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+struct UpdateCategoryArgs {
+    category_id: i64,
+    name: Option<String>,
+    intro: Option<String>,
+    logo: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+struct DeleteCategoryArgs {
+    category_id: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+struct CreateTagArgs {
+    name: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+struct UpdateTagArgs {
+    tag_id: i64,
+    name: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+struct DeleteTagArgs {
+    tag_id: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+struct ListDocumentsArgs {
+    keyword: Option<String>,
+    directory_id: Option<i64>,
+    limit: Option<i64>,
+}
+
+impl ListDocumentsArgs {
+    fn limit(&self) -> i64 {
+        self.limit.unwrap_or(20).clamp(1, 100)
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+struct DocumentIdArgs {
+    document_id: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+struct CreateDocumentArgs {
+    name: String,
+    filename: Option<String>,
+    content: String,
+    directory_id: Option<i64>,
+    sort_order: Option<i32>,
+    references: Option<Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+struct UpdateDocumentArgs {
+    document_id: i64,
+    name: Option<String>,
+    filename: Option<String>,
+    content: Option<String>,
+    directory_id: Option<i64>,
+    sort_order: Option<i32>,
+    references: Option<Value>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+struct DeleteDocumentArgs {
+    document_id: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+struct DirectoryIdArgs {
+    directory_id: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+struct CreateDirectoryArgs {
+    name: String,
+    intro: Option<String>,
+    parent_id: Option<i64>,
+    sort_order: Option<i32>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+struct UpdateDirectoryArgs {
+    directory_id: i64,
+    name: Option<String>,
+    intro: Option<String>,
+    parent_id: Option<i64>,
+    sort_order: Option<i32>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+struct DeleteDirectoryArgs {
+    directory_id: i64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -227,6 +352,34 @@ impl BlogMcpServer {
         Ok(())
     }
 
+    fn normalize_tag_ids(tag_ids: Vec<i64>) -> Vec<i64> {
+        let mut normalized = Vec::new();
+        for tag_id in tag_ids {
+            if tag_id > 0 && !normalized.contains(&tag_id) {
+                normalized.push(tag_id);
+            }
+        }
+        normalized
+    }
+
+    async fn ensure_category_exists(&self, category_id: i64) -> Result<(), String> {
+        CategoryRepository::find_by_id(&self.state.db, category_id)
+            .await
+            .map_err(Self::api_error_to_string)?
+            .ok_or_else(|| format!("分类 {} 不存在", category_id))?;
+        Ok(())
+    }
+
+    async fn ensure_tags_exist(&self, tag_ids: &[i64]) -> Result<(), String> {
+        for &tag_id in tag_ids {
+            TagRepository::find_by_id(&self.state.db, tag_id)
+                .await
+                .map_err(Self::api_error_to_string)?
+                .ok_or_else(|| format!("标签 {} 不存在", tag_id))?;
+        }
+        Ok(())
+    }
+
     async fn get_ai_service(&self) -> Result<AiService, String> {
         let enabled = SiteConfigRepo::get_value(&self.state.db, "ai_enabled")
             .await
@@ -304,6 +457,150 @@ impl BlogMcpServer {
             .ok_or_else(|| format!("博客 {} 不存在", blog_id))?;
 
         Self::json_result(blog)
+    }
+
+    #[tool(name = "set_blog_category", description = "设置指定博客的分类")]
+    async fn set_blog_category(
+        &self,
+        Parameters(args): Parameters<SetBlogCategoryArgs>,
+    ) -> Result<McpJson<Value>, String> {
+        self.ensure_category_exists(args.category_id).await?;
+
+        let existing = BlogRepository::find_by_id(&self.state.db, args.blog_id)
+            .await
+            .map_err(Self::api_error_to_string)?
+            .ok_or_else(|| format!("博客 {} 不存在", args.blog_id))?;
+
+        let blog = BlogRepository::update(
+            &self.state.db,
+            args.blog_id,
+            &UpdateBlogRequest {
+                title: None,
+                slug: None,
+                author: None,
+                content: None,
+                summary: None,
+                thumbnail: None,
+                category_id: Some(args.category_id),
+                tag_ids: None,
+                is_published: None,
+                references: None,
+            },
+            None,
+        )
+        .await
+        .map_err(Self::api_error_to_string)?
+        .ok_or_else(|| format!("博客 {} 不存在", args.blog_id))?;
+
+        let detail = BlogRepository::find_detail_by_id(&self.state.db, args.blog_id)
+            .await
+            .map_err(Self::api_error_to_string)?
+            .ok_or_else(|| "更新分类后获取博客详情失败".to_string())?;
+
+        let _ = BlogService::invalidate_blog_cache(
+            &self.state.cache,
+            args.blog_id,
+            blog.slug.as_deref().or(existing.slug.as_deref()),
+        )
+        .await;
+
+        Self::json_result(detail)
+    }
+
+    #[tool(name = "add_blog_tags", description = "为指定博客新增一个或多个标签，不会移除现有标签")]
+    async fn add_blog_tags(
+        &self,
+        Parameters(args): Parameters<BlogTagIdsArgs>,
+    ) -> Result<McpJson<Value>, String> {
+        let tag_ids = Self::normalize_tag_ids(args.tag_ids);
+        if tag_ids.is_empty() {
+            return Err("tag_ids 不能为空".to_string());
+        }
+        self.ensure_tags_exist(&tag_ids).await?;
+
+        let blog = BlogRepository::find_by_id(&self.state.db, args.blog_id)
+            .await
+            .map_err(Self::api_error_to_string)?
+            .ok_or_else(|| format!("博客 {} 不存在", args.blog_id))?;
+
+        for &tag_id in &tag_ids {
+            TagRepository::add_tag_to_blog(&self.state.db, args.blog_id, tag_id)
+                .await
+                .map_err(Self::api_error_to_string)?;
+        }
+
+        let detail = BlogRepository::find_detail_by_id(&self.state.db, args.blog_id)
+            .await
+            .map_err(Self::api_error_to_string)?
+            .ok_or_else(|| "更新标签后获取博客详情失败".to_string())?;
+
+        let _ =
+            BlogService::invalidate_blog_cache(&self.state.cache, args.blog_id, blog.slug.as_deref())
+                .await;
+
+        Self::json_result(detail)
+    }
+
+    #[tool(name = "remove_blog_tags", description = "从指定博客移除一个或多个标签，不影响其他标签")]
+    async fn remove_blog_tags(
+        &self,
+        Parameters(args): Parameters<BlogTagIdsArgs>,
+    ) -> Result<McpJson<Value>, String> {
+        let tag_ids = Self::normalize_tag_ids(args.tag_ids);
+        if tag_ids.is_empty() {
+            return Err("tag_ids 不能为空".to_string());
+        }
+
+        let blog = BlogRepository::find_by_id(&self.state.db, args.blog_id)
+            .await
+            .map_err(Self::api_error_to_string)?
+            .ok_or_else(|| format!("博客 {} 不存在", args.blog_id))?;
+
+        for &tag_id in &tag_ids {
+            TagRepository::remove_tag_from_blog(&self.state.db, args.blog_id, tag_id)
+                .await
+                .map_err(Self::api_error_to_string)?;
+        }
+
+        let detail = BlogRepository::find_detail_by_id(&self.state.db, args.blog_id)
+            .await
+            .map_err(Self::api_error_to_string)?
+            .ok_or_else(|| "更新标签后获取博客详情失败".to_string())?;
+
+        let _ =
+            BlogService::invalidate_blog_cache(&self.state.cache, args.blog_id, blog.slug.as_deref())
+                .await;
+
+        Self::json_result(detail)
+    }
+
+    #[tool(name = "set_blog_tags", description = "重设指定博客的标签列表，传入的标签会完全替换原有标签")]
+    async fn set_blog_tags(
+        &self,
+        Parameters(args): Parameters<BlogTagIdsArgs>,
+    ) -> Result<McpJson<Value>, String> {
+        let tag_ids = Self::normalize_tag_ids(args.tag_ids);
+        self.ensure_tags_exist(&tag_ids).await?;
+
+        let blog = BlogRepository::find_by_id(&self.state.db, args.blog_id)
+            .await
+            .map_err(Self::api_error_to_string)?
+            .ok_or_else(|| format!("博客 {} 不存在", args.blog_id))?;
+
+        TagRepository::set_blog_tags(&self.state.db, args.blog_id, &tag_ids)
+            .await
+            .map_err(Self::api_error_to_string)?;
+
+        let detail = BlogRepository::find_detail_by_id(&self.state.db, args.blog_id)
+            .await
+            .map_err(Self::api_error_to_string)?
+            .ok_or_else(|| "更新标签后获取博客详情失败".to_string())?;
+
+        let _ =
+            BlogService::invalidate_blog_cache(&self.state.cache, args.blog_id, blog.slug.as_deref())
+                .await;
+
+        Self::json_result(detail)
     }
 
     #[tool(
@@ -466,6 +763,493 @@ impl BlogMcpServer {
             .await
             .map_err(Self::api_error_to_string)?;
         Self::json_result(projects)
+    }
+
+    #[tool(name = "list_documents", description = "获取文档列表，可按关键字或目录筛选")]
+    async fn list_documents(
+        &self,
+        Parameters(args): Parameters<ListDocumentsArgs>,
+    ) -> Result<McpJson<Value>, String> {
+        let items = if let Some(keyword) = args.keyword.as_deref() {
+            let keyword = keyword.trim();
+            if keyword.is_empty() {
+                return Err("keyword 不能为空".to_string());
+            }
+            DocumentRepository::search(&self.state.db, keyword, args.limit())
+                .await
+                .map_err(Self::api_error_to_string)?
+        } else if let Some(directory_id) = args.directory_id {
+            DirectoryRepository::find_by_id(&self.state.db, directory_id)
+                .await
+                .map_err(Self::api_error_to_string)?
+                .ok_or_else(|| format!("目录 {} 不存在", directory_id))?;
+            DocumentRepository::find_by_directory_id(&self.state.db, directory_id)
+                .await
+                .map_err(Self::api_error_to_string)?
+        } else {
+            DocumentRepository::find_all(&self.state.db)
+                .await
+                .map_err(Self::api_error_to_string)?
+        };
+
+        Self::json_result(json!({
+            "items": items,
+            "count": items.len(),
+        }))
+    }
+
+    #[tool(name = "get_document_detail", description = "获取指定文档详情，包含 Markdown 和渲染后的 HTML")]
+    async fn get_document_detail(
+        &self,
+        Parameters(DocumentIdArgs { document_id }): Parameters<DocumentIdArgs>,
+    ) -> Result<McpJson<Value>, String> {
+        let document = DocumentRepository::find_by_id(&self.state.db, document_id)
+            .await
+            .map_err(Self::api_error_to_string)?
+            .ok_or_else(|| format!("文档 {} 不存在", document_id))?;
+        let html = render_markdown(&document.content);
+
+        Self::json_result(document.to_response(Some(html)))
+    }
+
+    #[tool(name = "create_document", description = "创建文档")]
+    async fn create_document(
+        &self,
+        Parameters(args): Parameters<CreateDocumentArgs>,
+    ) -> Result<McpJson<Value>, String> {
+        if args.name.trim().is_empty() {
+            return Err("name 不能为空".to_string());
+        }
+        if args.content.trim().is_empty() {
+            return Err("content 不能为空".to_string());
+        }
+
+        let document = DocumentRepository::create(
+            &self.state.db,
+            &CreateDocumentRequest {
+                name: args.name.trim().to_string(),
+                filename: args.filename,
+                content: args.content,
+                directory_id: args.directory_id,
+                sort_order: args.sort_order,
+                references: args.references,
+            },
+        )
+        .await
+        .map_err(Self::api_error_to_string)?;
+
+        let _ = self.state.cache.delete(&cache_keys::directory_tree()).await;
+        let html = render_markdown(&document.content);
+        Self::json_result(document.to_response(Some(html)))
+    }
+
+    #[tool(name = "update_document", description = "更新文档")]
+    async fn update_document(
+        &self,
+        Parameters(args): Parameters<UpdateDocumentArgs>,
+    ) -> Result<McpJson<Value>, String> {
+        DocumentRepository::find_by_id(&self.state.db, args.document_id)
+            .await
+            .map_err(Self::api_error_to_string)?
+            .ok_or_else(|| format!("文档 {} 不存在", args.document_id))?;
+
+        if let Some(name) = args.name.as_deref() {
+            if name.trim().is_empty() {
+                return Err("name 不能为空".to_string());
+            }
+        }
+        if let Some(content) = args.content.as_deref() {
+            if content.trim().is_empty() {
+                return Err("content 不能为空".to_string());
+            }
+        }
+
+        let document = DocumentRepository::update(
+            &self.state.db,
+            args.document_id,
+            &UpdateDocumentRequest {
+                name: args.name.map(|name| name.trim().to_string()),
+                filename: args.filename,
+                content: args.content,
+                directory_id: args.directory_id,
+                sort_order: args.sort_order,
+                references: args.references,
+            },
+        )
+        .await
+        .map_err(Self::api_error_to_string)?
+        .ok_or_else(|| format!("文档 {} 不存在", args.document_id))?;
+
+        let _ = self.state.cache.delete(&cache_keys::directory_tree()).await;
+        let html = render_markdown(&document.content);
+        Self::json_result(document.to_response(Some(html)))
+    }
+
+    #[tool(name = "delete_document", description = "删除文档")]
+    async fn delete_document(
+        &self,
+        Parameters(DeleteDocumentArgs { document_id }): Parameters<DeleteDocumentArgs>,
+    ) -> Result<McpJson<Value>, String> {
+        DocumentRepository::find_by_id(&self.state.db, document_id)
+            .await
+            .map_err(Self::api_error_to_string)?
+            .ok_or_else(|| format!("文档 {} 不存在", document_id))?;
+
+        let deleted = DocumentRepository::delete(&self.state.db, document_id)
+            .await
+            .map_err(Self::api_error_to_string)?;
+        if !deleted {
+            return Err(format!("文档 {} 不存在", document_id));
+        }
+
+        let _ = self.state.cache.delete(&cache_keys::directory_tree()).await;
+        Self::json_result(json!({
+            "success": true,
+            "document_id": document_id,
+        }))
+    }
+
+    #[tool(name = "get_directory_tree", description = "获取文档目录树，包含目录层级和目录下的文档")]
+    async fn get_directory_tree(&self) -> Result<McpJson<Value>, String> {
+        let tree = DirectoryRepository::get_tree(&self.state.db)
+            .await
+            .map_err(Self::api_error_to_string)?;
+        Self::json_result(tree)
+    }
+
+    #[tool(name = "get_directory_detail", description = "获取指定目录详情")]
+    async fn get_directory_detail(
+        &self,
+        Parameters(DirectoryIdArgs { directory_id }): Parameters<DirectoryIdArgs>,
+    ) -> Result<McpJson<Value>, String> {
+        let directory = DirectoryRepository::find_by_id(&self.state.db, directory_id)
+            .await
+            .map_err(Self::api_error_to_string)?
+            .ok_or_else(|| format!("目录 {} 不存在", directory_id))?;
+
+        Self::json_result(directory)
+    }
+
+    #[tool(name = "create_directory", description = "创建文档目录")]
+    async fn create_directory(
+        &self,
+        Parameters(args): Parameters<CreateDirectoryArgs>,
+    ) -> Result<McpJson<Value>, String> {
+        if args.name.trim().is_empty() {
+            return Err("name 不能为空".to_string());
+        }
+
+        let directory = DirectoryRepository::create(
+            &self.state.db,
+            &CreateDirectoryRequest {
+                name: args.name.trim().to_string(),
+                intro: args.intro,
+                parent_id: args.parent_id,
+                sort_order: args.sort_order,
+            },
+        )
+        .await
+        .map_err(Self::api_error_to_string)?;
+
+        let _ = self.state.cache.delete(&cache_keys::directory_tree()).await;
+        Self::json_result(directory)
+    }
+
+    #[tool(name = "update_directory", description = "更新文档目录")]
+    async fn update_directory(
+        &self,
+        Parameters(args): Parameters<UpdateDirectoryArgs>,
+    ) -> Result<McpJson<Value>, String> {
+        DirectoryRepository::find_by_id(&self.state.db, args.directory_id)
+            .await
+            .map_err(Self::api_error_to_string)?
+            .ok_or_else(|| format!("目录 {} 不存在", args.directory_id))?;
+
+        if let Some(name) = args.name.as_deref() {
+            if name.trim().is_empty() {
+                return Err("name 不能为空".to_string());
+            }
+        }
+
+        let directory = DirectoryRepository::update(
+            &self.state.db,
+            args.directory_id,
+            &UpdateDirectoryRequest {
+                name: args.name.map(|name| name.trim().to_string()),
+                intro: args.intro,
+                parent_id: args.parent_id,
+                sort_order: args.sort_order,
+            },
+        )
+        .await
+        .map_err(Self::api_error_to_string)?
+        .ok_or_else(|| format!("目录 {} 不存在", args.directory_id))?;
+
+        let _ = self.state.cache.delete(&cache_keys::directory_tree()).await;
+        Self::json_result(directory)
+    }
+
+    #[tool(name = "delete_directory", description = "删除文档目录；会级联删除其子目录和目录下文档")]
+    async fn delete_directory(
+        &self,
+        Parameters(DeleteDirectoryArgs { directory_id }): Parameters<DeleteDirectoryArgs>,
+    ) -> Result<McpJson<Value>, String> {
+        DirectoryRepository::find_by_id(&self.state.db, directory_id)
+            .await
+            .map_err(Self::api_error_to_string)?
+            .ok_or_else(|| format!("目录 {} 不存在", directory_id))?;
+
+        let deleted = DirectoryRepository::delete(&self.state.db, directory_id)
+            .await
+            .map_err(Self::api_error_to_string)?;
+        if !deleted {
+            return Err(format!("目录 {} 不存在", directory_id));
+        }
+
+        let _ = self.state.cache.delete(&cache_keys::directory_tree()).await;
+        Self::json_result(json!({
+            "success": true,
+            "directory_id": directory_id,
+        }))
+    }
+
+    #[tool(name = "list_categories", description = "获取分类列表，附带每个分类的博客数量")]
+    async fn list_categories(&self) -> Result<McpJson<Value>, String> {
+        let categories = CategoryRepository::find_all_with_count(&self.state.db)
+            .await
+            .map_err(Self::api_error_to_string)?;
+        Self::json_result(categories)
+    }
+
+    #[tool(name = "create_category", description = "创建分类")]
+    async fn create_category(
+        &self,
+        Parameters(args): Parameters<CreateCategoryArgs>,
+    ) -> Result<McpJson<Value>, String> {
+        let name = args.name.trim();
+        if name.is_empty() {
+            return Err("name 不能为空".to_string());
+        }
+        if CategoryRepository::name_exists(&self.state.db, name, None)
+            .await
+            .map_err(Self::api_error_to_string)?
+        {
+            return Err(format!("分类 '{}' 已存在", name));
+        }
+
+        let category = CategoryRepository::create(
+            &self.state.db,
+            &CreateCategoryRequest {
+                name: name.to_string(),
+                intro: args.intro,
+                logo: args.logo,
+            },
+        )
+        .await
+        .map_err(Self::api_error_to_string)?;
+
+        let _ = self.state.cache.delete(&cache_keys::category_list()).await;
+        Self::json_result(category)
+    }
+
+    #[tool(name = "update_category", description = "更新分类")]
+    async fn update_category(
+        &self,
+        Parameters(args): Parameters<UpdateCategoryArgs>,
+    ) -> Result<McpJson<Value>, String> {
+        CategoryRepository::find_by_id(&self.state.db, args.category_id)
+            .await
+            .map_err(Self::api_error_to_string)?
+            .ok_or_else(|| format!("分类 {} 不存在", args.category_id))?;
+
+        let name = match args.name {
+            Some(name) => {
+                let trimmed = name.trim().to_string();
+                if trimmed.is_empty() {
+                    return Err("name 不能为空".to_string());
+                }
+                if CategoryRepository::name_exists(&self.state.db, &trimmed, Some(args.category_id))
+                    .await
+                    .map_err(Self::api_error_to_string)?
+                {
+                    return Err(format!("分类 '{}' 已存在", trimmed));
+                }
+                Some(trimmed)
+            }
+            None => None,
+        };
+
+        let category = CategoryRepository::update(
+            &self.state.db,
+            args.category_id,
+            &UpdateCategoryRequest {
+                name,
+                intro: args.intro,
+                logo: args.logo,
+            },
+        )
+        .await
+        .map_err(Self::api_error_to_string)?
+        .ok_or_else(|| format!("分类 {} 不存在", args.category_id))?;
+
+        let _ = self.state.cache.delete(&cache_keys::category_list()).await;
+        let _ = self
+            .state
+            .cache
+            .delete_pattern(&format!("category:{}:*", args.category_id))
+            .await;
+        Self::json_result(category)
+    }
+
+    #[tool(name = "delete_category", description = "删除分类；如果分类下仍有关联博客则拒绝删除")]
+    async fn delete_category(
+        &self,
+        Parameters(DeleteCategoryArgs { category_id }): Parameters<DeleteCategoryArgs>,
+    ) -> Result<McpJson<Value>, String> {
+        let category = CategoryRepository::find_by_id(&self.state.db, category_id)
+            .await
+            .map_err(Self::api_error_to_string)?
+            .ok_or_else(|| format!("分类 {} 不存在", category_id))?;
+        let blog_count = CategoryRepository::count_blogs(&self.state.db, category_id)
+            .await
+            .map_err(Self::api_error_to_string)?;
+        if blog_count > 0 {
+            return Err(format!(
+                "无法删除分类 '{}'：仍有 {} 篇博客使用该分类",
+                category.name, blog_count
+            ));
+        }
+
+        let deleted = CategoryRepository::delete(&self.state.db, category_id)
+            .await
+            .map_err(Self::api_error_to_string)?;
+        if !deleted {
+            return Err(format!("分类 {} 不存在", category_id));
+        }
+
+        let _ = self.state.cache.delete(&cache_keys::category_list()).await;
+        let _ = self
+            .state
+            .cache
+            .delete_pattern(&format!("category:{}:*", category_id))
+            .await;
+
+        Self::json_result(json!({
+            "success": true,
+            "category_id": category_id,
+        }))
+    }
+
+    #[tool(name = "list_tags", description = "获取标签列表，附带每个标签的博客数量")]
+    async fn list_tags(&self) -> Result<McpJson<Value>, String> {
+        let tags = TagRepository::find_all_with_count(&self.state.db)
+            .await
+            .map_err(Self::api_error_to_string)?;
+        Self::json_result(tags)
+    }
+
+    #[tool(name = "create_tag", description = "创建标签")]
+    async fn create_tag(
+        &self,
+        Parameters(args): Parameters<CreateTagArgs>,
+    ) -> Result<McpJson<Value>, String> {
+        let name = args.name.trim();
+        if name.is_empty() {
+            return Err("name 不能为空".to_string());
+        }
+        if TagRepository::name_exists(&self.state.db, name, None)
+            .await
+            .map_err(Self::api_error_to_string)?
+        {
+            return Err(format!("标签 '{}' 已存在", name));
+        }
+
+        let tag = TagRepository::create(
+            &self.state.db,
+            &CreateTagRequest {
+                name: name.to_string(),
+            },
+        )
+        .await
+        .map_err(Self::api_error_to_string)?;
+
+        let _ = self.state.cache.delete(&cache_keys::tag_list()).await;
+        Self::json_result(tag)
+    }
+
+    #[tool(name = "update_tag", description = "更新标签")]
+    async fn update_tag(
+        &self,
+        Parameters(args): Parameters<UpdateTagArgs>,
+    ) -> Result<McpJson<Value>, String> {
+        TagRepository::find_by_id(&self.state.db, args.tag_id)
+            .await
+            .map_err(Self::api_error_to_string)?
+            .ok_or_else(|| format!("标签 {} 不存在", args.tag_id))?;
+
+        let name = match args.name {
+            Some(name) => {
+                let trimmed = name.trim().to_string();
+                if trimmed.is_empty() {
+                    return Err("name 不能为空".to_string());
+                }
+                if TagRepository::name_exists(&self.state.db, &trimmed, Some(args.tag_id))
+                    .await
+                    .map_err(Self::api_error_to_string)?
+                {
+                    return Err(format!("标签 '{}' 已存在", trimmed));
+                }
+                Some(trimmed)
+            }
+            None => None,
+        };
+
+        let tag = TagRepository::update(
+            &self.state.db,
+            args.tag_id,
+            &UpdateTagRequest { name },
+        )
+        .await
+        .map_err(Self::api_error_to_string)?
+        .ok_or_else(|| format!("标签 {} 不存在", args.tag_id))?;
+
+        let _ = self.state.cache.delete(&cache_keys::tag_list()).await;
+        let _ = self
+            .state
+            .cache
+            .delete_pattern(&format!("tag:{}:*", args.tag_id))
+            .await;
+        Self::json_result(tag)
+    }
+
+    #[tool(name = "delete_tag", description = "删除标签")]
+    async fn delete_tag(
+        &self,
+        Parameters(DeleteTagArgs { tag_id }): Parameters<DeleteTagArgs>,
+    ) -> Result<McpJson<Value>, String> {
+        TagRepository::find_by_id(&self.state.db, tag_id)
+            .await
+            .map_err(Self::api_error_to_string)?
+            .ok_or_else(|| format!("标签 {} 不存在", tag_id))?;
+
+        let deleted = TagRepository::delete(&self.state.db, tag_id)
+            .await
+            .map_err(Self::api_error_to_string)?;
+        if !deleted {
+            return Err(format!("标签 {} 不存在", tag_id));
+        }
+
+        let _ = self.state.cache.delete(&cache_keys::tag_list()).await;
+        let _ = self
+            .state
+            .cache
+            .delete_pattern(&format!("tag:{}:*", tag_id))
+            .await;
+
+        Self::json_result(json!({
+            "success": true,
+            "tag_id": tag_id,
+        }))
     }
 
     #[tool(
@@ -956,7 +1740,7 @@ impl BlogMcpServer {
 impl ServerHandler for BlogMcpServer {
     fn get_info(&self) -> ServerInfo {
         ServerInfo::new(ServerCapabilities::builder().enable_tools().build()).with_instructions(
-            "典典博客 MCP：支持博客检索、字典文本、友链、项目、博客管理和 AI 文本处理。"
+            "典典博客 MCP：支持博客检索、字典文本、文档与目录、分类、标签、友链、项目、博客管理和 AI 文本处理。"
                 .to_string(),
         )
     }

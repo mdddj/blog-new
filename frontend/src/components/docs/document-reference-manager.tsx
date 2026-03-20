@@ -18,6 +18,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Quote, Plus, Trash2, Edit2, Copy, Check } from "lucide-react";
 import type { DocumentReference } from "@/types";
+import { getReferencePreview, sanitizeReferenceRecord } from "@/lib/reference-utils";
 import { toast } from "sonner";
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), {
@@ -133,7 +134,7 @@ export function DocumentReferenceManager({
         toast.success("引用标记已复制");
     };
 
-    const refList = Object.values(references);
+    const refList = Object.values(sanitizeReferenceRecord<DocumentReference>(references));
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -272,8 +273,7 @@ export function DocumentReferenceManager({
                                             </CardHeader>
                                             <CardContent className="py-2">
                                                 <p className="text-sm text-muted-foreground line-clamp-2">
-                                                    {ref.content.replace(/[#*`>\-\[\]]/g, "").slice(0, 150)}
-                                                    {ref.content.length > 150 && "..."}
+                                                    {getReferencePreview(ref.content)}
                                                 </p>
                                             </CardContent>
                                         </Card>
