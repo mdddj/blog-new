@@ -3,7 +3,7 @@
 use crate::error::ApiError;
 use crate::models::blog::BlogListItem;
 use crate::models::category::Category;
-use crate::models::tag::{CreateTagRequest, Tag, TagWithCount};
+use crate::models::tag::{CreateTagRequest, Tag, TagWithCount, UpdateTagRequest};
 use chrono::{DateTime, Utc};
 use sqlx::PgPool;
 
@@ -104,6 +104,28 @@ impl TagRepository {
         Ok(tag)
     }
 
+    /// Update an existing tag
+    pub async fn update(
+        pool: &PgPool,
+        id: i64,
+        req: &UpdateTagRequest,
+    ) -> Result<Option<Tag>, ApiError> {
+        let tag = sqlx::query_as::<_, Tag>(
+            r#"
+            UPDATE tags
+            SET name = COALESCE($2, name)
+            WHERE id = $1
+            RETURNING id, name
+            "#,
+        )
+        .bind(id)
+        .bind(&req.name)
+        .fetch_optional(pool)
+        .await?;
+
+        Ok(tag)
+    }
+
     /// Delete a tag by ID (also removes all blog-tag associations due to CASCADE)
     pub async fn delete(pool: &PgPool, id: i64) -> Result<bool, ApiError> {
         let result = sqlx::query(
@@ -120,15 +142,34 @@ impl TagRepository {
     }
 
     /// Check if tag name already exists
-    pub async fn name_exists(pool: &PgPool, name: &str) -> Result<bool, ApiError> {
-        let exists = sqlx::query_scalar::<_, bool>(
-            r#"
-            SELECT EXISTS(SELECT 1 FROM tags WHERE name = $1)
-            "#,
-        )
-        .bind(name)
-        .fetch_one(pool)
-        .await?;
+    pub async fn name_exists(
+        pool: &PgPool,
+        name: &str,
+        exclude_id: Option<i64>,
+    ) -> Result<bool, ApiError> {
+        let exists = match exclude_id {
+            Some(id) => {
+                sqlx::query_scalar::<_, bool>(
+                    r#"
+                    SELECT EXISTS(SELECT 1 FROM tags WHERE name = $1 AND id != $2)
+                    "#,
+                )
+                .bind(name)
+                .bind(id)
+                .fetch_one(pool)
+                .await?
+            }
+            None => {
+                sqlx::query_scalar::<_, bool>(
+                    r#"
+                    SELECT EXISTS(SELECT 1 FROM tags WHERE name = $1)
+                    "#,
+                )
+                .bind(name)
+                .fetch_one(pool)
+                .await?
+            }
+        };
 
         Ok(exists)
     }

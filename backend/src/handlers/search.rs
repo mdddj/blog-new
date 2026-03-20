@@ -32,7 +32,7 @@ pub async fn search(
 
     // Perform search
     let (results, total) =
-        SearchRepository::search_blogs(&state.db, &keyword, page, page_size).await?;
+        SearchRepository::search_blogs(&state.db, &keyword, page, page_size, true).await?;
 
     tracing::debug!(
         "Search for '{}' returned {} results (page {}, total {})",

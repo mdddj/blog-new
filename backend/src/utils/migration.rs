@@ -30,6 +30,10 @@ const MIGRATIONS: &[(&str, &str)] = &[
         "006_document_references",
         include_str!("../../migrations/006_document_references.sql"),
     ),
+    (
+        "007_mcp_config",
+        include_str!("../../migrations/007_mcp_config.sql"),
+    ),
 ];
 
 /// Run all pending migrations

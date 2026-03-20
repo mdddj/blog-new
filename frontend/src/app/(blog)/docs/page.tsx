@@ -2,77 +2,54 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { BookOpenText } from "lucide-react";
 import { directoryApi } from "@/lib/api";
 import type { DirectoryTreeNode } from "@/types";
-import { Terminal } from "lucide-react";
 
-export default function DocsPage() {
-    const router = useRouter();
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        const findFirstDocument = async () => {
-            try {
-                const tree = await directoryApi.getTree();
-                const firstDoc = findFirstDocumentInTree(tree);
-                if (firstDoc) {
-                    router.replace(`/docs/${firstDoc.id}`);
-                } else {
-                    setIsLoading(false);
-                }
-            } catch (error) {
-                console.error("Failed to fetch directory tree:", error);
-                setIsLoading(false);
-            }
-        };
-
-        findFirstDocument();
-    }, [router]);
-
-    if (isLoading) {
-        return (
-            <main className="cf-main">
-                <div className="flex gap-8">
-                    <div className="w-64 space-y-4 hidden lg:block">
-                        <div className="cf-panel h-full min-h-[500px] animate-pulse">
-                            <div className="cf-panel-header bg-(--cf-bg-inset)" />
-                        </div>
-                    </div>
-                    <div className="flex-1 space-y-6">
-                        <div className="h-12 bg-(--cf-bg-panel) border border-(--cf-border) animate-pulse" />
-                        <div className="h-96 bg-(--cf-bg-panel) border border-(--cf-border) animate-pulse" />
-                    </div>
-                </div>
-            </main>
-        );
-    }
-
-    return (
-        <main className="cf-main flex flex-col items-center justify-center min-h-[60vh]">
-            <div className="cf-panel p-12 text-center max-w-lg">
-                <Terminal className="h-16 w-16 text-(--cf-text-muted) mx-auto mb-4 opacity-50" />
-                <h1 className="font-(--cf-font-display) text-2xl text-(--cf-text) mb-2">
-                    KNOWLEDGE_BASE
-                </h1>
-                <p className="font-mono text-(--cf-text-dim)">
-                    {"// SYSTEM_STATUS: EMPTY"}
-                    <br />
-                    {"// NO_DOCUMENTS_FOUND"}
-                </p>
-            </div>
-        </main>
-    );
-}
-
-function findFirstDocumentInTree(nodes: DirectoryTreeNode[]): { id: number } | null {
+function findFirstDocument(nodes: DirectoryTreeNode[]): { id: number } | null {
     for (const node of nodes) {
-        if (node.documents && node.documents.length > 0) {
-            return { id: node.documents[0].id };
-        }
-        if (node.children && node.children.length > 0) {
-            const found = findFirstDocumentInTree(node.children);
+        if (node.documents?.length) return { id: node.documents[0].id };
+        if (node.children?.length) {
+            const found = findFirstDocument(node.children);
             if (found) return found;
         }
     }
     return null;
+}
+
+export default function DocsPage() {
+    const router = useRouter();
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function boot() {
+            try {
+                const tree = await directoryApi.getTree();
+                const first = findFirstDocument(tree);
+                if (first) {
+                    router.replace(`/docs/${first.id}`);
+                    return;
+                }
+            } finally {
+                setLoading(false);
+            }
+        }
+        boot();
+    }, [router]);
+
+    return (
+        <main className="island-main">
+            <div className="island-container island-page">
+                {loading ? (
+                    <div className="island-panel island-skeleton h-64" />
+                ) : (
+                    <section className="island-panel p-10 text-center">
+                        <BookOpenText className="mx-auto h-10 w-10 text-[var(--is-text-faint)]" />
+                        <h1 className="mt-3 font-[var(--is-font-title)] text-xl text-[var(--is-text)]">文档库为空</h1>
+                        <p className="mt-2 text-sm text-[var(--is-text-muted)]">当前没有可阅读文档。</p>
+                    </section>
+                )}
+            </div>
+        </main>
+    );
 }

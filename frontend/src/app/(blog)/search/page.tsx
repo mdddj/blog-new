@@ -1,283 +1,243 @@
 "use client";
 
-import { Suspense, useEffect, useState, useCallback } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { Suspense, useCallback, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Search, Calendar, FileText, Loader2 } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Pagination } from "@/components/blog";
+import { Loader2, Search } from "lucide-react";
 import { searchApi } from "@/lib/api";
-import type { SearchResult, PaginatedResponse } from "@/types";
+import type { PaginatedResponse, SearchResult } from "@/types";
+import { IslandPageHeader } from "@/components/blog/island";
+import { Pagination } from "@/components/blog/pagination";
 
-// Escape special regex characters
-function escapeRegex(str: string): string {
+function escapeRegex(str: string) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-// Highlight matching keywords in text
 function HighlightText({ text, keyword }: { text: string; keyword: string }) {
-    if (!text) {
-        return <span></span>;
-    }
-
-    if (!keyword.trim()) {
-        return <span>{text}</span>;
-    }
-
+    if (!keyword.trim()) return <>{text}</>;
     const escaped = escapeRegex(keyword);
     const parts = text.split(new RegExp(`(${escaped})`, "gi"));
-
     return (
-        <span>
-            {parts.map((part, index) =>
+        <>
+            {parts.map((part, idx) =>
                 part.toLowerCase() === keyword.toLowerCase() ? (
-                    <mark key={index} className="bg-yellow-200 dark:bg-yellow-800 px-0.5 rounded">
+                    <mark key={idx} className="rounded bg-[var(--is-primary-soft)] px-0.5 text-[var(--is-primary)]">
                         {part}
                     </mark>
                 ) : (
-                    <span key={index}>{part}</span>
+                    <span key={idx}>{part}</span>
                 )
             )}
-        </span>
+        </>
     );
 }
 
-interface SearchResultCardProps {
-    result: SearchResult;
-    keyword: string;
-}
-
-function SearchResultCard({ result, keyword }: SearchResultCardProps) {
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString("zh-CN", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-        });
-    };
-
-    return (
-        <Card className="transition-all hover:shadow-md">
-            <CardHeader className="pb-2">
-                <Link
-                    href={result.slug ? `/blog/${result.slug}` : `/blog/${result.id}`}
-                    className="text-lg font-semibold transition-colors hover:text-primary line-clamp-2"
-                >
-                    <HighlightText text={result.title} keyword={keyword} />
-                </Link>
-            </CardHeader>
-            <CardContent className="space-y-2">
-                <p className="text-sm text-muted-foreground line-clamp-3">
-                    <HighlightText text={result.content_snippet || ""} keyword={keyword} />
-                </p>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Calendar className="h-3 w-3" />
-                    <span>{formatDate(result.created_at)}</span>
-                </div>
-            </CardContent>
-        </Card>
-    );
-}
-
-function SearchPageContent() {
+function SearchContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
-
     const queryParam = searchParams.get("q") || "";
     const currentPage = Number(searchParams.get("page")) || 1;
     const pageSize = 10;
 
-    const [searchQuery, setSearchQuery] = useState(queryParam);
+    const [input, setInput] = useState(queryParam);
     const [results, setResults] = useState<SearchResult[]>([]);
-    const [pagination, setPagination] = useState({
-        total: 0,
-        totalPages: 0,
-    });
-    const [isLoading, setIsLoading] = useState(false);
-    const [hasSearched, setHasSearched] = useState(false);
+    const [pagination, setPagination] = useState({ total: 0, totalPages: 0 });
+    const [loading, setLoading] = useState(false);
+    const [searched, setSearched] = useState(false);
 
-    const performSearch = useCallback(async (query: string, page: number) => {
+    const doSearch = useCallback(async (query: string, page: number) => {
         if (!query.trim()) {
             setResults([]);
             setPagination({ total: 0, totalPages: 0 });
-            setHasSearched(false);
+            setSearched(false);
             return;
         }
-
-        setIsLoading(true);
-        setHasSearched(true);
+        setLoading(true);
+        setSearched(true);
         try {
-            const response: PaginatedResponse<SearchResult> = await searchApi.search(
-                query,
-                page,
-                pageSize
-            );
-            setResults(response.items);
-            setPagination({
-                total: response.total,
-                totalPages: response.total_pages,
-            });
-        } catch (error) {
-            console.error("Search failed:", error);
-            setResults([]);
-            setPagination({ total: 0, totalPages: 0 });
+            const data: PaginatedResponse<SearchResult> = await searchApi.search(query, page, pageSize);
+            setResults(data.items);
+            setPagination({ total: data.total, totalPages: data.total_pages });
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
-    }, [pageSize]);
+    }, []);
 
-    // Perform search when URL params change
     useEffect(() => {
-        setSearchQuery(queryParam);
+        setInput(queryParam);
         if (queryParam) {
-            performSearch(queryParam, currentPage);
+            doSearch(queryParam, currentPage);
         } else {
             setResults([]);
             setPagination({ total: 0, totalPages: 0 });
-            setHasSearched(false);
+            setSearched(false);
         }
-    }, [queryParam, currentPage, performSearch]);
+    }, [queryParam, currentPage, doSearch]);
 
-    const handleSearch = (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (searchQuery.trim()) {
-            router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+        if (input.trim()) {
+            router.push(`/search?q=${encodeURIComponent(input.trim())}`);
         }
     };
 
-    const handlePageChange = (page: number) => {
-        router.push(`/search?q=${encodeURIComponent(queryParam)}&page=${page}`);
-    };
+    const headerStats = queryParam
+        ? [
+            {
+                label: "Keyword",
+                value: <span className="line-clamp-1 text-xl sm:text-2xl">{queryParam}</span>,
+                description: "当前关键词",
+            },
+            {
+                label: "Results",
+                value: pagination.total,
+                description: "匹配内容数",
+            },
+            {
+                label: "Page",
+                value: (
+                    <>
+                        {currentPage}
+                        <span className="text-base text-[var(--is-text-faint)]">
+                            /{Math.max(1, pagination.totalPages)}
+                        </span>
+                    </>
+                ),
+                description: "当前页码",
+            },
+        ]
+        : [
+            {
+                label: "Search",
+                value: "全站",
+                description: "标题与正文均参与匹配",
+            },
+            {
+                label: "Status",
+                value: "待输入",
+                description: "提交关键词后显示结果",
+            },
+        ];
 
     return (
-        <div className="container mx-auto px-4 py-8">
-            <div className="max-w-3xl mx-auto space-y-8">
-                {/* Search Header */}
-                <div className="text-center space-y-4">
-                    <h1 className="text-3xl font-bold">搜索文章</h1>
-                    <p className="text-muted-foreground">
-                        在博客文章中搜索您感兴趣的内容
-                    </p>
-                </div>
+        <main className="island-main">
+            <div className="island-container island-page">
+                <IslandPageHeader
+                    eyebrow="内容搜索"
+                    chips={[queryParam ? "已提交关键词" : "输入关键词后开始"]}
+                    title={queryParam ? `搜索 “${queryParam}”` : "搜索文章与笔记"}
+                    description={
+                        queryParam
+                            ? "结果会按相关文章直接展开，你可以继续换词缩小范围。"
+                            : "直接检索文章标题、摘要和正文内容。"
+                    }
+                    stats={headerStats}
+                >
+                    <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:flex-row">
+                        <div className="relative flex-1">
+                            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--is-text-faint)]" />
+                            <input
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                placeholder="输入关键词，例如：Rust、架构、读书笔记..."
+                                className="island-focus-ring h-11 w-full rounded-xl border border-[var(--is-border)] bg-[var(--is-surface)] pl-10 pr-3 text-sm text-[var(--is-text)] placeholder:text-[var(--is-text-faint)]"
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            className="island-focus-ring inline-flex h-11 items-center justify-center rounded-xl border border-[var(--is-border-strong)] bg-[var(--is-primary-soft)] px-5 text-sm text-[var(--is-primary)] transition hover:opacity-85"
+                        >
+                            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "搜索"}
+                        </button>
+                    </form>
+                </IslandPageHeader>
 
-                {/* Search Form */}
-                <form onSubmit={handleSearch} className="flex gap-2">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                            type="text"
-                            placeholder="输入关键词搜索..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-10"
-                        />
-                    </div>
-                    <Button type="submit" disabled={isLoading}>
-                        {isLoading ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                            "搜索"
-                        )}
-                    </Button>
-                </form>
-
-                {/* Search Results */}
-                {isLoading ? (
-                    <div className="space-y-4">
-                        {[1, 2, 3].map((i) => (
-                            <Card key={i}>
-                                <CardHeader className="pb-2">
-                                    <Skeleton className="h-6 w-3/4" />
-                                </CardHeader>
-                                <CardContent className="space-y-2">
-                                    <Skeleton className="h-4 w-full" />
-                                    <Skeleton className="h-4 w-2/3" />
-                                    <Skeleton className="h-3 w-24" />
-                                </CardContent>
-                            </Card>
+                {loading ? (
+                    <div className="grid gap-3">
+                        {Array.from({ length: 4 }).map((_, idx) => (
+                            <div key={idx} className="island-panel island-skeleton h-28" />
                         ))}
                     </div>
-                ) : hasSearched ? (
+                ) : searched ? (
                     results.length > 0 ? (
-                        <div className="space-y-6">
-                            {/* Results Count */}
-                            <p className="text-sm text-muted-foreground">
-                                找到 <span className="font-medium text-foreground">{pagination.total}</span> 篇相关文章
-                            </p>
+                        <section className="island-grid">
+                            <div className="island-panel-soft px-5 py-4 sm:px-6">
+                                <div className="flex flex-wrap items-center justify-between gap-3">
+                                    <div>
+                                        <p className="text-xs uppercase tracking-[0.24em] text-[var(--is-text-faint)]">
+                                            Search Results
+                                        </p>
+                                        <h2 className="mt-2 island-section-title">搜索结果</h2>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        <span className="island-chip">共 {pagination.total} 条结果</span>
+                                        <span className="island-chip">当前第 {currentPage} 页</span>
+                                    </div>
+                                </div>
+                            </div>
 
-                            {/* Results List */}
-                            <div className="space-y-4">
-                                {results.map((result) => (
-                                    <SearchResultCard
-                                        key={result.id}
-                                        result={result}
-                                        keyword={queryParam}
-                                    />
+                            <div className="island-grid">
+                                {results.map((item) => (
+                                    <article key={item.id} className="island-card p-4 sm:p-5">
+                                        <h2 className="font-[var(--is-font-title)] text-lg text-[var(--is-text)]">
+                                            <Link href={item.slug ? `/blog/${item.slug}` : `/blog/${item.id}`} className="island-focus-ring">
+                                                <HighlightText text={item.title} keyword={queryParam} />
+                                            </Link>
+                                        </h2>
+                                        <p className="mt-2 text-sm leading-7 text-[var(--is-text-muted)] line-clamp-3">
+                                            <HighlightText text={item.content_snippet || ""} keyword={queryParam} />
+                                        </p>
+                                        <p className="mt-3 text-xs text-[var(--is-text-faint)]">
+                                            {new Date(item.created_at).toLocaleDateString("zh-CN")}
+                                        </p>
+                                    </article>
                                 ))}
                             </div>
 
-                            {/* Pagination */}
                             {pagination.totalPages > 1 && (
-                                <div className="flex justify-center pt-4">
+                                <div className="island-panel px-4 py-4">
                                     <Pagination
                                         currentPage={currentPage}
                                         totalPages={pagination.totalPages}
-                                        onPageChange={handlePageChange}
+                                        onPageChange={(page) => router.push(`/search?q=${encodeURIComponent(queryParam)}&page=${page}`)}
                                     />
                                 </div>
                             )}
-                        </div>
+                        </section>
                     ) : (
-                        <div className="text-center py-12 space-y-4">
-                            <FileText className="h-12 w-12 mx-auto text-muted-foreground" />
-                            <div className="space-y-2">
-                                <p className="text-lg font-medium">未找到相关文章</p>
-                                <p className="text-sm text-muted-foreground">
-                                    尝试使用其他关键词搜索
-                                </p>
-                            </div>
+                        <div className="island-panel p-10 text-center text-sm text-[var(--is-text-muted)]">
+                            没有找到相关内容，换个更通用的关键词再试一次。
                         </div>
                     )
                 ) : (
-                    <div className="text-center py-12 space-y-4">
-                        <Search className="h-12 w-12 mx-auto text-muted-foreground" />
-                        <div className="space-y-2">
-                            <p className="text-lg font-medium">开始搜索</p>
-                            <p className="text-sm text-muted-foreground">
-                                输入关键词搜索博客文章
-                            </p>
-                        </div>
+                    <div className="island-panel p-10 text-center text-sm text-[var(--is-text-muted)]">
+                        输入关键词后开始搜索。
                     </div>
                 )}
             </div>
-        </div>
+        </main>
     );
 }
 
-function SearchPageSkeleton() {
+function Loading() {
     return (
-        <div className="container mx-auto px-4 py-8">
-            <div className="max-w-3xl mx-auto space-y-8">
-                <div className="text-center space-y-4">
-                    <Skeleton className="h-9 w-32 mx-auto" />
-                    <Skeleton className="h-5 w-48 mx-auto" />
-                </div>
-                <div className="flex gap-2">
-                    <Skeleton className="h-10 flex-1" />
-                    <Skeleton className="h-10 w-20" />
+        <main className="island-main">
+            <div className="island-container island-page">
+                <div className="island-panel island-skeleton h-[220px]" />
+                <div className="grid gap-3">
+                    {Array.from({ length: 3 }).map((_, idx) => (
+                        <div key={idx} className="island-panel island-skeleton h-28" />
+                    ))}
                 </div>
             </div>
-        </div>
+        </main>
     );
 }
 
 export default function SearchPage() {
     return (
-        <Suspense fallback={<SearchPageSkeleton />}>
-            <SearchPageContent />
+        <Suspense fallback={<Loading />}>
+            <SearchContent />
         </Suspense>
     );
 }

@@ -1,24 +1,45 @@
-import "@/app/cassette.css";
-import { CassetteHeader } from "@/components/blog/cassette/cassette-header";
-import { CassetteFooter } from "@/components/blog/cassette/cassette-footer";
-import { CassetteBackground } from "@/components/blog/cassette/cassette-background";
+import "@/app/island.css";
+import { IslandHeader, IslandFooter } from "@/components/blog/island";
 import { SiteConfigProvider } from "@/contexts/site-config-context";
 import { AnalyticsScript } from "@/components/analytics-script";
+import { siteConfigApi, type PublicSiteConfig } from "@/lib/api";
 
-export default function BlogLayout({
-    children,
+export default async function BlogLayout({
+  children,
 }: {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }) {
-    return (
-        <SiteConfigProvider>
-            <AnalyticsScript />
-            <div className="cassette-theme flex flex-col min-h-screen">
-                <CassetteBackground />
-                <CassetteHeader />
-                <div className="flex-1">{children}</div>
-                <CassetteFooter />
-            </div>
-        </SiteConfigProvider>
-    );
+  let initialConfig: PublicSiteConfig | undefined;
+  try {
+    initialConfig = await siteConfigApi.getPublic();
+  } catch (error) {
+    console.error("Failed to fetch site config in blog layout:", error);
+  }
+
+  return (
+    <SiteConfigProvider initialConfig={initialConfig}>
+      <AnalyticsScript />
+      <div
+        className="island-root island-shell"
+        style={{
+          display: "grid",
+          gridTemplateRows: "auto minmax(0, 1fr) auto",
+          minHeight: "100dvh",
+        }}
+      >
+        <a
+          href="#island-main-content"
+          className="island-skip-link island-focus-ring"
+        >
+          跳到主内容
+        </a>
+        <div className="island-wave" />
+        <IslandHeader />
+        <div id="island-main-content" className="min-h-0">
+          {children}
+        </div>
+        <IslandFooter />
+      </div>
+    </SiteConfigProvider>
+  );
 }

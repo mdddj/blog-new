@@ -12,6 +12,7 @@ import {
 import { Quote } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { BlogReference } from "@/types";
+import { sanitizeReference } from "@/lib/reference-utils";
 
 const MDPreview = dynamic(
     () => import("@uiw/react-md-editor").then((mod) => mod.default.Markdown),
@@ -27,6 +28,7 @@ interface ReferenceCardProps {
 
 export function ReferenceCard({ reference }: ReferenceCardProps) {
     const [open, setOpen] = useState(false);
+    const safeReference = sanitizeReference<BlogReference>(reference);
 
     return (
         <>
@@ -42,7 +44,7 @@ export function ReferenceCard({ reference }: ReferenceCardProps) {
                     shadow-sm hover:shadow"
             >
                 <Quote className="h-3.5 w-3.5" />
-                <span>{reference.title}</span>
+                <span>{safeReference.title}</span>
             </button>
 
             <Dialog open={open} onOpenChange={setOpen}>
@@ -50,7 +52,7 @@ export function ReferenceCard({ reference }: ReferenceCardProps) {
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
                             <Quote className="h-5 w-5" />
-                            {reference.title}
+                            {safeReference.title}
                         </DialogTitle>
                         <DialogDescription className="sr-only">
                             引用内容详情
@@ -61,13 +63,13 @@ export function ReferenceCard({ reference }: ReferenceCardProps) {
                             data-color-mode="light"
                             className="dark:hidden prose prose-sm max-w-none"
                         >
-                            <MDPreview source={reference.content} />
+                            <MDPreview source={safeReference.content} />
                         </div>
                         <div
                             data-color-mode="dark"
                             className="hidden dark:block prose prose-sm prose-invert max-w-none"
                         >
-                            <MDPreview source={reference.content} />
+                            <MDPreview source={safeReference.content} />
                         </div>
                     </div>
                 </DialogContent>

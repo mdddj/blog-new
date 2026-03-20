@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import { ReferenceCard } from "./reference-card";
 import type { BlogReference } from "@/types";
+import { sanitizeReferenceRecord } from "@/lib/reference-utils";
 
 interface BlogContentRendererProps {
     html: string;
@@ -11,6 +12,11 @@ interface BlogContentRendererProps {
 }
 
 export function BlogContentRenderer({ html, references = {}, className }: BlogContentRendererProps) {
+    const safeReferences = useMemo(
+        () => sanitizeReferenceRecord<BlogReference>(references),
+        [references]
+    );
+
     // Parse HTML and split by reference markers
     const parts = useMemo(() => {
         const result: { type: "html" | "reference"; content: string; refId?: string }[] = [];
@@ -29,7 +35,7 @@ export function BlogContentRenderer({ html, references = {}, className }: BlogCo
 
             // Add the reference marker
             const refId = match[1];
-            if (references[refId]) {
+            if (safeReferences[refId]) {
                 result.push({
                     type: "reference",
                     content: refId,
@@ -55,16 +61,16 @@ export function BlogContentRenderer({ html, references = {}, className }: BlogCo
         }
 
         return result;
-    }, [html, references]);
+    }, [html, safeReferences]);
 
     return (
         <div className={className}>
             {parts.map((part, index) => {
-                if (part.type === "reference" && part.refId && references[part.refId]) {
+                if (part.type === "reference" && part.refId && safeReferences[part.refId]) {
                     return (
                         <ReferenceCard
                             key={`ref-${part.refId}-${index}`}
-                            reference={references[part.refId]}
+                            reference={safeReferences[part.refId]}
                         />
                     );
                 }

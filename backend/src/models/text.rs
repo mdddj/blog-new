@@ -109,3 +109,51 @@ impl Text {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::Text;
+
+    fn sample_text(is_encrypted: bool, password: Option<&str>) -> Text {
+        Text {
+            id: 1,
+            name: "sample".to_string(),
+            intro: Some("intro".to_string()),
+            content: "secret content".to_string(),
+            is_encrypted: Some(is_encrypted),
+            view_password: password.map(ToOwned::to_owned),
+            created_at: None,
+            updated_at: None,
+        }
+    }
+
+    #[test]
+    fn public_response_hides_encrypted_content_without_permission() {
+        let text = sample_text(true, Some("123456"));
+        let response = text.to_public_response(false);
+
+        assert!(response.is_encrypted);
+        assert_eq!(response.content, None);
+    }
+
+    #[test]
+    fn public_response_returns_unencrypted_content() {
+        let text = sample_text(false, None);
+        let response = text.to_public_response(false);
+
+        assert_eq!(response.content.as_deref(), Some("secret content"));
+    }
+
+    #[test]
+    fn verify_password_accepts_matching_secret() {
+        let text = sample_text(true, Some("123456"));
+        assert!(text.verify_password("123456"));
+        assert!(!text.verify_password("bad-password"));
+    }
+
+    #[test]
+    fn verify_password_allows_plain_text_without_password() {
+        let text = sample_text(false, None);
+        assert!(text.verify_password("anything"));
+    }
+}

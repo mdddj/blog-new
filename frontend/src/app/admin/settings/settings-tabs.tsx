@@ -1,8 +1,15 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { Copy, KeyRound, Loader2, RefreshCw } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { mcpApi, type McpSettings } from "@/lib/api";
 
 interface SettingsTabProps {
     getValue: (key: string) => string;
@@ -394,6 +401,187 @@ export function AiConfigTab({ getValue, setValue }: SettingsTabProps) {
                         rows={4}
                     />
                 </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+export function McpConfigTab() {
+    const [settings, setSettings] = useState<McpSettings | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isRotating, setIsRotating] = useState(false);
+    const [enabledDraft, setEnabledDraft] = useState(true);
+    const [freshToken, setFreshToken] = useState<string | null>(null);
+
+    const fetchSettings = async () => {
+        setIsLoading(true);
+        try {
+            const data = await mcpApi.getSettings();
+            setSettings(data);
+            setEnabledDraft(data.enabled);
+        } catch (error) {
+            console.error("Failed to load MCP settings:", error);
+            toast.error("无法加载 MCP 配置");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchSettings();
+    }, []);
+
+    const hasChanges = useMemo(
+        () => settings !== null && settings.enabled !== enabledDraft,
+        [enabledDraft, settings]
+    );
+
+    const handleSave = async () => {
+        setIsSaving(true);
+        try {
+            const updated = await mcpApi.updateSettings(enabledDraft);
+            setSettings(updated);
+            setEnabledDraft(updated.enabled);
+            toast.success("MCP 配置已更新");
+        } catch (error) {
+            console.error("Failed to save MCP settings:", error);
+            toast.error("无法保存 MCP 配置");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleRotate = async () => {
+        setIsRotating(true);
+        try {
+            const result = await mcpApi.rotateToken();
+            setFreshToken(result.token);
+            toast.success("MCP Token 已轮换，请立即复制保存");
+            await fetchSettings();
+        } catch (error) {
+            console.error("Failed to rotate MCP token:", error);
+            toast.error("无法轮换 MCP Token");
+        } finally {
+            setIsRotating(false);
+        }
+    };
+
+    const handleCopy = async () => {
+        if (!freshToken) return;
+        try {
+            await navigator.clipboard.writeText(freshToken);
+            toast.success("Token 已复制到剪贴板");
+        } catch (error) {
+            console.error("Failed to copy token:", error);
+            toast.error("复制失败，请手动复制");
+        }
+    };
+
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="flex items-center justify-center py-12">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>MCP 服务配置</CardTitle>
+                <CardDescription>
+                    管理典典博客 MCP 服务开关和访问 Token。Token 仅会在生成或轮换当次完整展示一次。
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <div className="space-y-2">
+                    <Label htmlFor="mcp-endpoint">MCP Endpoint</Label>
+                    <Input id="mcp-endpoint" value={settings?.endpoint ?? ""} readOnly />
+                </div>
+
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                        <Label htmlFor="mcp-enabled">启用 MCP 服务</Label>
+                        <p className="text-sm text-muted-foreground">
+                            关闭后 `/mcp` 将立即不可用，重新开启无需重启服务。
+                        </p>
+                    </div>
+                    <Switch
+                        id="mcp-enabled"
+                        checked={enabledDraft}
+                        onCheckedChange={setEnabledDraft}
+                    />
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                        <Label>Token 状态</Label>
+                        <Input
+                            value={settings?.token_initialized ? "已初始化" : "未初始化"}
+                            readOnly
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <Label>当前 Token 掩码</Label>
+                        <Input value={settings?.token_masked || "尚未生成"} readOnly />
+                    </div>
+                </div>
+
+                <div className="space-y-2">
+                    <Label>最近轮换时间</Label>
+                    <Input
+                        value={
+                            settings?.token_last_rotated_at
+                                ? new Date(settings.token_last_rotated_at).toLocaleString("zh-CN")
+                                : "尚未轮换"
+                        }
+                        readOnly
+                    />
+                </div>
+
+                <div className="flex flex-wrap gap-3">
+                    <Button onClick={handleSave} disabled={isSaving || !hasChanges}>
+                        {isSaving ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                            <RefreshCw className="mr-2 h-4 w-4" />
+                        )}
+                        保存开关
+                    </Button>
+                    <Button variant="secondary" onClick={handleRotate} disabled={isRotating}>
+                        {isRotating ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                            <KeyRound className="mr-2 h-4 w-4" />
+                        )}
+                        {settings?.token_initialized ? "轮换 Token" : "生成 Token"}
+                    </Button>
+                </div>
+
+                {freshToken && (
+                    <div className="space-y-3 rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 text-foreground">
+                        <div>
+                            <Label htmlFor="fresh-token">新 Token</Label>
+                            <p className="text-sm text-amber-100 dark:text-amber-200/90">
+                                这是唯一一次完整展示。刷新页面后将无法再次查看旧值。
+                            </p>
+                        </div>
+                        <Textarea
+                            id="fresh-token"
+                            value={freshToken}
+                            readOnly
+                            rows={4}
+                            className="border-amber-500/30 bg-background/80 font-mono text-sm text-foreground shadow-sm"
+                        />
+                        <Button variant="outline" onClick={handleCopy}>
+                            <Copy className="mr-2 h-4 w-4" />
+                            复制 Token
+                        </Button>
+                    </div>
+                )}
             </CardContent>
         </Card>
     );

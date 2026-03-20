@@ -7,6 +7,7 @@ pub mod directory;
 pub mod document;
 pub mod file;
 pub mod friend_link;
+pub mod mcp;
 pub mod project;
 pub mod search;
 pub mod site_config;

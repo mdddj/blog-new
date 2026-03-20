@@ -1,135 +1,90 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-import { Link2, ExternalLink, Mail } from "lucide-react";
+import { ExternalLink, Link2, Mail } from "lucide-react";
 import { friendLinkApi } from "@/lib/api";
 import type { FriendLink } from "@/types";
 
 export default function FriendsPage() {
-    const [friendLinks, setFriendLinks] = useState<FriendLink[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [links, setLinks] = useState<FriendLink[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const fetchFriendLinks = useCallback(async () => {
-        setIsLoading(true);
+    const fetchLinks = useCallback(async () => {
+        setLoading(true);
         try {
-            const data = await friendLinkApi.list();
-            setFriendLinks(data);
-        } catch (error) {
-            console.error("Failed to fetch friend links:", error);
+            const result = await friendLinkApi.list();
+            setLinks(result);
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
     }, []);
 
     useEffect(() => {
-        fetchFriendLinks();
-    }, [fetchFriendLinks]);
+        fetchLinks();
+    }, [fetchLinks]);
 
     return (
-        <main className="cf-main">
-            <div className="cf-section-header">
-                <h1 className="cf-section-title">
-                    SIGNALS
-                </h1>
-                <span className="cf-section-badge">
-                    {friendLinks.length} LINKS
-                </span>
-            </div>
-
-            {isLoading ? (
-                <FriendLinksGridSkeleton />
-            ) : friendLinks.length === 0 ? (
-                <div className="cf-panel p-12 text-center">
-                    <Link2 className="h-16 w-16 text-(--cf-text-muted) mx-auto mb-4 opacity-50" />
-                    <p className="font-mono text-(--cf-text-dim)">NO_SIGNALS_DETECTED</p>
-                </div>
-            ) : (
-                <div className="cf-grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {friendLinks.map((link) => (
-                        <FriendLinkCard key={link.id} friendLink={link} />
-                    ))}
-                </div>
-            )}
-        </main>
-    );
-}
-
-
-function FriendLinkCard({ friendLink }: { friendLink: FriendLink }) {
-    return (
-        <a
-            href={friendLink.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="cf-card group h-full hover:border-(--cf-green) transition-colors"
-        >
-            <div className="cf-card-header group-hover:text-(--cf-green) group-hover:border-(--cf-green-dim)">
-                <span>LINK_{friendLink.id.toString().padStart(3, '0')}</span>
-                <ExternalLink className="w-3 h-3" />
-            </div>
-            
-            <div className="cf-card-content">
-                <div className="flex items-center gap-4 mb-4">
-                    {friendLink.logo ? (
-                        <div className="relative h-12 w-12 overflow-hidden rounded-full border border-(--cf-border) bg-(--cf-bg-inset) shrink-0 group-hover:border-(--cf-green)">
-                            <Image
-                                src={friendLink.logo}
-                                alt={friendLink.name}
-                                fill
-                                sizes="48px"
-                                className="object-cover grayscale group-hover:grayscale-0 transition-all"
-                                loading="lazy"
-                            />
+        <main className="island-main">
+            <div className="island-container island-page">
+                <section className="island-panel px-6 py-5">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <h1 className="island-section-title">友链航线</h1>
+                            <p className="island-subtle mt-2">连接那些值得长期阅读与交流的站点。</p>
                         </div>
-                    ) : (
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full border border-(--cf-border) bg-(--cf-bg-inset) shrink-0 group-hover:border-(--cf-green)">
-                            <Link2 className="h-6 w-6 text-(--cf-text-muted) group-hover:text-(--cf-green)" />
-                        </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                        <h3 className="font-(--cf-font-display) text-base text-(--cf-text) group-hover:text-(--cf-green) transition-colors truncate">
-                            {friendLink.name}
-                        </h3>
-                        <p className="text-xs font-mono text-(--cf-text-muted) truncate">
-                            {new URL(friendLink.url).hostname}
-                        </p>
+                        <span className="island-chip">{links.length} 个站点</span>
                     </div>
-                </div>
-                
-                <p className="text-sm font-mono text-(--cf-text-dim) line-clamp-2 mb-2">
-                    {friendLink.intro || "// NO_DATA"}
-                </p>
-                
-                {friendLink.email && (
-                    <div className="mt-auto pt-2 border-t border-(--cf-border) flex items-center gap-2 text-xs font-mono text-(--cf-text-muted)">
-                        <Mail className="h-3 w-3" />
-                        <span className="truncate">{friendLink.email}</span>
+                </section>
+
+                {loading ? (
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {Array.from({ length: 6 }).map((_, idx) => (
+                            <div key={idx} className="island-panel island-skeleton h-44" />
+                        ))}
+                    </div>
+                ) : links.length === 0 ? (
+                    <div className="island-panel p-10 text-center text-sm text-[var(--is-text-muted)]">
+                        暂无友链
+                    </div>
+                ) : (
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {links.map((link) => (
+                            <a
+                                key={link.id}
+                                href={link.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="island-card island-focus-ring p-4"
+                            >
+                                <div className="flex items-center gap-3">
+                                    {link.logo ? (
+                                        <div className="relative h-12 w-12 overflow-hidden rounded-full border border-[var(--is-border)]">
+                                            <Image src={link.logo} alt={link.name} fill sizes="48px" className="object-cover" />
+                                        </div>
+                                    ) : (
+                                        <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--is-border)] bg-[var(--is-surface-soft)] text-[var(--is-text-faint)]">
+                                            <Link2 className="h-4 w-4" />
+                                        </div>
+                                    )}
+                                    <div className="min-w-0">
+                                        <h2 className="truncate font-medium text-[var(--is-text)]">{link.name}</h2>
+                                        <p className="truncate text-xs text-[var(--is-text-faint)]">{new URL(link.url).hostname}</p>
+                                    </div>
+                                    <ExternalLink className="ml-auto h-3.5 w-3.5 text-[var(--is-text-faint)]" />
+                                </div>
+                                {link.intro && <p className="mt-3 line-clamp-2 text-sm leading-7 text-[var(--is-text-muted)]">{link.intro}</p>}
+                                {link.email && (
+                                    <p className="mt-3 inline-flex items-center gap-1.5 text-xs text-[var(--is-text-faint)]">
+                                        <Mail className="h-3.5 w-3.5" />
+                                        {link.email}
+                                    </p>
+                                )}
+                            </a>
+                        ))}
                     </div>
                 )}
             </div>
-        </a>
-    );
-}
-
-function FriendLinksGridSkeleton() {
-    return (
-        <div className="cf-grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="cf-card h-40 animate-pulse">
-                    <div className="cf-card-header bg-(--cf-bg-inset)" />
-                    <div className="cf-card-content">
-                        <div className="flex items-center gap-4 mb-4">
-                            <div className="h-12 w-12 rounded-full bg-(--cf-bg-elevated)" />
-                            <div className="flex-1 space-y-2">
-                                <div className="h-4 w-24 bg-(--cf-bg-elevated)" />
-                                <div className="h-3 w-32 bg-(--cf-bg-elevated)" />
-                            </div>
-                        </div>
-                        <div className="h-3 w-full bg-(--cf-bg-elevated)" />
-                    </div>
-                </div>
-            ))}
-        </div>
+        </main>
     );
 }

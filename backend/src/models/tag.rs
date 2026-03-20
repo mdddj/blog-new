@@ -24,6 +24,12 @@ pub struct CreateTagRequest {
     pub name: String,
 }
 
+/// Update tag request DTO
+#[derive(Debug, Deserialize)]
+pub struct UpdateTagRequest {
+    pub name: Option<String>,
+}
+
 /// Tag response DTO
 #[derive(Debug, Serialize)]
 pub struct TagResponse {
