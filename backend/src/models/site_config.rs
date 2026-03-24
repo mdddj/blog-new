@@ -31,6 +31,7 @@ pub struct SiteConfigResponse {
     pub site_subtitle: String,
     pub site_description: String,
     pub site_keywords: String,
+    pub blog_global_summary: String,
 
     // 站长信息
     pub owner_name: String,

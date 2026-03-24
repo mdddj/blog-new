@@ -86,6 +86,7 @@ impl SiteConfigRepo {
             site_subtitle: map.get("site_subtitle").cloned().unwrap_or_default(),
             site_description: map.get("site_description").cloned().unwrap_or_default(),
             site_keywords: map.get("site_keywords").cloned().unwrap_or_default(),
+            blog_global_summary: map.get("blog_global_summary").cloned().unwrap_or_default(),
             owner_name: map.get("owner_name").cloned().unwrap_or_default(),
             owner_avatar: map.get("owner_avatar").cloned().unwrap_or_default(),
             owner_bio: map.get("owner_bio").cloned().unwrap_or_default(),

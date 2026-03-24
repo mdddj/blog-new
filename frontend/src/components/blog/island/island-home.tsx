@@ -67,6 +67,7 @@ export function IslandHome({ initialData }: { initialData?: IslandHomeInitialDat
     const pageTitle = currentPage === 1 ? "最新文章" : `第 ${currentPage} 页文章`;
     const featuredBlog = currentPage === 1 ? blogs[0] : undefined;
     const feedBlogs = featuredBlog ? blogs.slice(1) : blogs;
+    const blogGlobalSummary = config.blog_global_summary.trim();
 
     return (
         <main className="island-main">
@@ -82,6 +83,17 @@ export function IslandHome({ initialData }: { initialData?: IslandHomeInitialDat
                                 config.site_subtitle ||
                                 "这里收录博客、项目、文档与长期积累下来的技术线索。新的版式更像一本持续更新的数字刊物，每次打开都先看到主编导读，再进入正文。"}
                         </p>
+
+                        {blogGlobalSummary && (
+                            <div className="mt-6 island-panel-soft px-5 py-4">
+                                <p className="text-xs uppercase tracking-[0.24em] text-[var(--is-primary)]">
+                                    Blog Brief
+                                </p>
+                                <p className="mt-3 text-sm leading-7 text-[var(--is-text-muted)]">
+                                    {blogGlobalSummary}
+                                </p>
+                            </div>
+                        )}
 
                         <div className="mt-6 island-home-metrics">
                             <div className="island-home-metric">

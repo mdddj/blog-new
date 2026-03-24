@@ -9,7 +9,10 @@ export async function generateMetadata(): Promise<Metadata> {
     const config = await siteConfigApi.getPublic();
     return {
       title: config.site_title || "Blog System",
-      description: config.site_description || "A modern blog platform",
+      description:
+        config.site_description ||
+        config.blog_global_summary ||
+        "A modern blog platform",
       keywords: config.site_keywords,
     };
   } catch (error) {

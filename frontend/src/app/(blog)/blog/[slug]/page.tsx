@@ -1,20 +1,16 @@
 import { Metadata } from "next";
+import { blogApi } from "@/lib/api";
+import type { Blog } from "@/types";
 import { BlogDetailClient } from "./blog-detail-client";
 
-// 服务端使用内部 API URL（Docker 网络）
-const API_BASE_URL = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "我的博客";
 
-async function getBlog(slug: string) {
+async function getBlog(slug: string): Promise<Blog | null> {
     try {
-        const url = isNaN(Number(slug)) 
-            ? `${API_BASE_URL}/blogs/slug/${slug}`
-            : `${API_BASE_URL}/blogs/${slug}`;
-            
-        const res = await fetch(url, { next: { revalidate: 60 } });
-        if (!res.ok) return null;
-        return res.json();
+        return Number.isNaN(Number(slug))
+            ? await blogApi.getBySlug(slug)
+            : await blogApi.getById(Number(slug));
     } catch (error) {
         console.error("Failed to fetch blog for metadata:", error);
         return null;

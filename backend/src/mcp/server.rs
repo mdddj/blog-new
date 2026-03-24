@@ -323,6 +323,11 @@ struct PolishMarkdownArgs {
     custom_prompt: Option<String>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+struct SetBlogGlobalSummaryArgs {
+    summary: String,
+}
+
 #[derive(Clone)]
 pub struct BlogMcpServer {
     state: AppState,
@@ -507,7 +512,10 @@ impl BlogMcpServer {
         Self::json_result(detail)
     }
 
-    #[tool(name = "add_blog_tags", description = "为指定博客新增一个或多个标签，不会移除现有标签")]
+    #[tool(
+        name = "add_blog_tags",
+        description = "为指定博客新增一个或多个标签，不会移除现有标签"
+    )]
     async fn add_blog_tags(
         &self,
         Parameters(args): Parameters<BlogTagIdsArgs>,
@@ -534,14 +542,20 @@ impl BlogMcpServer {
             .map_err(Self::api_error_to_string)?
             .ok_or_else(|| "更新标签后获取博客详情失败".to_string())?;
 
-        let _ =
-            BlogService::invalidate_blog_cache(&self.state.cache, args.blog_id, blog.slug.as_deref())
-                .await;
+        let _ = BlogService::invalidate_blog_cache(
+            &self.state.cache,
+            args.blog_id,
+            blog.slug.as_deref(),
+        )
+        .await;
 
         Self::json_result(detail)
     }
 
-    #[tool(name = "remove_blog_tags", description = "从指定博客移除一个或多个标签，不影响其他标签")]
+    #[tool(
+        name = "remove_blog_tags",
+        description = "从指定博客移除一个或多个标签，不影响其他标签"
+    )]
     async fn remove_blog_tags(
         &self,
         Parameters(args): Parameters<BlogTagIdsArgs>,
@@ -567,14 +581,20 @@ impl BlogMcpServer {
             .map_err(Self::api_error_to_string)?
             .ok_or_else(|| "更新标签后获取博客详情失败".to_string())?;
 
-        let _ =
-            BlogService::invalidate_blog_cache(&self.state.cache, args.blog_id, blog.slug.as_deref())
-                .await;
+        let _ = BlogService::invalidate_blog_cache(
+            &self.state.cache,
+            args.blog_id,
+            blog.slug.as_deref(),
+        )
+        .await;
 
         Self::json_result(detail)
     }
 
-    #[tool(name = "set_blog_tags", description = "重设指定博客的标签列表，传入的标签会完全替换原有标签")]
+    #[tool(
+        name = "set_blog_tags",
+        description = "重设指定博客的标签列表，传入的标签会完全替换原有标签"
+    )]
     async fn set_blog_tags(
         &self,
         Parameters(args): Parameters<BlogTagIdsArgs>,
@@ -596,9 +616,12 @@ impl BlogMcpServer {
             .map_err(Self::api_error_to_string)?
             .ok_or_else(|| "更新标签后获取博客详情失败".to_string())?;
 
-        let _ =
-            BlogService::invalidate_blog_cache(&self.state.cache, args.blog_id, blog.slug.as_deref())
-                .await;
+        let _ = BlogService::invalidate_blog_cache(
+            &self.state.cache,
+            args.blog_id,
+            blog.slug.as_deref(),
+        )
+        .await;
 
         Self::json_result(detail)
     }
@@ -765,7 +788,10 @@ impl BlogMcpServer {
         Self::json_result(projects)
     }
 
-    #[tool(name = "list_documents", description = "获取文档列表，可按关键字或目录筛选")]
+    #[tool(
+        name = "list_documents",
+        description = "获取文档列表，可按关键字或目录筛选"
+    )]
     async fn list_documents(
         &self,
         Parameters(args): Parameters<ListDocumentsArgs>,
@@ -798,7 +824,10 @@ impl BlogMcpServer {
         }))
     }
 
-    #[tool(name = "get_document_detail", description = "获取指定文档详情，包含 Markdown 和渲染后的 HTML")]
+    #[tool(
+        name = "get_document_detail",
+        description = "获取指定文档详情，包含 Markdown 和渲染后的 HTML"
+    )]
     async fn get_document_detail(
         &self,
         Parameters(DocumentIdArgs { document_id }): Parameters<DocumentIdArgs>,
@@ -909,7 +938,10 @@ impl BlogMcpServer {
         }))
     }
 
-    #[tool(name = "get_directory_tree", description = "获取文档目录树，包含目录层级和目录下的文档")]
+    #[tool(
+        name = "get_directory_tree",
+        description = "获取文档目录树，包含目录层级和目录下的文档"
+    )]
     async fn get_directory_tree(&self) -> Result<McpJson<Value>, String> {
         let tree = DirectoryRepository::get_tree(&self.state.db)
             .await
@@ -989,7 +1021,10 @@ impl BlogMcpServer {
         Self::json_result(directory)
     }
 
-    #[tool(name = "delete_directory", description = "删除文档目录；会级联删除其子目录和目录下文档")]
+    #[tool(
+        name = "delete_directory",
+        description = "删除文档目录；会级联删除其子目录和目录下文档"
+    )]
     async fn delete_directory(
         &self,
         Parameters(DeleteDirectoryArgs { directory_id }): Parameters<DeleteDirectoryArgs>,
@@ -1013,7 +1048,10 @@ impl BlogMcpServer {
         }))
     }
 
-    #[tool(name = "list_categories", description = "获取分类列表，附带每个分类的博客数量")]
+    #[tool(
+        name = "list_categories",
+        description = "获取分类列表，附带每个分类的博客数量"
+    )]
     async fn list_categories(&self) -> Result<McpJson<Value>, String> {
         let categories = CategoryRepository::find_all_with_count(&self.state.db)
             .await
@@ -1101,7 +1139,10 @@ impl BlogMcpServer {
         Self::json_result(category)
     }
 
-    #[tool(name = "delete_category", description = "删除分类；如果分类下仍有关联博客则拒绝删除")]
+    #[tool(
+        name = "delete_category",
+        description = "删除分类；如果分类下仍有关联博客则拒绝删除"
+    )]
     async fn delete_category(
         &self,
         Parameters(DeleteCategoryArgs { category_id }): Parameters<DeleteCategoryArgs>,
@@ -1140,7 +1181,10 @@ impl BlogMcpServer {
         }))
     }
 
-    #[tool(name = "list_tags", description = "获取标签列表，附带每个标签的博客数量")]
+    #[tool(
+        name = "list_tags",
+        description = "获取标签列表，附带每个标签的博客数量"
+    )]
     async fn list_tags(&self) -> Result<McpJson<Value>, String> {
         let tags = TagRepository::find_all_with_count(&self.state.db)
             .await
@@ -1204,14 +1248,10 @@ impl BlogMcpServer {
             None => None,
         };
 
-        let tag = TagRepository::update(
-            &self.state.db,
-            args.tag_id,
-            &UpdateTagRequest { name },
-        )
-        .await
-        .map_err(Self::api_error_to_string)?
-        .ok_or_else(|| format!("标签 {} 不存在", args.tag_id))?;
+        let tag = TagRepository::update(&self.state.db, args.tag_id, &UpdateTagRequest { name })
+            .await
+            .map_err(Self::api_error_to_string)?
+            .ok_or_else(|| format!("标签 {} 不存在", args.tag_id))?;
 
         let _ = self.state.cache.delete(&cache_keys::tag_list()).await;
         let _ = self
@@ -1733,6 +1773,46 @@ impl BlogMcpServer {
             .map_err(Self::api_error_to_string)?;
 
         Self::json_result(json!({ "result": result }))
+    }
+
+    #[tool(
+        name = "get_blog_global_summary",
+        description = "获取站点级博客总结配置，前台首页可用它展示最近发布内容与近期研究方向概述"
+    )]
+    async fn get_blog_global_summary(&self) -> Result<McpJson<Value>, String> {
+        let summary = SiteConfigRepo::get_value(&self.state.db, "blog_global_summary")
+            .await
+            .map_err(Self::api_error_to_string)?
+            .unwrap_or_default();
+        let configured = !summary.trim().is_empty();
+
+        Self::json_result(json!({
+            "summary": summary,
+            "configured": configured,
+        }))
+    }
+
+    #[tool(
+        name = "set_blog_global_summary",
+        description = "更新站点级博客总结配置。前台首页检测到后会显示这段总结；传空字符串可清空"
+    )]
+    async fn set_blog_global_summary(
+        &self,
+        Parameters(args): Parameters<SetBlogGlobalSummaryArgs>,
+    ) -> Result<McpJson<Value>, String> {
+        let summary = args.summary.trim().to_string();
+        let configured = !summary.is_empty();
+
+        SiteConfigRepo::update(&self.state.db, "blog_global_summary", &summary)
+            .await
+            .map_err(Self::api_error_to_string)?;
+
+        let _ = self.state.cache.delete(&cache_keys::site_config()).await;
+
+        Self::json_result(json!({
+            "summary": summary,
+            "configured": configured,
+        }))
     }
 }
 
