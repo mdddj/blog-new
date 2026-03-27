@@ -174,11 +174,11 @@ export function BlogDetailClient({ slug }: { slug: string }) {
                   !hasThumbnail && "island-story-header-text-only",
                 )}
               >
-                <div className="grid content-start gap-6">
+                <div className="island-story-copy">
                   <div className="flex flex-wrap items-center gap-3">
                     <button
                       type="button"
-                      className="island-action-btn island-focus-ring"
+                      className="island-action-btn island-focus-ring cursor-pointer"
                       onClick={() => {
                         if (window.history.length > 1) {
                           router.back();
@@ -213,7 +213,12 @@ export function BlogDetailClient({ slug }: { slug: string }) {
                     </h1>
                   </div>
 
-                  <div className="grid gap-3 sm:max-w-3xl sm:grid-cols-2 xl:grid-cols-4">
+                  <div
+                    className={cn(
+                      "grid gap-3 sm:max-w-3xl sm:grid-cols-2",
+                      isLoggedIn ? "xl:grid-cols-4" : "xl:grid-cols-3",
+                    )}
+                  >
                     <div className="island-panel-soft px-4 py-3">
                       <div className="text-[11px] uppercase tracking-[0.2em] text-[var(--is-text-faint)]">
                         Published

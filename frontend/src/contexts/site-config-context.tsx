@@ -14,6 +14,7 @@ export const defaultConfig: PublicSiteConfig = {
     site_subtitle: "",
     site_description: "",
     site_keywords: "",
+    blog_global_summary: "",
     owner_name: "",
     owner_avatar: "",
     owner_bio: "",

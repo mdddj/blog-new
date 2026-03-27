@@ -1,42 +1,42 @@
+import { access, readFile } from "node:fs/promises";
+import path from "node:path";
 import { NextResponse } from "next/server";
 
-// 服务端使用内部 API URL（Docker 网络），客户端使用公开 URL
-const API_BASE_URL = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL || "https://api.itbug.shop/api/v1";
-const PUBLIC_FALLBACK_API_URL = process.env.NEXT_PUBLIC_FALLBACK_API_URL || "https://api.itbug.shop/api/v1";
+const FAVICON_CANDIDATE_PATHS = [
+    path.join(process.cwd(), "public", "favicon.ico"),
+    path.join(process.cwd(), "frontend", "public", "favicon.ico"),
+];
 
-export const dynamic = "force-dynamic";
+async function resolveFaviconPath() {
+    for (const candidatePath of FAVICON_CANDIDATE_PATHS) {
+        try {
+            await access(candidatePath);
+            return candidatePath;
+        } catch {
+            continue;
+        }
+    }
+
+    return null;
+}
 
 export async function GET() {
     try {
-        // 获取站点配置
-        let configRes = await fetch(`${API_BASE_URL}/config`, { cache: "no-store" });
-        if (!configRes.ok && API_BASE_URL !== PUBLIC_FALLBACK_API_URL) {
-            configRes = await fetch(`${PUBLIC_FALLBACK_API_URL}/config`, { cache: "no-store" });
+        const faviconPath = await resolveFaviconPath();
+        if (!faviconPath) {
+            throw new Error("Local favicon.ico not found");
         }
 
-        if (configRes.ok) {
-            const data = await configRes.json();
-            const avatarUrl = data.data?.owner_avatar;
+        const iconBuffer = await readFile(faviconPath);
 
-            if (avatarUrl) {
-                // 获取头像图片
-                const imageRes = await fetch(avatarUrl);
-
-                if (imageRes.ok) {
-                    const imageBuffer = await imageRes.arrayBuffer();
-                    const contentType = imageRes.headers.get("content-type") || "image/png";
-
-                    return new NextResponse(imageBuffer, {
-                        headers: {
-                            "Content-Type": contentType,
-                            "Cache-Control": "public, max-age=3600, s-maxage=3600",
-                        },
-                    });
-                }
-            }
-        }
-    } catch (e) {
-        console.error("[favicon] Error:", e);
+        return new NextResponse(iconBuffer, {
+            headers: {
+                "Content-Type": "image/x-icon",
+                "Cache-Control": "public, max-age=86400, s-maxage=86400",
+            },
+        });
+    } catch (error) {
+        console.error("[favicon] Error serving local icon:", error);
     }
 
     // Fallback: 返回一个简单的 1x1 透明 PNG

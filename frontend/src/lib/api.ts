@@ -619,6 +619,7 @@ export interface PublicSiteConfig {
   site_subtitle: string;
   site_description: string;
   site_keywords: string;
+  blog_global_summary: string;
   owner_name: string;
   owner_avatar: string;
   owner_bio: string;
@@ -638,7 +639,10 @@ export interface PublicSiteConfig {
 
 export const siteConfigApi = {
   // 获取公开配置（前端使用）
-  getPublic: () => request<PublicSiteConfig>("/config"),
+  getPublic: () =>
+    request<PublicSiteConfig>("/config", {
+      cache: "no-store",
+    }),
 
   // 获取所有配置（管理后台使用）
   getAll: () => request<SiteConfig[]>("/admin/config"),

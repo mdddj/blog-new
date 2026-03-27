@@ -55,6 +55,19 @@ export function SiteInfoTab({ getValue, setValue }: SettingsTabProps) {
                     />
                 </div>
                 <div className="space-y-2">
+                    <Label htmlFor="blog_global_summary">博客总结</Label>
+                    <Textarea
+                        id="blog_global_summary"
+                        value={getValue("blog_global_summary")}
+                        onChange={(e) => setValue("blog_global_summary", e.target.value)}
+                        placeholder="例如：最近主要在研究 AI 编码工作流、MCP 集成和博客系统演进。"
+                        rows={4}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                        这是全局博客导读，可在后台手动维护，也可由 AI 通过 MCP 更新，前台首页检测到后会展示。
+                    </p>
+                </div>
+                <div className="space-y-2">
                     <Label htmlFor="site_keywords">站点关键词 (SEO)</Label>
                     <Input
                         id="site_keywords"
