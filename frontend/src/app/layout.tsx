@@ -14,12 +14,20 @@ export async function generateMetadata(): Promise<Metadata> {
         config.blog_global_summary ||
         "A modern blog platform",
       keywords: config.site_keywords,
+      icons: {
+        icon: "/favicon.ico",
+        shortcut: "/favicon.ico",
+      },
     };
   } catch (error) {
     console.error("Failed to fetch site config for metadata:", error);
     return {
       title: "Blog System",
       description: "A modern blog platform",
+      icons: {
+        icon: "/favicon.ico",
+        shortcut: "/favicon.ico",
+      },
     };
   }
 }
