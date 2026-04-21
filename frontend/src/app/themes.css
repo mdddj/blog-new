@@ -2,13 +2,18 @@
    STYLE THEMES FOR BLOG FRONTEND
    ============================================ */
 
+:root {
+    --blog-system-font:
+        system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
 /* ============================================
    THEME: MINIMAL (极简)
    Clean, black & white, generous whitespace
    ============================================ */
 .theme-minimal {
-    --theme-font-heading: "Inter", system-ui, sans-serif;
-    --theme-font-body: "Inter", system-ui, sans-serif;
+    --theme-font-heading: var(--blog-system-font);
+    --theme-font-body: var(--blog-system-font);
     --theme-radius: 0.5rem;
     --theme-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     --theme-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -54,8 +59,8 @@
    Neon gradients, dark base, tech vibes
    ============================================ */
 .theme-cyber {
-    --theme-font-heading: "Space Grotesk", "Inter", system-ui, sans-serif;
-    --theme-font-body: "Inter", system-ui, sans-serif;
+    --theme-font-heading: var(--blog-system-font);
+    --theme-font-body: var(--blog-system-font);
     --theme-radius: 0.75rem;
     --theme-shadow: 0 0 20px rgba(139, 92, 246, 0.15);
     --theme-shadow-lg: 0 0 40px rgba(139, 92, 246, 0.25);
@@ -121,8 +126,8 @@
    Earthy tones, serif fonts, cozy feeling
    ============================================ */
 .theme-warm {
-    --theme-font-heading: "Playfair Display", "Noto Serif SC", Georgia, serif;
-    --theme-font-body: "Source Sans 3", "Noto Sans SC", system-ui, sans-serif;
+    --theme-font-heading: var(--blog-system-font);
+    --theme-font-body: var(--blog-system-font);
     --theme-radius: 0.25rem;
     --theme-shadow: 0 2px 8px rgba(120, 80, 40, 0.08);
     --theme-shadow-lg: 0 8px 24px rgba(120, 80, 40, 0.12);
@@ -177,8 +182,8 @@
    Blue-green palette, fresh and clean
    ============================================ */
 .theme-ocean {
-    --theme-font-heading: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
-    --theme-font-body: "Inter", system-ui, sans-serif;
+    --theme-font-heading: var(--blog-system-font);
+    --theme-font-body: var(--blog-system-font);
     --theme-radius: 1rem;
     --theme-shadow: 0 4px 16px rgba(0, 120, 150, 0.08);
     --theme-shadow-lg: 0 8px 32px rgba(0, 120, 150, 0.12);
