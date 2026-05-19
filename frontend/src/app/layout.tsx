@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { siteConfigApi } from "@/lib/api";
+import "animal-island-ui/style";
 import "./globals.css";
 
 export async function generateMetadata(): Promise<Metadata> {

@@ -1,27 +1,16 @@
 import { Suspense } from "react";
 import { IslandHome } from "@/components/blog/island";
 import { blogApi, categoryApi, tagApi } from "@/lib/api";
+import { Card, Loading } from "@/lib/animal-ui";
 
 function LoadingSkeleton() {
     return (
-        <main className="island-main">
-            <div className="island-container island-page">
-                <div className="island-home-hero">
-                    <div className="island-panel island-skeleton min-h-[360px]" />
-                    <div className="island-panel island-skeleton min-h-[360px]" />
+        <main className="mx-auto grid w-[min(1180px,calc(100vw-2rem))] gap-4 py-6">
+            <Card type="dashed">
+                <div className="flex min-h-[60vh] items-center justify-center">
+                    <Loading active />
                 </div>
-                <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
-                    <div className="grid gap-4">
-                        <div className="island-panel island-skeleton h-24" />
-                        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                            {Array.from({ length: 9 }).map((_, i) => (
-                                <div key={i} className="island-panel island-skeleton h-60" />
-                            ))}
-                        </div>
-                    </div>
-                    <div className="island-panel island-skeleton h-96" />
-                </div>
-            </div>
+            </Card>
         </main>
     );
 }

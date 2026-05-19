@@ -2,93 +2,104 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-import { BriefcaseBusiness, Download, ExternalLink, Github } from "lucide-react";
+import { Button, Card, Divider, Icon, Loading } from "@/lib/animal-ui";
 import { projectApi } from "@/lib/api";
 import type { Project } from "@/types";
 
+function openExternal(url: string) {
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
 export default function ProjectsPage() {
-    const [projects, setProjects] = useState<Project[]>([]);
-    const [loading, setLoading] = useState(true);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
 
-    const fetchProjects = useCallback(async () => {
-        setLoading(true);
-        try {
-            const result = await projectApi.list();
-            setProjects(result);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+  const fetchProjects = useCallback(async () => {
+    setLoading(true);
+    try {
+      setProjects(await projectApi.list());
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-    useEffect(() => {
-        fetchProjects();
-    }, [fetchProjects]);
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
 
-    return (
-        <main className="island-main">
-            <div className="island-container island-page">
-                <section className="island-panel px-6 py-5">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div>
-                            <h1 className="island-section-title">项目礁石</h1>
-                            <p className="island-subtle mt-2">记录正在打磨与持续维护的项目。</p>
-                        </div>
-                        <span className="island-chip">{projects.length} 个项目</span>
-                    </div>
-                </section>
-
-                {loading ? (
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {Array.from({ length: 6 }).map((_, idx) => (
-                            <div key={idx} className="island-panel island-skeleton h-64" />
-                        ))}
-                    </div>
-                ) : projects.length === 0 ? (
-                    <div className="island-panel p-10 text-center text-sm text-[var(--is-text-muted)]">暂无项目数据</div>
-                ) : (
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {projects.map((project) => (
-                            <article key={project.id} className="island-card p-4 sm:p-5">
-                                <div className="flex items-center gap-3">
-                                    {project.logo ? (
-                                        <div className="relative h-14 w-14 overflow-hidden rounded-xl border border-[var(--is-border)] bg-[var(--is-surface-soft)]">
-                                            <Image src={project.logo} alt={project.name} fill sizes="56px" className="object-cover" />
-                                        </div>
-                                    ) : (
-                                        <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-[var(--is-border)] bg-[var(--is-surface-soft)] text-[var(--is-text-faint)]">
-                                            <BriefcaseBusiness className="h-4 w-4" />
-                                        </div>
-                                    )}
-                                    <h2 className="font-[var(--is-font-title)] text-lg text-[var(--is-text)]">{project.name}</h2>
-                                </div>
-
-                                {project.description && <p className="mt-3 line-clamp-4 text-sm leading-7 text-[var(--is-text-muted)]">{project.description}</p>}
-
-                                <div className="mt-4 flex flex-wrap gap-2">
-                                    {project.github_url && (
-                                        <a href={project.github_url} target="_blank" rel="noopener noreferrer" className="island-chip island-focus-ring">
-                                            <Github className="h-3.5 w-3.5" />
-                                            GitHub
-                                        </a>
-                                    )}
-                                    {project.preview_url && (
-                                        <a href={project.preview_url} target="_blank" rel="noopener noreferrer" className="island-chip island-focus-ring">
-                                            <ExternalLink className="h-3.5 w-3.5" />
-                                            预览
-                                        </a>
-                                    )}
-                                    {project.download_url && (
-                                        <a href={project.download_url} target="_blank" rel="noopener noreferrer" className="island-chip island-focus-ring">
-                                            <Download className="h-3.5 w-3.5" />
-                                            下载
-                                        </a>
-                                    )}
-                                </div>
-                            </article>
-                        ))}
-                    </div>
-                )}
+  return (
+    <main className="mx-auto grid w-[min(1180px,calc(100vw-2rem))] gap-6 py-6">
+      <Card color="app-teal">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="grid gap-2">
+            <div className="flex items-center gap-2 text-sm font-black">
+              <Icon name="icon-diy" size={24} bounce />
+              项目礁石
             </div>
-        </main>
-    );
+            <h1 className="text-3xl font-black leading-tight sm:text-4xl">记录正在打磨与持续维护的项目。</h1>
+            <p className="max-w-3xl leading-8">项目入口保持原有外链能力，用 Animal Island 的卡片和按钮呈现。</p>
+          </div>
+          <Card>
+            <div className="text-sm font-black uppercase tracking-wide">Projects</div>
+            <div className="mt-1 text-3xl font-black">{projects.length}</div>
+            <div className="mt-1 text-sm">个项目</div>
+          </Card>
+        </div>
+      </Card>
+
+      {loading ? (
+        <Card type="dashed">
+          <div className="flex min-h-72 items-center justify-center">
+            <Loading active />
+          </div>
+        </Card>
+      ) : projects.length === 0 ? (
+        <Card type="dashed">
+          <div className="grid justify-items-center gap-3 py-10">
+            <Icon name="icon-shopping" size={54} bounce />
+            <p>暂无项目数据</p>
+          </div>
+        </Card>
+      ) : (
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {projects.map((project) => (
+            <Card key={project.id}>
+              <article className="grid h-full gap-4">
+                <div className="flex items-center gap-3">
+                  {project.logo ? (
+                    <div className="relative h-16 w-16 overflow-hidden rounded-[22px] bg-[#f0e8d8]">
+                      <Image src={project.logo} alt={project.name} fill sizes="64px" className="object-cover" />
+                    </div>
+                  ) : (
+                    <Icon name="icon-diy" size={58} bounce />
+                  )}
+                  <h2 className="text-xl font-black leading-tight">{project.name}</h2>
+                </div>
+
+                {project.description ? <p className="line-clamp-5 leading-7">{project.description}</p> : null}
+                <Divider type="line-brown" />
+                <div className="flex flex-wrap gap-2">
+                  {project.github_url ? (
+                    <Button type="dashed" size="small" icon={<Icon name="icon-critterpedia" size={16} />} onClick={() => openExternal(project.github_url!)}>
+                      GitHub
+                    </Button>
+                  ) : null}
+                  {project.preview_url ? (
+                    <Button type="primary" size="small" icon={<Icon name="icon-map" size={16} />} onClick={() => openExternal(project.preview_url!)}>
+                      预览
+                    </Button>
+                  ) : null}
+                  {project.download_url ? (
+                    <Button type="default" size="small" icon={<Icon name="icon-shopping" size={16} />} onClick={() => openExternal(project.download_url!)}>
+                      下载
+                    </Button>
+                  ) : null}
+                </div>
+              </article>
+            </Card>
+          ))}
+        </section>
+      )}
+    </main>
+  );
 }

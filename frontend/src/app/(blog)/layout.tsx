@@ -1,4 +1,4 @@
-import "@/app/island.css";
+import { Cursor } from "@/lib/animal-ui";
 import { IslandHeader, IslandFooter } from "@/components/blog/island";
 import { SiteConfigProvider } from "@/contexts/site-config-context";
 import { AnalyticsScript } from "@/components/analytics-script";
@@ -19,27 +19,21 @@ export default async function BlogLayout({
   return (
     <SiteConfigProvider initialConfig={initialConfig}>
       <AnalyticsScript />
-      <div
-        className="island-root island-shell"
-        style={{
-          display: "grid",
-          gridTemplateRows: "auto minmax(0, 1fr) auto",
-          minHeight: "100dvh",
-        }}
-      >
+      <Cursor>
+      <div className="min-h-dvh bg-[#f8f8f0] text-[#794f27]">
         <a
-          href="#island-main-content"
-          className="island-skip-link island-focus-ring"
+          href="#public-main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-[#f7f3df] focus:px-4 focus:py-2 focus:text-[#794f27] focus:outline-2 focus:outline-[#19c8b9]"
         >
           跳到主内容
         </a>
-        <div className="island-wave" />
         <IslandHeader />
-        <div id="island-main-content" className="min-h-0">
+        <div id="public-main-content" className="min-h-[calc(100dvh-13rem)]">
           {children}
         </div>
         <IslandFooter />
       </div>
+      </Cursor>
     </SiteConfigProvider>
   );
 }
