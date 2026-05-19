@@ -3,11 +3,22 @@
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Button, Card, Divider, Icon, Loading } from "@/lib/animal-ui";
+import { ArrowLeft, ArrowUp, CalendarDays, Clock3, Edit3, Eye, FileText, Folder, Hash } from "lucide-react";
 import { blogApi } from "@/lib/api";
 import { isAuthenticated } from "@/lib/auth";
 import type { Blog } from "@/types";
 import { BlogContentRenderer } from "@/components/blog";
+import {
+  EmptyState,
+  LoadingState,
+  PublicCard,
+  PUBLIC_CONTAINER,
+  TextButton,
+  blogHref,
+  formatDate,
+  readingMinutes,
+} from "@/components/blog/public";
+import { cn } from "@/lib/utils";
 
 function extractHeadings(html: string): { id: string; text: string; level: number }[] {
   if (typeof window === "undefined") return [];
@@ -28,10 +39,6 @@ function addHeadingIds(html: string): string {
     node.id = `heading-${idx}`;
   });
   return doc.body.innerHTML;
-}
-
-function blogHref(blog: Blog) {
-  return blog.slug ? `/blog/${blog.slug}` : `/blog/${blog.id}`;
 }
 
 export function BlogDetailClient({ slug }: { slug: string }) {
@@ -67,7 +74,7 @@ export function BlogDetailClient({ slug }: { slug: string }) {
           if (idx > 0) setNextBlog(all.items[idx - 1]);
           if (idx < all.items.length - 1) setPrevBlog(all.items[idx + 1]);
         } catch {
-          // Navigation is optional; keep article render stable when this request fails.
+          // Previous and next links are optional.
         }
       } catch {
         setError("文章不存在或已被删除");
@@ -111,198 +118,189 @@ export function BlogDetailClient({ slug }: { slug: string }) {
 
   if (loading) {
     return (
-      <main className="mx-auto grid w-[min(1180px,calc(100vw-2rem))] gap-6 py-6">
-        <Card type="dashed">
-          <div className="flex min-h-[72vh] items-center justify-center">
-            <Loading active />
-          </div>
-        </Card>
+      <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8")}>
+        <LoadingState label="正在加载文章" />
       </main>
     );
   }
 
   if (error || !blog) {
     return (
-      <main className="mx-auto grid w-[min(1180px,calc(100vw-2rem))] gap-6 py-6">
-        <Card type="dashed">
-          <div className="grid justify-items-center gap-3 py-12 text-center">
-            <Icon name="icon-chat" size={58} bounce />
-            <h1 className="text-2xl font-black">{error || "找不到这篇文章"}</h1>
-            <Button type="primary" onClick={() => router.push("/")}>
-              返回首页
-            </Button>
-          </div>
-        </Card>
+      <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8")}>
+        <EmptyState title={error || "找不到这篇文章"} description="返回首页继续浏览最新内容。" icon={<FileText className="h-6 w-6" />} />
+        <div className="flex justify-center">
+          <TextButton variant="primary" onClick={() => router.push("/")}>
+            返回首页
+          </TextButton>
+        </div>
       </main>
     );
   }
 
-  const readingTime = Math.max(1, Math.ceil((blog.content || blog.html || "").length / 700));
+  const readTime = readingMinutes(blog);
   const hasThumbnail = Boolean(blog.thumbnail);
 
   return (
     <>
-      <main className="mx-auto grid w-[min(1180px,calc(100vw-2rem))] min-w-0 gap-6 py-6">
-        <section className="grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1fr)_260px]">
-          <article className="grid min-w-0 gap-4">
-            <Card color="app-yellow" className="min-w-0 overflow-hidden">
-              <header className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(260px,0.42fr)] lg:items-center">
-                <div className="grid min-w-0 gap-4">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Button
-                      type="dashed"
-                      size="small"
-                      icon={<Icon name="icon-helicopter" size={16} />}
-                      onClick={() => {
-                        if (window.history.length > 1) router.back();
-                        else router.push("/");
-                      }}
+      <main className={cn(PUBLIC_CONTAINER, "grid min-w-0 gap-8 py-8")}>
+        <article className="grid min-w-0 gap-8 xl:grid-cols-[minmax(0,760px)_260px] xl:justify-center">
+          <div className="grid min-w-0 gap-6">
+            <header className="grid gap-5">
+              <div className="flex flex-wrap items-center gap-2">
+                <TextButton
+                  variant="secondary"
+                  onClick={() => {
+                    if (window.history.length > 1) router.back();
+                    else router.push("/");
+                  }}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  返回
+                </TextButton>
+                {blog.category ? (
+                  <button
+                    type="button"
+                    className="inline-flex min-h-9 items-center gap-2 rounded-full bg-slate-100 px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                    onClick={() => router.push(`/category/${blog.category!.id}`)}
+                  >
+                    <Folder className="h-4 w-4" />
+                    {blog.category.name}
+                  </button>
+                ) : null}
+              </div>
+
+              <div className="grid gap-4">
+                <h1 className="break-words text-4xl font-semibold leading-tight tracking-tight text-slate-950 dark:text-white sm:text-5xl">
+                  {blog.title}
+                </h1>
+                {blog.summary ? <p className="text-lg leading-8 text-slate-600 dark:text-slate-300">{blog.summary}</p> : null}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-500 dark:text-slate-400">
+                <span className="inline-flex items-center gap-2">
+                  <CalendarDays className="h-4 w-4" />
+                  {formatDate(blog.created_at)}
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <Eye className="h-4 w-4" />
+                  {blog.view_count || 0} 次阅读
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <Clock3 className="h-4 w-4" />
+                  {readTime} 分钟
+                </span>
+                {isLoggedIn ? (
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-2 font-medium text-slate-700 hover:underline dark:text-slate-200"
+                    onClick={() => router.push(`/admin/blogs/${blog.id}`)}
+                  >
+                    <Edit3 className="h-4 w-4" />
+                    编辑文章
+                  </button>
+                ) : null}
+              </div>
+
+              {blog.tags?.length ? (
+                <div className="flex flex-wrap gap-2">
+                  {blog.tags.map((tag) => (
+                    <button
+                      key={tag.id}
+                      type="button"
+                      className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1.5 text-sm text-slate-600 transition hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+                      onClick={() => router.push(`/tag/${tag.id}`)}
                     >
-                      返回
-                    </Button>
-                    {blog.category ? (
-                      <Button type="text" size="small" onClick={() => router.push(`/category/${blog.category!.id}`)}>
-                        {blog.category.name}
-                      </Button>
-                    ) : (
-                      <span className="text-sm font-black">Longform Note</span>
-                    )}
-                    <span className="text-sm font-black">{new Date(blog.created_at).getFullYear()}</span>
-                  </div>
-
-                  <h1 className="break-words text-3xl font-black leading-tight sm:text-5xl">{blog.title}</h1>
-
-                  <div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                    <Card>
-                      <div className="text-xs font-black uppercase tracking-wide">Published</div>
-                      <div className="mt-1 text-sm font-bold">{new Date(blog.created_at).toLocaleDateString("zh-CN")}</div>
-                    </Card>
-                    <Card>
-                      <div className="text-xs font-black uppercase tracking-wide">Reads</div>
-                      <div className="mt-1 text-sm font-bold">{blog.view_count || 0}</div>
-                    </Card>
-                    <Card>
-                      <div className="text-xs font-black uppercase tracking-wide">Reading</div>
-                      <div className="mt-1 text-sm font-bold">{readingTime} 分钟</div>
-                    </Card>
-                    {isLoggedIn ? (
-                      <Card>
-                        <Button type="text" size="small" icon={<Icon name="icon-diy" size={16} />} onClick={() => router.push(`/admin/blogs/${blog.id}`)}>
-                          编辑文章
-                        </Button>
-                      </Card>
-                    ) : null}
-                  </div>
-
-                  {blog.summary ? (
-                    <Card type="dashed">
-                      <div className="text-sm font-black uppercase tracking-wide">Editor&apos;s Note</div>
-                      <p className="mt-2 leading-7">{blog.summary}</p>
-                    </Card>
-                  ) : null}
-
-                  {blog.tags?.length ? (
-                    <div className="flex flex-wrap gap-2">
-                      {blog.tags.map((tag) => (
-                        <Button key={tag.id} type="text" size="small" onClick={() => router.push(`/tag/${tag.id}`)}>
-                          #{tag.name}
-                        </Button>
-                      ))}
-                    </div>
-                  ) : null}
+                      <Hash className="h-3.5 w-3.5" />
+                      {tag.name}
+                    </button>
+                  ))}
                 </div>
+              ) : null}
 
-                {hasThumbnail ? (
-                  <div className="relative aspect-[4/3] overflow-hidden rounded-[24px] bg-[#f0e8d8]">
-                    <Image
-                      src={blog.thumbnail!}
-                      alt={blog.title}
-                      fill
-                      sizes="(max-width: 1280px) 100vw, 32vw"
-                      className="object-cover"
-                      priority
-                    />
-                  </div>
-                ) : (
-                  <div className="hidden min-h-72 items-center justify-center lg:flex">
-                    <Icon name="icon-critterpedia" size={120} bounce />
-                  </div>
-                )}
-              </header>
-            </Card>
+              {hasThumbnail ? (
+                <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-900">
+                  <Image
+                    src={blog.thumbnail!}
+                    alt={blog.title}
+                    fill
+                    sizes="(max-width: 1280px) 100vw, 760px"
+                    className="object-cover"
+                    priority
+                  />
+                </div>
+              ) : null}
+            </header>
 
-            <Card className="min-w-0 overflow-hidden">
+            <PublicCard className="min-w-0 overflow-hidden p-5 sm:p-8">
               <BlogContentRenderer
                 html={html}
                 references={blog.references}
-                className="prose min-w-0 max-w-none overflow-x-auto break-words p-1 prose-headings:scroll-mt-28 prose-p:leading-8 prose-a:no-underline hover:prose-a:underline prose-code:break-words prose-code:before:content-none prose-code:after:content-none prose-pre:overflow-x-auto prose-pre:rounded-2xl prose-blockquote:not-italic"
+                className="prose min-w-0 max-w-none overflow-x-auto break-words prose-slate dark:prose-invert prose-headings:scroll-mt-28 prose-p:leading-8 prose-a:no-underline hover:prose-a:underline prose-code:break-words prose-code:before:content-none prose-code:after:content-none prose-pre:overflow-x-auto prose-pre:rounded-2xl prose-blockquote:not-italic"
               />
-            </Card>
-          </article>
+            </PublicCard>
+          </div>
 
           <aside className="hidden xl:block">
             {tocItems.length > 0 ? (
-              <Card>
-                <div className="grid gap-3">
-                  <div className="flex items-center gap-2 font-black">
-                    <Icon name="icon-map" size={22} bounce />
-                    文章目录
-                  </div>
-                  <Divider type="line-teal" />
-                  <nav className="grid gap-1">
-                    {tocItems.map((item) => (
-                      <Button
-                        key={item.id}
-                        type={activeHeading === item.id ? "primary" : "text"}
-                        size="small"
-                        block
-                        onClick={() => document.getElementById(item.id)?.scrollIntoView({ behavior: "smooth", block: "start" })}
-                      >
-                        <span className="block truncate text-left" style={{ paddingLeft: `${Math.max(0, item.level - 2) * 0.7}rem` }}>
-                          {item.text}
-                        </span>
-                      </Button>
-                    ))}
-                  </nav>
-                </div>
-              </Card>
+              <PublicCard className="sticky top-28 grid gap-3 p-4">
+                <div className="text-sm font-semibold text-slate-950 dark:text-white">文章目录</div>
+                <nav className="grid gap-1">
+                  {tocItems.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      className={cn(
+                        "truncate rounded-lg px-2 py-1.5 text-left text-sm transition",
+                        activeHeading === item.id
+                          ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950"
+                          : "text-slate-500 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
+                      )}
+                      style={{ paddingLeft: `${Math.max(0, item.level - 2) * 0.75 + 0.5}rem` }}
+                      onClick={() => document.getElementById(item.id)?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                    >
+                      {item.text}
+                    </button>
+                  ))}
+                </nav>
+              </PublicCard>
             ) : null}
           </aside>
-        </section>
+        </article>
 
-        <section className="grid min-w-0 gap-4 sm:grid-cols-2">
+        <section className="mx-auto grid w-full max-w-[760px] min-w-0 gap-4 sm:grid-cols-2">
           {prevBlog ? (
-            <Card>
-              <div className="grid gap-2">
-                <div className="text-xs font-black uppercase tracking-wide">上一篇</div>
-                <div className="line-clamp-2 font-black">{prevBlog.title}</div>
-                <Button type="text" size="small" onClick={() => router.push(blogHref(prevBlog))}>
-                  继续阅读
-                </Button>
-              </div>
-            </Card>
+            <PublicCard className="grid gap-2">
+              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">上一篇</div>
+              <div className="line-clamp-2 font-semibold text-slate-950 dark:text-white">{prevBlog.title}</div>
+              <button type="button" className="w-fit text-sm font-medium text-slate-600 hover:underline dark:text-slate-300" onClick={() => router.push(blogHref(prevBlog))}>
+                继续阅读
+              </button>
+            </PublicCard>
           ) : (
             <div />
           )}
 
           {nextBlog ? (
-            <Card>
-              <div className="grid gap-2 text-right">
-                <div className="text-xs font-black uppercase tracking-wide">下一篇</div>
-                <div className="line-clamp-2 font-black">{nextBlog.title}</div>
-                <Button type="text" size="small" onClick={() => router.push(blogHref(nextBlog))}>
-                  继续阅读
-                </Button>
-              </div>
-            </Card>
+            <PublicCard className="grid gap-2 sm:text-right">
+              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">下一篇</div>
+              <div className="line-clamp-2 font-semibold text-slate-950 dark:text-white">{nextBlog.title}</div>
+              <button type="button" className="w-fit text-sm font-medium text-slate-600 hover:underline dark:text-slate-300 sm:ml-auto" onClick={() => router.push(blogHref(nextBlog))}>
+                继续阅读
+              </button>
+            </PublicCard>
           ) : null}
         </section>
       </main>
 
       {showTop ? (
-        <div className="fixed bottom-6 right-6 z-30">
-          <Button type="primary" icon={<Icon name="icon-helicopter" size={18} />} onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} aria-label="回到顶部" />
-        </div>
+        <button
+          type="button"
+          className="fixed bottom-6 right-6 z-30 inline-flex h-11 w-11 items-center justify-center rounded-full bg-slate-950 text-white shadow-lg transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          aria-label="回到顶部"
+        >
+          <ArrowUp className="h-5 w-5" />
+        </button>
       ) : null}
     </>
   );

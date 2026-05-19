@@ -3,10 +3,19 @@
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Button, Card, Icon, Loading } from "@/lib/animal-ui";
+import { Folder } from "lucide-react";
 import { categoryApi, tagApi } from "@/lib/api";
 import type { Category, Tag } from "@/types";
-import { IslandPageHeader, IslandSidebar } from "@/components/blog/island";
+import {
+  BlogSidebar,
+  EmptyState,
+  LoadingState,
+  PageHero,
+  PublicCard,
+  PUBLIC_CONTAINER,
+  TextButton,
+} from "@/components/blog/public";
+import { cn } from "@/lib/utils";
 
 export default function CategoriesPage() {
   const router = useRouter();
@@ -32,14 +41,13 @@ export default function CategoriesPage() {
   const totalBlogs = categories.reduce((sum, item) => sum + (item.blog_count || 0), 0);
 
   return (
-    <main className="mx-auto grid w-[min(1180px,calc(100vw-2rem))] gap-6 py-6">
-      <IslandPageHeader
-        eyebrow="分类索引"
-        chips={["按主题浏览", "直接进入文章"]}
-        title="按主题查看全部分类。"
-        description="每个分类都直接对应一组文章入口，适合从主题而不是时间开始浏览。"
+    <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8")}>
+      <PageHero
+        eyebrow="Categories"
+        title="按主题查看全部分类"
+        description="每个分类都对应一组文章入口，适合从主题而不是时间开始浏览。"
         stats={[
-          { label: "Categories", value: categories.length, description: "当前分类数量" },
+          { label: "Categories", value: categories.length, description: "当前分类" },
           { label: "Posts", value: totalBlogs, description: "已收录文章" },
           { label: "Tags", value: tags.length, description: "可交叉浏览标签" },
         ]}
@@ -47,47 +55,50 @@ export default function CategoriesPage() {
 
       <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="grid gap-4">
-          <Card type="title">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-2xl font-black">全部分类</h2>
-              <span className="font-bold">共 {categories.length} 个分类 · 累计 {totalBlogs} 篇文章</span>
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">All Categories</p>
+              <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">全部分类</h2>
             </div>
-          </Card>
+            <span className="text-sm text-slate-500 dark:text-slate-400">共 {categories.length} 个分类 · 累计 {totalBlogs} 篇文章</span>
+          </div>
 
           {loading ? (
-            <Card type="dashed"><div className="flex min-h-72 items-center justify-center"><Loading active /></div></Card>
+            <LoadingState label="正在加载分类" />
           ) : categories.length === 0 ? (
-            <Card type="dashed"><div className="grid justify-items-center gap-3 py-10"><Icon name="icon-map" size={54} bounce /><p>还没有可展示的分类。</p></div></Card>
+            <EmptyState title="还没有可展示的分类" description="创建分类后会在这里展示。" icon={<Folder className="h-6 w-6" />} />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {categories.map((category) => (
-                <Card key={category.id}>
-                  <article className="grid gap-3">
-                    <div className="flex items-center gap-3">
-                      {category.logo ? (
-                        <div className="relative h-14 w-14 overflow-hidden rounded-[20px] bg-[#f0e8d8]">
-                          <Image src={category.logo} alt={category.name} fill sizes="56px" className="object-contain p-2" />
-                        </div>
-                      ) : (
-                        <Icon name="icon-map" size={54} bounce />
-                      )}
-                      <div>
-                        <h3 className="text-lg font-black">{category.name}</h3>
-                        <p className="text-sm">{category.blog_count || 0} 篇文章</p>
+                <PublicCard key={category.id} as="article" className="grid h-full gap-4">
+                  <div className="flex items-center gap-3">
+                    {category.logo ? (
+                      <div className="relative h-12 w-12 overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-900">
+                        <Image src={category.logo} alt={category.name} fill sizes="48px" className="object-contain p-2" />
                       </div>
+                    ) : (
+                      <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-slate-500 dark:bg-slate-900 dark:text-slate-400">
+                        <Folder className="h-5 w-5" />
+                      </span>
+                    )}
+                    <div className="min-w-0">
+                      <h3 className="truncate text-lg font-semibold text-slate-950 dark:text-white">{category.name}</h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">{category.blog_count || 0} 篇文章</p>
                     </div>
-                    {category.intro ? <p className="line-clamp-3 text-sm leading-7">{category.intro}</p> : null}
-                    <Button type="primary" size="small" onClick={() => router.push(`/category/${category.id}`)}>
+                  </div>
+                  {category.intro ? <p className="line-clamp-3 text-sm leading-7 text-slate-600 dark:text-slate-300">{category.intro}</p> : null}
+                  <div className="mt-auto">
+                    <TextButton variant="secondary" onClick={() => router.push(`/category/${category.id}`)}>
                       查看分类
-                    </Button>
-                  </article>
-                </Card>
+                    </TextButton>
+                  </div>
+                </PublicCard>
               ))}
             </div>
           )}
         </div>
 
-        <IslandSidebar categories={categories} tags={tags} title="分类导航" />
+        <BlogSidebar categories={categories} tags={tags} title="分类导航" />
       </section>
     </main>
   );

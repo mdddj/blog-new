@@ -2,11 +2,21 @@
 
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { Button, Card, Icon, Loading } from "@/lib/animal-ui";
+import { ArrowLeft, Hash } from "lucide-react";
 import { categoryApi, tagApi } from "@/lib/api";
 import type { Blog, Category, PaginatedResponse, Tag } from "@/types";
-import { IslandPageHeader, IslandPostCard, IslandSidebar } from "@/components/blog/island";
 import { Pagination } from "@/components/blog/pagination";
+import {
+  BlogSidebar,
+  EmptyState,
+  LoadingState,
+  PageHero,
+  PostCard,
+  PublicCard,
+  PUBLIC_CONTAINER,
+  TextButton,
+} from "@/components/blog/public";
+import { cn } from "@/lib/utils";
 
 function TagPageContent() {
   const params = useParams();
@@ -56,59 +66,60 @@ function TagPageContent() {
   }, [fetchSidebar]);
 
   return (
-    <main className="mx-auto grid w-[min(1180px,calc(100vw-2rem))] gap-6 py-6">
-      <IslandPageHeader
-        pretitle={
-          <Button type="text" size="small" onClick={() => router.push("/tags")}>
-            返回标签索引
-          </Button>
-        }
-        eyebrow="标签文章"
-        chips={[currentPage === 1 ? "按时间顺序展开" : `当前第 ${currentPage} 页`]}
+    <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8")}>
+      <PageHero
+        eyebrow="Tag"
         title={currentTag ? `#${currentTag.name}` : "标签文章"}
         description="当前标签关联的文章已经按时间顺序展开，方便直接阅读。"
+        actions={
+          <TextButton variant="secondary" onClick={() => router.push("/tags")}>
+            <ArrowLeft className="h-4 w-4" />
+            返回标签索引
+          </TextButton>
+        }
         stats={[
           { label: "Matches", value: pagination.total, description: "匹配文章数" },
           { label: "Page", value: `${currentPage}/${Math.max(1, pagination.totalPages)}`, description: "分页位置" },
-          { label: "Categories", value: categories.length, description: "可切换浏览分类" },
+          { label: "Categories", value: categories.length, description: "可切换分类" },
         ]}
       />
 
       <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="grid gap-4">
-          <Card type="title">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-2xl font-black">相关文章</h2>
-              <span className="font-bold">共 {pagination.total} 篇 {currentTag ? `· #${currentTag.name}` : ""}</span>
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Related</p>
+              <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">相关文章</h2>
             </div>
-          </Card>
+            <span className="text-sm text-slate-500 dark:text-slate-400">
+              共 {pagination.total} 篇 {currentTag ? `· #${currentTag.name}` : ""}
+            </span>
+          </div>
 
           {loading ? (
-            <Card type="dashed"><div className="flex min-h-72 items-center justify-center"><Loading active /></div></Card>
+            <LoadingState label="正在加载文章" />
           ) : blogs.length === 0 ? (
-            <Card type="dashed"><div className="grid justify-items-center gap-3 py-10"><Icon name="icon-chat" size={54} bounce /><p>这个标签下还没有文章。</p></div></Card>
+            <EmptyState title="这个标签下还没有文章" description="换一个标签或返回首页看看最新内容。" icon={<Hash className="h-6 w-6" />} />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
-              {blogs.map((blog) => <IslandPostCard key={blog.id} blog={blog} />)}
+              {blogs.map((blog) => (
+                <PostCard key={blog.id} blog={blog} />
+              ))}
             </div>
           )}
 
           {pagination.totalPages > 1 ? (
-            <Card>
+            <PublicCard>
               <Pagination
                 currentPage={currentPage}
                 totalPages={pagination.totalPages}
                 onPageChange={(page) => router.push(`/tag/${tagId}?page=${page}`)}
               />
-            </Card>
+            </PublicCard>
           ) : null}
         </div>
 
-        {sideLoading ? (
-          <Card type="dashed"><div className="flex min-h-80 items-center justify-center"><Loading active /></div></Card>
-        ) : (
-          <IslandSidebar categories={categories} tags={tags} title="分类导航" />
-        )}
+        {sideLoading ? <LoadingState label="正在加载索引" /> : <BlogSidebar categories={categories} tags={tags} title="分类导航" />}
       </section>
     </main>
   );
@@ -116,8 +127,8 @@ function TagPageContent() {
 
 function LoadingFallback() {
   return (
-    <main className="mx-auto grid w-[min(1180px,calc(100vw-2rem))] gap-4 py-6">
-      <Card type="dashed"><div className="flex min-h-[50vh] items-center justify-center"><Loading active /></div></Card>
+    <main className={cn(PUBLIC_CONTAINER, "grid gap-4 py-8")}>
+      <LoadingState label="正在加载标签文章" />
     </main>
   );
 }

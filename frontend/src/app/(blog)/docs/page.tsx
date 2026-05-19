@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Card, Icon, Loading } from "@/lib/animal-ui";
+import { BookOpen } from "lucide-react";
 import { directoryApi } from "@/lib/api";
 import type { DirectoryTreeNode } from "@/types";
+import { EmptyState, LoadingState, PUBLIC_CONTAINER } from "@/components/blog/public";
+import { cn } from "@/lib/utils";
 
 function findFirstDocument(nodes: DirectoryTreeNode[]): { id: number } | null {
   for (const node of nodes) {
@@ -38,21 +40,11 @@ export default function DocsPage() {
   }, [router]);
 
   return (
-    <main className="mx-auto grid w-[min(1180px,calc(100vw-2rem))] gap-6 py-6">
+    <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8")}>
       {loading ? (
-        <Card type="dashed">
-          <div className="flex min-h-72 items-center justify-center">
-            <Loading active />
-          </div>
-        </Card>
+        <LoadingState label="正在加载文档库" />
       ) : (
-        <Card type="dashed">
-          <div className="grid justify-items-center gap-3 py-12 text-center">
-            <Icon name="icon-critterpedia" size={58} bounce />
-            <h1 className="text-2xl font-black">文档库为空</h1>
-            <p>当前没有可阅读文档。</p>
-          </div>
-        </Card>
+        <EmptyState title="文档库为空" description="当前没有可阅读文档。" icon={<BookOpen className="h-6 w-6" />} />
       )}
     </main>
   );

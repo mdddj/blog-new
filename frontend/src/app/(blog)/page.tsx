@@ -1,16 +1,12 @@
 import { Suspense } from "react";
-import { IslandHome } from "@/components/blog/island";
+import { LoadingState, PublicHome, PUBLIC_CONTAINER } from "@/components/blog/public";
 import { blogApi, categoryApi, tagApi } from "@/lib/api";
-import { Card, Loading } from "@/lib/animal-ui";
+import { cn } from "@/lib/utils";
 
 function LoadingSkeleton() {
     return (
-        <main className="mx-auto grid w-[min(1180px,calc(100vw-2rem))] gap-4 py-6">
-            <Card type="dashed">
-                <div className="flex min-h-[60vh] items-center justify-center">
-                    <Loading active />
-                </div>
-            </Card>
+        <main className={cn(PUBLIC_CONTAINER, "grid gap-4 py-8")}>
+            <LoadingState label="正在加载首页内容" />
         </main>
     );
 }
@@ -42,7 +38,7 @@ export default async function HomePage(props: { searchParams: Promise<{ [key: st
 
     return (
         <Suspense fallback={<LoadingSkeleton />}>
-            <IslandHome initialData={initialData} />
+            <PublicHome initialData={initialData} />
         </Suspense>
     );
 }

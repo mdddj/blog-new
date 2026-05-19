@@ -2,9 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { Button, Card, Divider, Icon, Loading } from "@/lib/animal-ui";
+import { ExternalLink, Link2, Mail } from "lucide-react";
 import { friendLinkApi } from "@/lib/api";
 import type { FriendLink } from "@/types";
+import { EmptyState, LoadingState, PageHero, PublicCard, PUBLIC_CONTAINER } from "@/components/blog/public";
+import { cn } from "@/lib/utils";
 
 function safeHostname(url: string) {
   try {
@@ -34,71 +36,58 @@ export default function FriendsPage() {
   const linksWithMail = useMemo(() => links.filter((link) => Boolean(link.email)).length, [links]);
 
   return (
-    <main className="mx-auto grid w-[min(1180px,calc(100vw-2rem))] gap-6 py-6">
-      <Card color="warm-peach-pink">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="grid gap-2">
-            <div className="flex items-center gap-2 text-sm font-black">
-              <Icon name="icon-helicopter" size={24} bounce />
-              友链航线
-            </div>
-            <h1 className="text-3xl font-black leading-tight sm:text-4xl">连接那些值得长期阅读与交流的站点。</h1>
-            <p className="max-w-3xl leading-8">所有站点仍使用原有数据源，入口统一呈现为 Animal Island 卡片。</p>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Card>
-              <div className="text-sm font-black uppercase tracking-wide">Sites</div>
-              <div className="mt-1 text-3xl font-black">{links.length}</div>
-              <div className="mt-1 text-sm">个站点</div>
-            </Card>
-            <Card>
-              <div className="text-sm font-black uppercase tracking-wide">Mail</div>
-              <div className="mt-1 text-3xl font-black">{linksWithMail}</div>
-              <div className="mt-1 text-sm">个邮箱</div>
-            </Card>
-          </div>
-        </div>
-      </Card>
+    <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8")}>
+      <PageHero
+        eyebrow="Friends"
+        title="连接那些值得长期阅读与交流的站点"
+        description="这里展示公开友链，保留站点简介、邮箱和外链入口。"
+        stats={[
+          { label: "Sites", value: links.length, description: "公开站点" },
+          { label: "Mail", value: linksWithMail, description: "留有邮箱" },
+        ]}
+      />
 
       {loading ? (
-        <Card type="dashed">
-          <div className="flex min-h-72 items-center justify-center">
-            <Loading active />
-          </div>
-        </Card>
+        <LoadingState label="正在加载友链" />
       ) : links.length === 0 ? (
-        <Card type="dashed">
-          <div className="grid justify-items-center gap-3 py-10">
-            <Icon name="icon-chat" size={54} bounce />
-            <p>暂无友链</p>
-          </div>
-        </Card>
+        <EmptyState title="暂无友链" description="通过后台添加通过审核的友链后会在这里展示。" icon={<Link2 className="h-6 w-6" />} />
       ) : (
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {links.map((link) => (
-            <Card key={link.id}>
-              <article className="grid h-full gap-4">
-                <div className="flex items-center gap-3">
-                  {link.logo ? (
-                    <div className="relative h-14 w-14 overflow-hidden rounded-full bg-[#f0e8d8]">
-                      <Image src={link.logo} alt={link.name} fill sizes="56px" className="object-cover" />
-                    </div>
-                  ) : (
-                    <Icon name="icon-chat" size={54} bounce />
-                  )}
-                  <div className="min-w-0">
-                    <h2 className="truncate text-lg font-black">{link.name}</h2>
-                    <p className="truncate text-sm">{safeHostname(link.url)}</p>
+            <PublicCard key={link.id} as="article" className="grid h-full gap-4">
+              <div className="flex items-center gap-3">
+                {link.logo ? (
+                  <div className="relative h-12 w-12 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-900">
+                    <Image src={link.logo} alt={link.name} fill sizes="48px" className="object-cover" />
                   </div>
+                ) : (
+                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-500 dark:bg-slate-900 dark:text-slate-400">
+                    <Link2 className="h-5 w-5" />
+                  </span>
+                )}
+                <div className="min-w-0">
+                  <h2 className="truncate text-lg font-semibold text-slate-950 dark:text-white">{link.name}</h2>
+                  <p className="truncate text-sm text-slate-500 dark:text-slate-400">{safeHostname(link.url)}</p>
                 </div>
-                {link.intro ? <p className="line-clamp-3 text-sm leading-7">{link.intro}</p> : null}
-                {link.email ? <p className="text-sm">{link.email}</p> : null}
-                <Divider type="line-teal" />
-                <Button type="primary" size="small" icon={<Icon name="icon-map" size={16} />} onClick={() => window.open(link.url, "_blank", "noopener,noreferrer")}>
+              </div>
+              {link.intro ? <p className="line-clamp-3 text-sm leading-7 text-slate-600 dark:text-slate-300">{link.intro}</p> : null}
+              {link.email ? (
+                <p className="inline-flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                  <Mail className="h-4 w-4" />
+                  {link.email}
+                </p>
+              ) : null}
+              <div className="mt-auto border-t border-slate-100 pt-4 dark:border-slate-800">
+                <button
+                  type="button"
+                  className="inline-flex min-h-9 items-center gap-2 rounded-full bg-slate-950 px-4 text-sm font-medium text-white transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+                  onClick={() => window.open(link.url, "_blank", "noopener,noreferrer")}
+                >
                   访问站点
-                </Button>
-              </article>
-            </Card>
+                  <ExternalLink className="h-4 w-4" />
+                </button>
+              </div>
+            </PublicCard>
           ))}
         </section>
       )}

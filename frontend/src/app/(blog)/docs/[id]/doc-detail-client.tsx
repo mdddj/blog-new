@@ -2,12 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Card, Divider, Icon, Loading } from "@/lib/animal-ui";
+import { BookOpen, ChevronDown, Clock3, FileText, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { directoryApi, documentApi } from "@/lib/api";
 import type { DirectoryTreeNode, DocumentResponse } from "@/types";
 import { DocsTreeNav } from "@/components/docs/docs-tree-nav";
 import { DocsSearch } from "@/components/docs/docs-search";
 import { DocumentContentRenderer } from "@/components/docs/document-content-renderer";
+import { EmptyState, LoadingState, PublicCard, PUBLIC_CONTAINER, TextButton, formatDate } from "@/components/blog/public";
+import { cn } from "@/lib/utils";
 
 function extractHeadings(html: string): { id: string; text: string; level: number }[] {
   if (typeof window === "undefined") return [];
@@ -91,118 +93,107 @@ export function DocDetailClient({ docId }: { docId: number }) {
 
   if (loading) {
     return (
-      <main className="mx-auto grid w-[min(1180px,calc(100vw-2rem))] gap-6 py-6">
-        <Card type="dashed">
-          <div className="flex min-h-[70vh] items-center justify-center">
-            <Loading active />
-          </div>
-        </Card>
+      <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8")}>
+        <LoadingState label="正在加载文档" />
       </main>
     );
   }
 
   if (error || !doc) {
     return (
-      <main className="mx-auto grid w-[min(1180px,calc(100vw-2rem))] gap-6 py-6">
-        <Card type="dashed">
-          <div className="grid justify-items-center gap-3 py-12 text-center">
-            <Icon name="icon-chat" size={58} bounce />
-            <h1 className="text-2xl font-black">{error || "无法访问文档"}</h1>
-            <Button type="primary" onClick={() => router.push("/docs")}>
-              返回文档首页
-            </Button>
-          </div>
-        </Card>
+      <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8")}>
+        <EmptyState title={error || "无法访问文档"} description="返回文档首页继续浏览。" icon={<FileText className="h-6 w-6" />} />
+        <div className="flex justify-center">
+          <TextButton variant="primary" onClick={() => router.push("/docs")}>
+            返回文档首页
+          </TextButton>
+        </div>
       </main>
     );
   }
 
   const treePanel = (
-    <Card>
-      <div className="grid gap-4">
-        <div className="flex items-center gap-2 font-black">
-          <Icon name="icon-critterpedia" size={22} bounce />
+    <PublicCard className="grid gap-4 p-4">
+      <div className="flex items-center justify-between gap-3">
+        <div className="inline-flex items-center gap-2 font-semibold text-slate-950 dark:text-white">
+          <BookOpen className="h-4 w-4" />
           知识目录
         </div>
-        <DocsSearch tree={tree} />
-        <div className="flex flex-wrap gap-2">
-          <Button type="dashed" size="small" onClick={() => setExpandAll(true)}>
-            展开
-          </Button>
-          <Button type="dashed" size="small" onClick={() => setExpandAll(false)}>
-            收起
-          </Button>
-        </div>
-        <Divider type="line-brown" />
-        <div className="max-h-[calc(100vh-21rem)] overflow-y-auto pr-1">
-          <DocsTreeNav tree={tree} currentDocId={docId} onNavigate={() => setSidebarOpen(false)} expandAll={expandAll} />
-        </div>
+        <button
+          type="button"
+          className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-900"
+          onClick={() => setExpandAll((value) => (value === true ? false : true))}
+        >
+          {expandAll ? "收起" : "展开"}
+          <ChevronDown className={cn("h-3.5 w-3.5 transition", expandAll && "rotate-180")} />
+        </button>
       </div>
-    </Card>
+      <DocsSearch tree={tree} />
+      <div className="max-h-[calc(100vh-21rem)] overflow-y-auto pr-1">
+        <DocsTreeNav tree={tree} currentDocId={docId} onNavigate={() => setSidebarOpen(false)} expandAll={expandAll} />
+      </div>
+    </PublicCard>
   );
 
   return (
-    <main className="mx-auto grid w-[min(1180px,calc(100vw-2rem))] min-w-0 gap-6 py-6">
+    <main className={cn(PUBLIC_CONTAINER, "grid min-w-0 gap-6 py-8")}>
       <div className="lg:hidden">
-        <Button block type="primary" icon={<Icon name="icon-map" size={18} />} onClick={() => setSidebarOpen((value) => !value)}>
+        <TextButton variant="primary" className="w-full" onClick={() => setSidebarOpen((value) => !value)}>
+          {sidebarOpen ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
           {sidebarOpen ? "收起文档目录" : "打开文档目录"}
-        </Button>
+        </TextButton>
       </div>
 
       {sidebarOpen ? <div className="lg:hidden">{treePanel}</div> : null}
 
-      <section className="grid min-w-0 gap-4 lg:grid-cols-[290px_minmax(0,1fr)] xl:grid-cols-[290px_minmax(0,1fr)_250px]">
-        <aside className="hidden lg:sticky lg:top-[6.6rem] lg:block lg:self-start">{treePanel}</aside>
+      <section className="grid min-w-0 gap-5 lg:grid-cols-[290px_minmax(0,760px)] lg:justify-center xl:grid-cols-[290px_minmax(0,760px)_240px]">
+        <aside className="hidden lg:sticky lg:top-28 lg:block lg:self-start">{treePanel}</aside>
 
-        <article className="grid min-w-0 gap-4">
-          <Card color="app-yellow" className="min-w-0 overflow-hidden">
-            <header className="grid gap-3">
-              <div className="flex items-center gap-2 text-sm font-black">
-                <Icon name="icon-critterpedia" size={22} bounce />
-                文档阅读
-              </div>
-              <h1 className="break-words text-3xl font-black leading-tight sm:text-4xl">{doc.name}</h1>
-              <p className="text-sm">
-                {doc.created_at ? new Date(doc.created_at).toLocaleDateString("zh-CN") : "未知日期"} · 预计阅读 {readingTime} 分钟
-              </p>
-            </header>
-          </Card>
+        <article className="grid min-w-0 gap-5">
+          <header className="grid gap-3">
+            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Documentation</div>
+            <h1 className="break-words text-4xl font-semibold leading-tight tracking-tight text-slate-950 dark:text-white">{doc.name}</h1>
+            <p className="inline-flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-500 dark:text-slate-400">
+              <span>{doc.created_at ? formatDate(doc.created_at) : "未知日期"}</span>
+              <span className="inline-flex items-center gap-2">
+                <Clock3 className="h-4 w-4" />
+                预计阅读 {readingTime} 分钟
+              </span>
+            </p>
+          </header>
 
-          <Card className="min-w-0 overflow-hidden">
+          <PublicCard className="min-w-0 overflow-hidden p-5 sm:p-8">
             <DocumentContentRenderer
               html={processedHtml}
               references={doc.references}
-              className="prose min-w-0 max-w-none overflow-x-auto break-words p-1 prose-headings:scroll-mt-28 prose-p:leading-8 prose-a:no-underline hover:prose-a:underline prose-code:break-words prose-code:before:content-none prose-code:after:content-none prose-pre:overflow-x-auto prose-pre:rounded-2xl prose-blockquote:not-italic"
+              className="prose min-w-0 max-w-none overflow-x-auto break-words prose-slate dark:prose-invert prose-headings:scroll-mt-28 prose-p:leading-8 prose-a:no-underline hover:prose-a:underline prose-code:break-words prose-code:before:content-none prose-code:after:content-none prose-pre:overflow-x-auto prose-pre:rounded-2xl prose-blockquote:not-italic"
             />
-          </Card>
+          </PublicCard>
         </article>
 
         <aside className="hidden xl:block">
           {tocItems.length > 0 ? (
-            <Card>
-              <div className="grid gap-3">
-                <div className="flex items-center gap-2 font-black">
-                  <Icon name="icon-map" size={22} bounce />
-                  目录导航
-                </div>
-                <Divider type="line-teal" />
-                <nav className="grid gap-1">
-                  {tocItems.map((item) => (
-                    <Button
-                      key={item.id}
-                      type={activeHeading === item.id ? "primary" : "text"}
-                      size="small"
-                      block
-                      onClick={() => document.getElementById(item.id)?.scrollIntoView({ behavior: "smooth", block: "start" })}
-                    >
-                      <span className="block truncate text-left" style={{ paddingLeft: `${Math.max(0, item.level - 2) * 0.7}rem` }}>
-                        {item.text}
-                      </span>
-                    </Button>
-                  ))}
-                </nav>
-              </div>
-            </Card>
+            <PublicCard className="sticky top-28 grid gap-3 p-4">
+              <div className="text-sm font-semibold text-slate-950 dark:text-white">目录导航</div>
+              <nav className="grid gap-1">
+                {tocItems.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={cn(
+                      "truncate rounded-lg px-2 py-1.5 text-left text-sm transition",
+                      activeHeading === item.id
+                        ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950"
+                        : "text-slate-500 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
+                    )}
+                    style={{ paddingLeft: `${Math.max(0, item.level - 2) * 0.75 + 0.5}rem` }}
+                    onClick={() => document.getElementById(item.id)?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                  >
+                    {item.text}
+                  </button>
+                ))}
+              </nav>
+            </PublicCard>
           ) : null}
         </aside>
       </section>
