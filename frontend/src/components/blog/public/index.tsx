@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
-import type { ReactNode } from "react";
+import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { useCallback, useEffect, useState } from "react";
 import {
   ArrowRight,
@@ -30,37 +30,81 @@ import { useSiteConfig } from "@/contexts/site-config-context";
 import { blogApi, categoryApi, tagApi } from "@/lib/api";
 import type { Blog, Category, PaginatedResponse, Tag } from "@/types";
 import { Pagination } from "@/components/blog/pagination";
+import {
+  Cursor,
+  Card as AICard,
+  Button as AIButton,
+  Footer as AIFooter,
+  Divider as AIDivider,
+  Time as AITime,
+  Phone as AIPhone,
+  Collapse as AICollapse,
+  Input as AIInput,
+  Tabs as AITabs,
+  Table as AITable,
+  Icon as AIIcon,
+  CardColor,
+} from "animal-island-ui";
+
+// Color pool for Animal Island Cards
+const CARD_COLORS: CardColor[] = [
+  "app-teal",
+  "app-pink",
+  "purple",
+  "app-blue",
+  "app-orange",
+  "app-green",
+  "app-red",
+  "lime-green",
+  "yellow-green",
+  "brown",
+  "warm-peach-pink",
+];
+
+export function getCardColor(seed: number | string): CardColor {
+  let num = 0;
+  if (typeof seed === "number") {
+    num = seed;
+  } else if (typeof seed === "string") {
+    for (let i = 0; i < seed.length; i++) {
+      num += seed.charCodeAt(i);
+    }
+  }
+  const index = Math.abs(num) % CARD_COLORS.length;
+  return CARD_COLORS[index];
+}
+
+export function BlogCursor({ children }: { children: ReactNode }) {
+  return <Cursor>{children}</Cursor>;
+}
 
 export const PUBLIC_CONTAINER = "mx-auto w-[min(1120px,calc(100vw-2rem))]";
 
 const NAV_LINKS = [
-  { href: "/", label: "首页" },
-  { href: "/archive", label: "归档" },
-  { href: "/categories", label: "分类" },
-  { href: "/tags", label: "标签" },
-  { href: "/docs", label: "文档" },
-  { href: "/projects", label: "项目" },
-  { href: "/friends", label: "友链" },
+  { href: "/", label: "首页", icon: "icon-miles" as const },
+  { href: "/archive", label: "归档", icon: "icon-critterpedia" as const },
+  { href: "/categories", label: "分类", icon: "icon-design" as const },
+  { href: "/tags", label: "标签", icon: "icon-diy" as const },
+  { href: "/docs", label: "文档", icon: "icon-critterpedia" as const },
+  { href: "/projects", label: "项目", icon: "icon-shopping" as const },
+  { href: "/friends", label: "友链", icon: "icon-chat" as const },
 ];
 
 export function PublicCard({
   children,
   className,
   as: Component = "div",
+  color = "default",
 }: {
   children: ReactNode;
   className?: string;
   as?: "div" | "article" | "section" | "aside" | "header" | "footer";
+  color?: CardColor;
 }) {
   return (
-    <Component
-      className={cn(
-        "min-w-0 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm shadow-slate-200/50 transition-colors dark:border-slate-800 dark:bg-slate-950 dark:shadow-none",
-        className,
-      )}
-    >
+    <AICard color={color} className={cn("min-w-0 border-2 border-[#725d42]/10", className)}>
       {children}
-    </Component>
+    </AICard>
   );
 }
 
@@ -68,30 +112,28 @@ export function TextButton({
   children,
   className,
   variant = "ghost",
+  type,
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: "primary" | "secondary" | "ghost" | "danger";
 }) {
-  const variants = {
-    primary: "bg-slate-950 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200",
-    secondary:
-      "border border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100 dark:hover:bg-slate-900",
-    ghost: "text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-900",
-    danger: "text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30",
+  const typeMap = {
+    primary: "primary" as const,
+    secondary: "default" as const,
+    ghost: "text" as const,
+    danger: "text" as const,
   };
 
   return (
-    <button
-      type="button"
-      className={cn(
-        "inline-flex min-h-9 items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 disabled:pointer-events-none disabled:opacity-50",
-        variants[variant],
-        className,
-      )}
+    <AIButton
+      type={typeMap[variant]}
+      danger={variant === "danger"}
+      htmlType={type as ButtonHTMLAttributes<HTMLButtonElement>["type"]}
+      className={cn("font-bold", className)}
       {...props}
     >
       {children}
-    </button>
+    </AIButton>
   );
 }
 
@@ -159,10 +201,10 @@ export function PublicHeader() {
           {config.owner_avatar ? (
             <Image
               src={config.owner_avatar}
-              alt={config.owner_name || config.site_title || "站点头像"}
+              alt={config.owner_name || config.site_title || "站站点头像"}
               width={36}
               height={36}
-              className="h-9 w-9 rounded-full object-cover"
+              className="h-9 w-9 rounded-full object-cover border-2 border-[#725d42]/20"
             />
           ) : (
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-950 text-sm font-semibold text-white dark:bg-white dark:text-slate-950">
@@ -170,55 +212,49 @@ export function PublicHeader() {
             </span>
           )}
           <span className="min-w-0">
-            <span className="block truncate text-sm font-semibold text-slate-950 dark:text-white">
+            <span className="block truncate text-sm font-extrabold text-slate-950 dark:text-white">
               {config.site_title || "典典博客"}
             </span>
-            <span className="hidden truncate text-xs text-slate-500 dark:text-slate-400 sm:block">
+            <span className="hidden truncate text-xs text-slate-500 dark:text-slate-400 sm:block font-bold">
               {config.site_subtitle || "Notes, projects and documents"}
             </span>
           </span>
         </Link>
 
-        <nav className="hidden items-center gap-1 lg:flex" aria-label="主导航">
+        <nav className="hidden items-center gap-2 lg:flex" aria-label="主导航">
           {NAV_LINKS.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              aria-current={isActive(item.href) ? "page" : undefined}
-              className={cn(
-                "rounded-full px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white",
-                isActive(item.href) && "bg-slate-950 text-white hover:bg-slate-950 hover:text-white dark:bg-white dark:text-slate-950 dark:hover:bg-white",
-              )}
-            >
-              {item.label}
+            <Link key={item.href} href={item.href}>
+              <AIButton
+                type={isActive(item.href) ? "primary" : "text"}
+                icon={<AIIcon name={item.icon} bounce size={20} />}
+                className="flex items-center gap-1.5 font-bold"
+              >
+                {item.label}
+              </AIButton>
             </Link>
           ))}
         </nav>
 
         <div className="flex items-center gap-2">
-          <Link
-            href="/search"
-            className="inline-flex h-9 items-center gap-2 rounded-full border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900"
-          >
-            <Search className="h-4 w-4" />
-            <span className="hidden sm:inline">搜索</span>
+          <Link href="/search">
+            <AIButton type="default" icon={<AIIcon name="icon-miles" bounce size={18} />} className="font-bold">
+              搜索
+            </AIButton>
           </Link>
-          <ThemeToggle />
         </div>
       </div>
 
       <nav className={cn(PUBLIC_CONTAINER, "flex gap-1 overflow-x-auto pb-3 lg:hidden")} aria-label="移动端主导航">
         {NAV_LINKS.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            aria-current={isActive(item.href) ? "page" : undefined}
-            className={cn(
-              "shrink-0 rounded-full px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-950 dark:text-slate-300 dark:hover:bg-slate-900 dark:hover:text-white",
-              isActive(item.href) && "bg-slate-950 text-white hover:bg-slate-950 hover:text-white dark:bg-white dark:text-slate-950 dark:hover:bg-white",
-            )}
-          >
-            {item.label}
+          <Link key={item.href} href={item.href}>
+            <AIButton
+              type={isActive(item.href) ? "primary" : "text"}
+              size="small"
+              icon={<AIIcon name={item.icon} bounce size={16} />}
+              className="shrink-0 font-bold"
+            >
+              {item.label}
+            </AIButton>
           </Link>
         ))}
       </nav>
@@ -236,14 +272,20 @@ export function PublicFooter() {
   ];
 
   return (
-    <footer className="mt-12 border-t border-slate-200/80 bg-white/80 py-8 dark:border-slate-800 dark:bg-slate-950/70">
-      <div className={cn(PUBLIC_CONTAINER, "grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end")}>
+    <footer className="relative mt-16 pt-8 pb-0 bg-white/80 dark:bg-slate-950/70 border-t border-slate-200/80 dark:border-slate-800 overflow-hidden">
+      <div className={cn(PUBLIC_CONTAINER, "grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end z-10 relative px-4")}>
         <div className="grid gap-3">
-          <div className="text-base font-semibold text-slate-950 dark:text-white">{config.site_title || "典典博客"}</div>
-          <p className="max-w-3xl text-sm leading-7 text-slate-600 dark:text-slate-300">
-            {config.footer_text || config.site_description || config.site_subtitle || "持续整理文章、项目与文档。"}
-          </p>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-500 dark:text-slate-400">
+          <div className="text-base font-extrabold text-slate-950 dark:text-white flex items-center gap-2">
+            <AIIcon name="icon-miles" size={24} />
+            {config.site_title || "典典博客"}
+          </div>
+          <p
+            className="max-w-3xl text-sm leading-7 text-slate-600 dark:text-slate-300 font-bold [&_a]:text-[#028b57] dark:[&_a]:text-[#03c27b] [&_a]:underline hover:[&_a]:text-[#016f45] dark:hover:[&_a]:text-[#04e894] transition-colors"
+            dangerouslySetInnerHTML={{
+              __html: config.footer_text || config.site_description || config.site_subtitle || "持续整理文章、项目与文档。"
+            }}
+          />
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-500 dark:text-slate-400 font-bold">
             <span>© {currentYear}</span>
             {config.icp_number ? (
               <a href="https://beian.miit.gov.cn/" target="_blank" rel="noreferrer" className="hover:text-slate-950 dark:hover:text-white">
@@ -265,11 +307,14 @@ export function PublicFooter() {
 
         <div className="flex items-center gap-2">
           {socialLinks.map((item) => (
-            <IconLink key={item.label} href={item.href} label={item.label}>
+            <IconLink key={item.label} href={item.href || ""} label={item.label}>
               {item.icon}
             </IconLink>
           ))}
         </div>
+      </div>
+      <div className="mt-8 select-none pointer-events-none">
+        <AIFooter type="tree" />
       </div>
     </footer>
   );
@@ -291,48 +336,55 @@ export function PageHero({
   children?: ReactNode;
 }) {
   return (
-    <section className="grid min-w-0 gap-6 rounded-3xl border border-slate-200/80 bg-white px-5 py-8 shadow-sm shadow-slate-200/50 dark:border-slate-800 dark:bg-slate-950 dark:shadow-none sm:px-8">
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
-        <div className="grid min-w-0 gap-3">
-          {eyebrow ? (
-            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
-              {eyebrow}
+    <section className="relative grid min-w-0 gap-4">
+      <AICard color="app-yellow" className="grid gap-6 p-6 sm:p-8 rounded-3xl border-2 border-[#725d42]/15">
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+          <div className="grid min-w-0 gap-3">
+            <div className="flex items-center gap-2">
+              {eyebrow ? (
+                <div className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#725d42]/70 bg-white/50 px-2 py-0.5 rounded-full">
+                  {eyebrow}
+                </div>
+              ) : null}
+              <AIIcon name="icon-design" size={20} bounce />
+            </div>
+            <h1 className="max-w-4xl break-words text-2xl font-extrabold leading-tight tracking-tight text-[#725d42] sm:text-3xl">
+              {title}
+            </h1>
+            {description ? (
+              <p className="max-w-3xl text-sm leading-6 text-[#725d42]/80 font-bold">{description}</p>
+            ) : null}
+            {actions ? <div className="flex flex-wrap gap-2 pt-2">{actions}</div> : null}
+            {children}
+          </div>
+
+          {stats.length ? (
+            <div className="flex flex-col items-center lg:items-end gap-3 shrink-0">
+              <div className="flex gap-2 flex-wrap justify-center lg:justify-end">
+                {stats.map((stat) => (
+                  <div key={stat.label} className="bg-white/40 px-3 py-1.5 rounded-xl border border-[#725d42]/10 text-center min-w-16">
+                    <div className="text-[9px] font-extrabold uppercase tracking-[0.1em] text-[#725d42]/60">{stat.label}</div>
+                    <div className="text-base font-extrabold text-[#725d42]">{stat.value}</div>
+                  </div>
+                ))}
+              </div>
             </div>
           ) : null}
-          <h1 className="max-w-4xl break-words text-3xl font-semibold leading-tight tracking-tight text-slate-950 dark:text-white sm:text-5xl">
-            {title}
-          </h1>
-          {description ? (
-            <p className="max-w-3xl text-base leading-8 text-slate-600 dark:text-slate-300">{description}</p>
-          ) : null}
-          {actions ? <div className="flex flex-wrap gap-2 pt-1">{actions}</div> : null}
-          {children}
         </div>
-
-        {stats.length ? (
-          <div className="grid min-w-0 gap-3 sm:grid-cols-3 lg:min-w-64 lg:grid-cols-1">
-            {stats.map((stat) => (
-              <div key={stat.label} className="rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/60">
-                <div className="text-xs font-medium uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">{stat.label}</div>
-                <div className="mt-1 text-2xl font-semibold text-slate-950 dark:text-white">{stat.value}</div>
-                {stat.description ? <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">{stat.description}</div> : null}
-              </div>
-            ))}
-          </div>
-        ) : null}
-      </div>
+      </AICard>
+      <AIDivider type="wave-yellow" className="w-full mt-2" />
     </section>
   );
 }
 
 export function LoadingState({ label = "正在加载" }: { label?: string }) {
   return (
-    <PublicCard className="flex min-h-72 items-center justify-center">
-      <div className="inline-flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
+    <AICard color="default" className="flex min-h-60 items-center justify-center border-2 border-[#725d42]/10">
+      <div className="inline-flex items-center gap-3 text-sm font-bold text-[#725d42]">
         <Loader2 className="h-4 w-4 animate-spin" />
         {label}
       </div>
-    </PublicCard>
+    </AICard>
   );
 }
 
@@ -346,13 +398,13 @@ export function EmptyState({
   icon?: ReactNode;
 }) {
   return (
-    <PublicCard className="grid justify-items-center gap-3 py-12 text-center">
-      <div className="rounded-full bg-slate-100 p-3 text-slate-500 dark:bg-slate-900 dark:text-slate-400">
+    <AICard color="default" className="grid justify-items-center gap-3 py-12 text-center border-2 border-[#725d42]/10">
+      <div className="rounded-full bg-white/60 p-3 text-[#725d42]/70 border border-[#725d42]/10">
         {icon || <FileText className="h-6 w-6" />}
       </div>
-      <div className="font-semibold text-slate-950 dark:text-white">{title}</div>
-      {description ? <p className="max-w-md text-sm leading-6 text-slate-500 dark:text-slate-400">{description}</p> : null}
-    </PublicCard>
+      <div className="font-extrabold text-base text-[#725d42]">{title}</div>
+      {description ? <p className="max-w-md text-xs leading-6 text-[#725d42]/70 font-bold">{description}</p> : null}
+    </AICard>
   );
 }
 
@@ -382,54 +434,57 @@ export function PostCard({ blog, compact = false }: { blog: Blog; compact?: bool
   const router = useRouter();
   const excerpt = buildExcerpt(blog, compact ? 96 : 150);
   const readTime = readingMinutes(blog);
+  const cardColor = getCardColor(blog.id);
 
   return (
-    <PublicCard as="article" className="group grid h-full gap-4 p-4">
-      {blog.thumbnail ? (
-        <button
-          type="button"
-          className="relative aspect-[16/9] overflow-hidden rounded-xl bg-slate-100 text-left dark:bg-slate-900"
-          onClick={() => router.push(blogHref(blog))}
-          aria-label={`阅读 ${blog.title}`}
-        >
-          <Image
-            src={blog.thumbnail}
-            alt={blog.title}
-            fill
-            sizes="(max-width: 768px) 100vw, 33vw"
-            className="object-cover transition duration-500 group-hover:scale-[1.03]"
-          />
-        </button>
-      ) : null}
+    <AICard color={cardColor} className="group flex flex-col justify-between h-full p-4 border-2 border-[#725d42]/10 hover:-translate-y-1 transition-transform duration-300 shadow-sm hover:shadow">
+      <div>
+        {blog.thumbnail ? (
+          <button
+            type="button"
+            className="relative w-full aspect-[16/9] overflow-hidden rounded-2xl bg-white/40 mb-3"
+            onClick={() => router.push(blogHref(blog))}
+            aria-label={`阅读 ${blog.title}`}
+          >
+            <Image
+              src={blog.thumbnail}
+              alt={blog.title}
+              fill
+              sizes="(max-width: 768px) 100vw, 33vw"
+              className="object-cover transition duration-500 group-hover:scale-[1.03]"
+            />
+          </button>
+        ) : null}
 
-      <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-        <span className="inline-flex items-center gap-1">
-          <Folder className="h-3.5 w-3.5" />
-          {blog.category?.name || "未分类"}
-        </span>
-        <span>·</span>
-        <span>{blog.view_count || 0} 次阅读</span>
+        <div className="flex flex-wrap items-center gap-2 text-xs font-bold opacity-80 mb-2">
+          <span className="inline-flex items-center gap-1 bg-white/40 px-2 py-0.5 rounded-full">
+            <AIIcon name="icon-design" size={14} />
+            {blog.category?.name || "未分类"}
+          </span>
+          <span>·</span>
+          <span>{blog.view_count || 0} 次阅读</span>
+        </div>
+
+        <h3 className="line-clamp-2 text-lg font-extrabold leading-snug tracking-tight mb-2 text-inherit">
+          <button type="button" className="text-left hover:underline font-extrabold text-inherit" onClick={() => router.push(blogHref(blog))}>
+            {blog.title}
+          </button>
+        </h3>
+
+        {!compact && excerpt ? <p className="line-clamp-3 text-xs leading-6 opacity-90 mb-4">{excerpt}</p> : null}
       </div>
 
-      <h3 className="line-clamp-2 text-xl font-semibold leading-snug tracking-tight text-slate-950 dark:text-white">
-        <button type="button" className="text-left hover:text-slate-700 dark:hover:text-slate-200" onClick={() => router.push(blogHref(blog))}>
-          {blog.title}
-        </button>
-      </h3>
-
-      {!compact && excerpt ? <p className="line-clamp-3 text-sm leading-7 text-slate-600 dark:text-slate-300">{excerpt}</p> : null}
-
-      <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4 text-sm text-slate-500 dark:border-slate-800 dark:text-slate-400">
-        <span className="inline-flex items-center gap-2">
-          <CalendarDays className="h-4 w-4" />
+      <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-black/10 pt-3 text-xs font-bold opacity-80">
+        <span className="inline-flex items-center gap-1.5">
+          <CalendarDays className="h-3.5 w-3.5" />
           {formatDate(blog.created_at)}
         </span>
-        <span className="inline-flex items-center gap-2">
-          <Clock3 className="h-4 w-4" />
+        <span className="inline-flex items-center gap-1.5">
+          <Clock3 className="h-3.5 w-3.5" />
           {readTime} 分钟
         </span>
       </div>
-    </PublicCard>
+    </AICard>
   );
 }
 
@@ -438,42 +493,43 @@ export function FeaturedPost({ blog }: { blog: Blog }) {
   const excerpt = buildExcerpt(blog, 220);
 
   return (
-    <PublicCard as="article" className="grid gap-6 overflow-hidden p-5 lg:grid-cols-[minmax(0,1fr)_0.9fr] lg:items-center">
+    <AICard color="app-yellow" className="grid gap-6 overflow-hidden p-5 lg:grid-cols-[minmax(0,1fr)_0.9fr] lg:items-center border-2 border-[#725d42]/10 shadow-sm">
       <div className="grid gap-4">
-        <div className="inline-flex w-fit items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium uppercase tracking-[0.16em] text-slate-500 dark:bg-slate-900 dark:text-slate-400">
-          <BookOpen className="h-3.5 w-3.5" />
+        <div className="inline-flex w-fit items-center gap-1.5 rounded-full bg-white/60 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em]">
+          <AIIcon name="icon-miles" size={16} bounce />
           精选文章
         </div>
-        <h2 className="text-3xl font-semibold leading-tight tracking-tight text-slate-950 dark:text-white sm:text-4xl">{blog.title}</h2>
-        {excerpt ? <p className="text-base leading-8 text-slate-600 dark:text-slate-300">{excerpt}</p> : null}
-        <div className="flex flex-wrap gap-2 text-sm text-slate-500 dark:text-slate-400">
+        <h2 className="text-2xl font-extrabold leading-tight tracking-tight text-[#725d42] sm:text-3xl">{blog.title}</h2>
+        {excerpt ? <p className="text-sm leading-6 text-[#725d42]/80 font-bold">{excerpt}</p> : null}
+        <div className="flex flex-wrap gap-2 text-xs font-bold text-[#725d42]/70">
           <span>{formatDate(blog.created_at)}</span>
           {blog.category ? <span>· {blog.category.name}</span> : null}
           <span>· {readingMinutes(blog)} 分钟阅读</span>
         </div>
         <div>
-          <TextButton variant="primary" onClick={() => router.push(blogHref(blog))}>
-            开始阅读
-            <ArrowRight className="h-4 w-4" />
-          </TextButton>
+          <Link href={blogHref(blog)}>
+            <AIButton type="primary" icon={<AIIcon name="icon-critterpedia" bounce size={16} />} className="font-bold">
+              开始阅读
+            </AIButton>
+          </Link>
         </div>
       </div>
 
       {blog.thumbnail ? (
         <button
           type="button"
-          className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-900"
+          className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-white/40 border border-[#725d42]/10"
           onClick={() => router.push(blogHref(blog))}
           aria-label={`阅读 ${blog.title}`}
         >
           <Image src={blog.thumbnail} alt={blog.title} fill sizes="(max-width: 1024px) 100vw, 42vw" className="object-cover" priority />
         </button>
       ) : (
-        <div className="flex min-h-64 items-center justify-center rounded-2xl bg-slate-100 text-slate-400 dark:bg-slate-900">
+        <div className="flex min-h-64 items-center justify-center rounded-2xl bg-white/40 border border-[#725d42]/10 text-slate-400">
           <BookOpen className="h-16 w-16" />
         </div>
       )}
-    </PublicCard>
+    </AICard>
   );
 }
 
@@ -483,27 +539,29 @@ export function BlogSidebar({ categories, tags, title = "内容索引" }: { cate
 
   return (
     <aside className="grid gap-4">
-      <PublicCard className="grid gap-4">
+      <AICard color="brown" className="grid gap-4 p-5 border-2 border-[#725d42]/10 text-white shadow-sm">
         <div className="flex items-center gap-4">
           {config.owner_avatar ? (
-            <Image src={config.owner_avatar} alt={config.owner_name || "作者头像"} width={52} height={52} className="rounded-full object-cover" />
+            <div className="relative h-14 w-14 rounded-full overflow-hidden border-2 border-white/60 shadow-sm shrink-0">
+              <Image src={config.owner_avatar} alt={config.owner_name || "作者头像"} fill className="object-cover" />
+            </div>
           ) : (
-            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-500 dark:bg-slate-900 dark:text-slate-400">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/20 text-white shrink-0">
               <UserRound className="h-5 w-5" />
             </span>
           )}
           <div className="min-w-0">
-            <div className="truncate font-semibold text-slate-950 dark:text-white">{config.owner_name || "作者"}</div>
-            <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-500 dark:text-slate-400">
+            <div className="truncate font-extrabold text-base">{config.owner_name || "岛主"}</div>
+            <p className="mt-1 line-clamp-2 text-xs leading-5 text-white/80 font-bold">
               {config.owner_bio || "记录技术、项目和长期积累的内容。"}
             </p>
           </div>
         </div>
-      </PublicCard>
+      </AICard>
 
-      <PublicCard className="grid gap-3">
-        <div className="flex items-center gap-2 font-semibold text-slate-950 dark:text-white">
-          <Folder className="h-4 w-4" />
+      <AICard color="default" className="grid gap-3 p-5 border-2 border-[#725d42]/10 shadow-sm">
+        <div className="flex items-center gap-2 font-extrabold text-[#725d42]">
+          <AIIcon name="icon-design" size={20} bounce />
           {title}
         </div>
         <div className="grid gap-1.5">
@@ -511,36 +569,36 @@ export function BlogSidebar({ categories, tags, title = "内容索引" }: { cate
             <button
               key={category.id}
               type="button"
-              className="flex items-center justify-between gap-3 rounded-xl px-3 py-2 text-left text-sm text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-900"
+              className="flex items-center justify-between gap-3 rounded-xl px-3 py-2 text-left text-xs font-bold text-[#725d42]/85 transition hover:bg-[#725d42]/5"
               onClick={() => router.push(`/category/${category.id}`)}
             >
               <span className="truncate">{category.name}</span>
-              <span className="shrink-0 text-xs text-slate-400">{category.blog_count || 0}</span>
+              <span className="shrink-0 bg-[#725d42]/10 text-[#725d42] px-2 py-0.5 rounded-full text-[10px]">{category.blog_count || 0}</span>
             </button>
           ))}
-          {categories.length === 0 ? <p className="text-sm text-slate-500 dark:text-slate-400">暂无分类</p> : null}
+          {categories.length === 0 ? <p className="text-xs text-[#725d42]/50 font-bold">暂无分类</p> : null}
         </div>
-      </PublicCard>
+      </AICard>
 
-      <PublicCard className="grid gap-3">
-        <div className="flex items-center gap-2 font-semibold text-slate-950 dark:text-white">
-          <Hash className="h-4 w-4" />
+      <AICard color="default" className="grid gap-3 p-5 border-2 border-[#725d42]/10 shadow-sm">
+        <div className="flex items-center gap-2 font-extrabold text-[#725d42]">
+          <AIIcon name="icon-diy" size={20} bounce />
           热门标签
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5">
           {tags.slice(0, 20).map((tag) => (
             <button
               key={tag.id}
               type="button"
-              className="rounded-full bg-slate-100 px-3 py-1.5 text-sm text-slate-600 transition hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+              className="rounded-full bg-white/80 hover:bg-[#725d42]/10 text-[#725d42] border border-[#725d42]/15 px-3 py-1 text-xs font-bold transition"
               onClick={() => router.push(`/tag/${tag.id}`)}
             >
               #{tag.name}
             </button>
           ))}
-          {tags.length === 0 ? <p className="text-sm text-slate-500 dark:text-slate-400">暂无标签</p> : null}
+          {tags.length === 0 ? <p className="text-xs text-[#725d42]/50 font-bold">暂无标签</p> : null}
         </div>
-      </PublicCard>
+      </AICard>
     </aside>
   );
 }
@@ -556,9 +614,9 @@ function LoadingCards({ count = 6 }: { count?: number }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
       {Array.from({ length: count }).map((_, idx) => (
-        <PublicCard key={idx} className="flex min-h-48 items-center justify-center">
+        <AICard color="default" key={idx} className="flex min-h-48 items-center justify-center border-2 border-[#725d42]/10">
           <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
-        </PublicCard>
+        </AICard>
       ))}
     </div>
   );
@@ -612,54 +670,21 @@ export function PublicHome({ initialData }: { initialData?: PublicHomeInitialDat
     }
   }, [fetchSidebar, initialData]);
 
-  const featuredBlog = currentPage === 1 ? blogs[0] : undefined;
-  const feedBlogs = featuredBlog ? blogs.slice(1) : blogs;
+  const feedBlogs = blogs;
   const pageTitle = currentPage === 1 ? "最新文章" : `第 ${currentPage} 页文章`;
   const description =
     config.site_description || config.site_subtitle || "这里收录博客、项目、文档与长期积累下来的技术线索。";
 
   return (
-    <main className={cn(PUBLIC_CONTAINER, "grid gap-8 py-8")}>
-      <section className="grid gap-6 lg:grid-cols-[minmax(0,0.86fr)_minmax(320px,1fr)] lg:items-stretch">
-        <PageHero
-          eyebrow="Editorial Desk"
-          title={config.site_title || "典典博客"}
-          description={description}
-          stats={[
-            { label: "Posts", value: pagination.total, description: "公开文章" },
-            { label: "Categories", value: categories.length, description: "内容分类" },
-            { label: "Tags", value: tags.length, description: "关键词" },
-          ]}
-          actions={
-            <>
-              <TextButton variant="primary" onClick={() => router.push("/search")}>
-                搜索内容
-                <Search className="h-4 w-4" />
-              </TextButton>
-              <TextButton variant="secondary" onClick={() => router.push("/docs")}>
-                浏览文档
-              </TextButton>
-            </>
-          }
-        >
-          {config.blog_global_summary ? (
-            <p className="max-w-3xl border-l-2 border-slate-200 pl-4 text-sm leading-7 text-slate-500 dark:border-slate-800 dark:text-slate-400">
-              {config.blog_global_summary}
-            </p>
-          ) : null}
-        </PageHero>
-
-        {featuredBlog ? <FeaturedPost blog={featuredBlog} /> : <LoadingState label="正在加载精选内容" />}
-      </section>
-
+    <main className={cn(PUBLIC_CONTAINER, "grid gap-8 py-8 px-4")}>
       <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="grid gap-4">
-          <div className="flex flex-wrap items-end justify-between gap-3">
+          <div className="flex flex-wrap items-end justify-between gap-3 px-1">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Latest</p>
-              <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">{pageTitle}</h2>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-400">Latest</p>
+              <h2 className="mt-1 text-xl font-extrabold tracking-tight text-[#725d42]">{pageTitle}</h2>
             </div>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
+            <p className="text-xs font-bold text-slate-400">
               共 {pagination.total} 篇 · {categories.length} 个分类 · {tags.length} 个标签
             </p>
           </div>
@@ -679,13 +704,13 @@ export function PublicHome({ initialData }: { initialData?: PublicHomeInitialDat
           )}
 
           {pagination.totalPages > 1 ? (
-            <PublicCard>
+            <AICard color="default" className="border-2 border-[#725d42]/10 p-4 shadow-sm">
               <Pagination
                 currentPage={currentPage}
                 totalPages={pagination.totalPages}
                 onPageChange={(page) => router.push(page === 1 ? "/" : `/?page=${page}`)}
               />
-            </PublicCard>
+            </AICard>
           ) : null}
         </div>
 
@@ -711,10 +736,10 @@ export function PaginationButton({
   children: ReactNode;
 }) {
   return (
-    <TextButton variant="secondary" disabled={disabled} onClick={onClick}>
-      {direction === "prev" ? <ChevronLeft className="h-4 w-4" /> : null}
+    <AIButton type="default" disabled={disabled} onClick={onClick} className="font-bold">
+      {direction === "prev" ? <ChevronLeft className="h-4 w-4 mr-1 inline" /> : null}
       {children}
-      {direction === "next" ? <ChevronRight className="h-4 w-4" /> : null}
-    </TextButton>
+      {direction === "next" ? <ChevronRight className="h-4 w-4 ml-1 inline" /> : null}
+    </AIButton>
   );
 }

@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Hash } from "lucide-react";
 import { categoryApi, tagApi } from "@/lib/api";
 import type { Category, Tag } from "@/types";
 import {
@@ -13,6 +12,7 @@ import {
   PublicCard,
   PUBLIC_CONTAINER,
 } from "@/components/blog/public";
+import { Icon as AIIcon, Table as AITable, type TableColumn } from "animal-island-ui";
 import { cn } from "@/lib/utils";
 
 export default function TagsPage() {
@@ -40,10 +40,53 @@ export default function TagsPage() {
     () => tags.slice().sort((a, b) => (b.blog_count || 0) - (a.blog_count || 0)),
     [tags],
   );
+
+  const tableData = useMemo<Record<string, unknown>[]>(
+    () =>
+      sortedTags.map((tag) => ({
+        id: tag.id,
+        name: tag.name,
+        blog_count: tag.blog_count ?? 0,
+      })),
+    [sortedTags],
+  );
+
   const totalBlogRefs = tags.reduce((sum, item) => sum + (item.blog_count || 0), 0);
 
+  // Define Table columns for animal-island-ui Table
+  const tableColumns: TableColumn[] = [
+    {
+      title: "标签",
+      dataIndex: "name" as const,
+      render: (value, record) => {
+        const tagId = typeof record.id === "number" || typeof record.id === "string" ? record.id : "";
+        const tagName = typeof value === "string" ? value : "";
+
+        return (
+          <button
+            type="button"
+            className="font-extrabold text-[#725d42] hover:underline"
+            onClick={() => router.push(`/tag/${tagId}`)}
+          >
+            #{tagName}
+          </button>
+        );
+      },
+    },
+    {
+      title: "关联文章数",
+      dataIndex: "blog_count" as const,
+      align: "right" as const,
+      render: (value) => (
+        <span className="font-extrabold text-[#725d42]/70 bg-[#725d42]/5 px-2.5 py-0.5 rounded-full text-xs">
+          {typeof value === "number" ? value : 0} 篇
+        </span>
+      ),
+    },
+  ];
+
   return (
-    <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8")}>
+    <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8 px-4")}>
       <PageHero
         eyebrow="Tags"
         title="按关键词查看全部标签"
@@ -56,61 +99,44 @@ export default function TagsPage() {
       />
 
       <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="grid gap-4">
+        <div className="grid gap-6">
           {loading ? (
-            <LoadingState label="正在加载标签" />
+            <LoadingState label="正在加载标签数据..." />
           ) : tags.length === 0 ? (
-            <EmptyState title="暂无标签" description="添加标签后会在这里按频率展示。" icon={<Hash className="h-6 w-6" />} />
+            <EmptyState title="暂无标签" description="添加标签后会在这里按频率展示。" icon={<AIIcon name="icon-diy" size={32} />} />
           ) : (
             <>
-              <div className="flex flex-wrap items-end justify-between gap-3">
+              <div className="flex flex-wrap items-end justify-between gap-3 px-1">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Overview</p>
-                  <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">标签概览</h2>
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-400">Overview</p>
+                  <h2 className="mt-1 text-xl font-extrabold tracking-tight text-[#725d42]">标签概览</h2>
                 </div>
-                <span className="text-sm text-slate-500 dark:text-slate-400">共 {tags.length} 个标签 · 累计 {totalBlogRefs} 次关联</span>
+                <span className="text-xs font-bold text-slate-400">共 {tags.length} 个标签 · 累计 {totalBlogRefs} 次关联</span>
               </div>
 
-              <PublicCard className="flex flex-wrap gap-2">
+              {/* Tag Cloud Card */}
+              <PublicCard color="default" className="flex flex-wrap gap-2 p-5">
                 {sortedTags.map((tag) => (
                   <button
                     key={tag.id}
                     type="button"
-                    className="rounded-full bg-slate-100 px-3 py-1.5 text-sm text-slate-700 transition hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                    className="rounded-full bg-white/80 hover:bg-[#725d42]/10 text-[#725d42] border border-[#725d42]/15 px-3.5 py-1.5 text-xs font-extrabold transition"
                     onClick={() => router.push(`/tag/${tag.id}`)}
                   >
-                    #{tag.name} ({tag.blog_count || 0})
+                    #{tag.name} <span className="opacity-60">({tag.blog_count || 0})</span>
                   </button>
                 ))}
               </PublicCard>
 
-              <PublicCard className="overflow-hidden p-0">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-sm">
-                    <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-[0.14em] text-slate-500 dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400">
-                      <tr>
-                        <th className="px-5 py-3 font-semibold">标签</th>
-                        <th className="px-5 py-3 text-right font-semibold">文章数量</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                      {sortedTags.map((tag) => (
-                        <tr key={tag.id} className="transition hover:bg-slate-50 dark:hover:bg-slate-900/60">
-                          <td className="px-5 py-3">
-                            <button
-                              type="button"
-                              className="font-medium text-slate-950 hover:underline dark:text-white"
-                              onClick={() => router.push(`/tag/${tag.id}`)}
-                            >
-                              #{tag.name}
-                            </button>
-                          </td>
-                          <td className="px-5 py-3 text-right text-slate-500 dark:text-slate-400">{tag.blog_count || 0}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+              {/* Tag Table Card */}
+              <PublicCard color="default" className="overflow-hidden p-0">
+                <AITable
+                  columns={tableColumns}
+                  dataSource={tableData}
+                  rowKey="id"
+                  striped
+                  className="w-full font-bold text-sm text-[#725d42]"
+                />
               </PublicCard>
             </>
           )}

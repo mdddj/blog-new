@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowUp, CalendarDays, Clock3, Edit3, Eye, FileText, Folder, Hash } from "lucide-react";
+import { ArrowLeft, ArrowUp, CalendarDays, Clock3, Edit3, Eye } from "lucide-react";
 import { blogApi } from "@/lib/api";
 import { isAuthenticated } from "@/lib/auth";
 import type { Blog } from "@/types";
@@ -13,11 +13,12 @@ import {
   LoadingState,
   PublicCard,
   PUBLIC_CONTAINER,
-  TextButton,
   blogHref,
   formatDate,
   readingMinutes,
+  getCardColor,
 } from "@/components/blog/public";
+import { Button as AIButton, Icon as AIIcon } from "animal-island-ui";
 import { cn } from "@/lib/utils";
 
 function extractHeadings(html: string): { id: string; text: string; level: number }[] {
@@ -100,8 +101,8 @@ export function BlogDetailClient({ slug }: { slug: string }) {
     if (tocItems.length === 0) return;
     const onScroll = () => {
       const mapped = tocItems
-        .map((item) => ({ id: item.id, el: document.getElementById(item.id) }))
-        .filter((item) => Boolean(item.el)) as { id: string; el: HTMLElement }[];
+          .map((item) => ({ id: item.id, el: document.getElementById(item.id) }))
+          .filter((item) => Boolean(item.el)) as { id: string; el: HTMLElement }[];
       if (mapped.length === 0) return;
       let current = mapped[0].id;
       for (const item of mapped) {
@@ -118,20 +119,20 @@ export function BlogDetailClient({ slug }: { slug: string }) {
 
   if (loading) {
     return (
-      <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8")}>
-        <LoadingState label="正在加载文章" />
+      <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8 px-4")}>
+        <LoadingState label="正在加载文章内容..." />
       </main>
     );
   }
 
   if (error || !blog) {
     return (
-      <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8")}>
-        <EmptyState title={error || "找不到这篇文章"} description="返回首页继续浏览最新内容。" icon={<FileText className="h-6 w-6" />} />
+      <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8 px-4")}>
+        <EmptyState title={error || "找不到这篇文章"} description="返回首页继续浏览最新内容。" icon={<AIIcon name="icon-critterpedia" size={32} />} />
         <div className="flex justify-center">
-          <TextButton variant="primary" onClick={() => router.push("/")}>
+          <AIButton type="primary" className="font-bold" onClick={() => router.push("/")}>
             返回首页
-          </TextButton>
+          </AIButton>
         </div>
       </main>
     );
@@ -139,63 +140,66 @@ export function BlogDetailClient({ slug }: { slug: string }) {
 
   const readTime = readingMinutes(blog);
   const hasThumbnail = Boolean(blog.thumbnail);
+  const prevCardColor = prevBlog ? getCardColor(prevBlog.id) : "default";
+  const nextCardColor = nextBlog ? getCardColor(nextBlog.id) : "default";
 
   return (
     <>
-      <main className={cn(PUBLIC_CONTAINER, "grid min-w-0 gap-8 py-8")}>
-        <article className="grid min-w-0 gap-8 xl:grid-cols-[minmax(0,760px)_260px] xl:justify-center">
+      <main className={cn(PUBLIC_CONTAINER, "grid min-w-0 gap-8 py-8 px-4")}>
+        <article className="grid min-w-0 gap-8 xl:grid-cols-[minmax(0,760px)_280px] xl:justify-center">
           <div className="grid min-w-0 gap-6">
             <header className="grid gap-5">
               <div className="flex flex-wrap items-center gap-2">
-                <TextButton
-                  variant="secondary"
+                <AIButton
+                  type="default"
+                  className="font-bold flex items-center"
                   onClick={() => {
                     if (window.history.length > 1) router.back();
                     else router.push("/");
                   }}
                 >
-                  <ArrowLeft className="h-4 w-4" />
+                  <ArrowLeft className="h-4 w-4 mr-1 inline" />
                   返回
-                </TextButton>
+                </AIButton>
                 {blog.category ? (
-                  <button
-                    type="button"
-                    className="inline-flex min-h-9 items-center gap-2 rounded-full bg-slate-100 px-3 text-sm font-medium text-slate-700 transition hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                  <AIButton
+                    type="text"
+                    icon={<AIIcon name="icon-design" size={16} bounce />}
+                    className="font-bold"
                     onClick={() => router.push(`/category/${blog.category!.id}`)}
                   >
-                    <Folder className="h-4 w-4" />
                     {blog.category.name}
-                  </button>
+                  </AIButton>
                 ) : null}
               </div>
 
               <div className="grid gap-4">
-                <h1 className="break-words text-4xl font-semibold leading-tight tracking-tight text-slate-950 dark:text-white sm:text-5xl">
+                <h1 className="break-words text-3xl font-extrabold leading-tight tracking-tight text-[#725d42] sm:text-4xl">
                   {blog.title}
                 </h1>
-                {blog.summary ? <p className="text-lg leading-8 text-slate-600 dark:text-slate-300">{blog.summary}</p> : null}
+                {blog.summary ? <p className="text-base leading-7 text-[#725d42]/80 font-bold border-l-2 border-[#725d42]/30 pl-4">{blog.summary}</p> : null}
               </div>
 
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-500 dark:text-slate-400">
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-bold text-slate-400">
                 <span className="inline-flex items-center gap-2">
-                  <CalendarDays className="h-4 w-4" />
+                  <CalendarDays className="h-3.5 w-3.5" />
                   {formatDate(blog.created_at)}
                 </span>
                 <span className="inline-flex items-center gap-2">
-                  <Eye className="h-4 w-4" />
+                  <Eye className="h-3.5 w-3.5" />
                   {blog.view_count || 0} 次阅读
                 </span>
                 <span className="inline-flex items-center gap-2">
-                  <Clock3 className="h-4 w-4" />
+                  <Clock3 className="h-3.5 w-3.5" />
                   {readTime} 分钟
                 </span>
                 {isLoggedIn ? (
                   <button
                     type="button"
-                    className="inline-flex items-center gap-2 font-medium text-slate-700 hover:underline dark:text-slate-200"
+                    className="inline-flex items-center gap-2 font-bold hover:underline"
                     onClick={() => router.push(`/admin/blogs/${blog.id}`)}
                   >
-                    <Edit3 className="h-4 w-4" />
+                    <Edit3 className="h-3.5 w-3.5" />
                     编辑文章
                   </button>
                 ) : null}
@@ -207,18 +211,17 @@ export function BlogDetailClient({ slug }: { slug: string }) {
                     <button
                       key={tag.id}
                       type="button"
-                      className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1.5 text-sm text-slate-600 transition hover:bg-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+                      className="rounded-full bg-slate-100 hover:bg-[#725d42]/10 text-[#725d42] border border-[#725d42]/10 px-3 py-1 text-xs font-bold transition"
                       onClick={() => router.push(`/tag/${tag.id}`)}
                     >
-                      <Hash className="h-3.5 w-3.5" />
-                      {tag.name}
+                      #{tag.name}
                     </button>
                   ))}
                 </div>
               ) : null}
 
               {hasThumbnail ? (
-                <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-900">
+                <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-white/40 border border-[#725d42]/10">
                   <Image
                     src={blog.thumbnail!}
                     alt={blog.title}
@@ -231,62 +234,68 @@ export function BlogDetailClient({ slug }: { slug: string }) {
               ) : null}
             </header>
 
-            <PublicCard className="min-w-0 overflow-hidden p-5 sm:p-8">
+            {/* Cozy Parchment Card */}
+            <PublicCard color="default" className="min-w-0 overflow-hidden p-5 sm:p-8">
               <BlogContentRenderer
                 html={html}
                 references={blog.references}
-                className="prose min-w-0 max-w-none overflow-x-auto break-words prose-slate dark:prose-invert prose-headings:scroll-mt-28 prose-p:leading-8 prose-a:no-underline hover:prose-a:underline prose-code:break-words prose-code:before:content-none prose-code:after:content-none prose-pre:overflow-x-auto prose-pre:rounded-2xl prose-blockquote:not-italic"
+                className="prose min-w-0 max-w-none overflow-x-auto break-words prose-slate dark:prose-invert prose-headings:scroll-mt-28 prose-headings:font-extrabold prose-headings:text-[#725d42] prose-p:leading-8 prose-p:font-bold prose-p:text-[#725d42]/90 prose-a:no-underline hover:prose-a:underline prose-code:break-words prose-code:before:content-none prose-code:after:content-none prose-code:text-[#c45a1f] prose-code:bg-[#725d42]/5 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-lg prose-code:font-bold prose-pre:overflow-x-auto prose-pre:rounded-2xl prose-pre:bg-[#f4efe4] prose-pre:text-[#725d42] prose-pre:border-2 prose-pre:border-[#725d42]/15 [&_pre_code]:bg-transparent [&_pre_code]:bg-none [&_pre_code]:p-0 [&_pre_code]:border-none prose-blockquote:not-italic prose-blockquote:border-l-4 prose-blockquote:border-[#725d42]/30 prose-blockquote:bg-black/5 prose-blockquote:px-4 prose-blockquote:py-1 prose-blockquote:rounded-r-xl"
               />
             </PublicCard>
           </div>
 
-          <aside className="hidden xl:block">
+          <aside className="hidden xl:flex xl:flex-col xl:gap-6 min-w-0">
             {tocItems.length > 0 ? (
-              <PublicCard className="sticky top-28 grid gap-3 p-4">
-                <div className="text-sm font-semibold text-slate-950 dark:text-white">文章目录</div>
+              <PublicCard color="default" className="sticky top-28 grid gap-3 p-4 shadow-sm">
+                <div className="text-sm font-extrabold text-[#725d42] flex items-center gap-1.5 border-b border-[#725d42]/10 pb-2 select-none">
+                  <AIIcon name="icon-critterpedia" size={16} />
+                  文章目录
+                </div>
                 <nav className="grid gap-1">
                   {tocItems.map((item) => (
                     <button
                       key={item.id}
                       type="button"
                       className={cn(
-                        "truncate rounded-lg px-2 py-1.5 text-left text-sm transition",
+                        "truncate rounded-lg px-2 py-1.5 text-left text-xs font-bold transition flex items-center gap-1",
                         activeHeading === item.id
-                          ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950"
-                          : "text-slate-500 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
+                          ? "bg-[#725d42] text-white"
+                          : "text-[#725d42]/80 hover:bg-[#725d42]/5",
                       )}
-                      style={{ paddingLeft: `${Math.max(0, item.level - 2) * 0.75 + 0.5}rem` }}
+                      style={{ paddingLeft: `${Math.max(0, item.level - 2) * 0.5 + 0.25}rem` }}
                       onClick={() => document.getElementById(item.id)?.scrollIntoView({ behavior: "smooth", block: "start" })}
                     >
-                      {item.text}
+                      {activeHeading === item.id && <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#19c8b9] shrink-0" />}
+                      <span className="truncate">{item.text}</span>
                     </button>
                   ))}
                 </nav>
               </PublicCard>
             ) : null}
+
           </aside>
         </article>
 
         <section className="mx-auto grid w-full max-w-[760px] min-w-0 gap-4 sm:grid-cols-2">
           {prevBlog ? (
-            <PublicCard className="grid gap-2">
-              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">上一篇</div>
-              <div className="line-clamp-2 font-semibold text-slate-950 dark:text-white">{prevBlog.title}</div>
-              <button type="button" className="w-fit text-sm font-medium text-slate-600 hover:underline dark:text-slate-300" onClick={() => router.push(blogHref(prevBlog))}>
+            <PublicCard color={prevCardColor} className="grid gap-2 p-4 shadow-sm hover:shadow">
+              <div className="text-[10px] font-extrabold uppercase tracking-[0.14em] opacity-80">上一篇</div>
+              <div className="line-clamp-2 font-extrabold text-inherit text-base">{prevBlog.title}</div>
+              <AIButton type="default" size="small" className="w-fit font-bold" onClick={() => router.push(blogHref(prevBlog))}>
                 继续阅读
-              </button>
+              </AIButton>
             </PublicCard>
           ) : (
             <div />
           )}
 
           {nextBlog ? (
-            <PublicCard className="grid gap-2 sm:text-right">
-              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400">下一篇</div>
-              <div className="line-clamp-2 font-semibold text-slate-950 dark:text-white">{nextBlog.title}</div>
-              <button type="button" className="w-fit text-sm font-medium text-slate-600 hover:underline dark:text-slate-300 sm:ml-auto" onClick={() => router.push(blogHref(nextBlog))}>
+            <PublicCard color={nextCardColor} className="grid gap-2 p-4 shadow-sm hover:shadow sm:text-right">
+              <div className="text-[10px] font-extrabold uppercase tracking-[0.14em] opacity-80">下一篇</div>
+              <div className="line-clamp-2 font-extrabold text-inherit text-base">{nextBlog.title}</div>
+              <AIButton type="default" size="small" className="w-fit font-bold sm:ml-auto" onClick={() => router.push(blogHref(nextBlog))}>
                 继续阅读
-              </button>
+              </AIButton>
             </PublicCard>
           ) : null}
         </section>
@@ -295,7 +304,7 @@ export function BlogDetailClient({ slug }: { slug: string }) {
       {showTop ? (
         <button
           type="button"
-          className="fixed bottom-6 right-6 z-30 inline-flex h-11 w-11 items-center justify-center rounded-full bg-slate-950 text-white shadow-lg transition hover:bg-slate-800 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-200"
+          className="fixed bottom-6 right-6 z-30 inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#19c8b9] text-white shadow-lg transition hover:bg-[#16b5a8] hover:scale-105 active:scale-95 focus-visible:outline-none"
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           aria-label="回到顶部"
         >

@@ -2,7 +2,6 @@
 
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FileSearch, Search } from "lucide-react";
 import { searchApi } from "@/lib/api";
 import type { PaginatedResponse, SearchResult } from "@/types";
 import { Pagination } from "@/components/blog/pagination";
@@ -12,9 +11,10 @@ import {
   PageHero,
   PublicCard,
   PUBLIC_CONTAINER,
-  TextButton,
   formatDate,
+  getCardColor,
 } from "@/components/blog/public";
+import { Input as AIInput, Button as AIButton, Icon as AIIcon } from "animal-island-ui";
 import { cn } from "@/lib/utils";
 
 function escapeRegex(str: string) {
@@ -29,7 +29,7 @@ function HighlightText({ text, keyword }: { text: string; keyword: string }) {
     <>
       {parts.map((part, idx) =>
         part.toLowerCase() === keyword.toLowerCase() ? (
-          <mark key={idx} className="rounded bg-amber-100 px-1 text-slate-950 dark:bg-amber-300/20 dark:text-amber-100">
+          <mark key={idx} className="rounded bg-amber-200 px-1 text-[#725d42] font-extrabold dark:bg-amber-300/30 dark:text-amber-100">
             {part}
           </mark>
         ) : (
@@ -86,11 +86,15 @@ function SearchContent() {
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     const keyword = input.trim();
-    if (keyword) router.push(`/search?q=${encodeURIComponent(keyword)}`);
+    if (keyword) {
+      router.push(`/search?q=${encodeURIComponent(keyword)}`);
+    } else {
+      router.push("/search");
+    }
   };
 
   return (
-    <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8")}>
+    <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8 px-4")}>
       <PageHero
         eyebrow="Search"
         title={queryParam ? `搜索 “${queryParam}”` : "搜索文章与笔记"}
@@ -101,76 +105,74 @@ function SearchContent() {
           { label: "Page", value: `${currentPage}/${Math.max(1, pagination.totalPages)}`, description: "当前页码" },
         ]}
       >
-        <form onSubmit={handleSubmit} className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
-          <label className="relative min-w-0">
-            <span className="sr-only">搜索关键词</span>
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <input
+        <form onSubmit={handleSubmit} className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] items-center">
+          <div className="relative min-w-0">
+            <AIInput
+              size="large"
               value={input}
               placeholder="输入关键词，例如：Rust、架构、读书笔记..."
               onChange={(event) => setInput(event.target.value)}
-              className="h-11 w-full rounded-full border border-slate-200 bg-white px-10 text-sm text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-2 focus:ring-slate-200 dark:border-slate-800 dark:bg-slate-950 dark:text-white dark:focus:border-slate-600 dark:focus:ring-slate-800"
+              prefix={<AIIcon name="icon-miles" size={20} bounce />}
+              allowClear
+              onClear={() => setInput("")}
+              className="w-full font-bold"
             />
-            {input ? (
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
-                onClick={() => setInput("")}
-              >
-                清空
-              </button>
-            ) : null}
-          </label>
-          <TextButton type="submit" variant="primary" className="h-11" disabled={loading}>
-            {loading ? "搜索中" : "搜索"}
-          </TextButton>
+          </div>
+          <AIButton type="primary" htmlType="submit" disabled={loading} className="h-[42px] font-bold">
+            {loading ? "搜索中..." : "搜索"}
+          </AIButton>
         </form>
       </PageHero>
 
       {loading ? (
-        <LoadingState label="正在搜索" />
+        <LoadingState label="正在全站检索中..." />
       ) : searched ? (
         results.length > 0 ? (
           <section className="grid gap-4">
-            <div className="flex flex-wrap items-end justify-between gap-3">
+            <div className="flex flex-wrap items-end justify-between gap-3 px-1">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Results</p>
-                <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">搜索结果</h2>
+                <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-400">Results</p>
+                <h2 className="mt-1 text-xl font-extrabold tracking-tight text-[#725d42]">搜索结果</h2>
               </div>
-              <span className="text-sm text-slate-500 dark:text-slate-400">共 {pagination.total} 条结果 · 当前第 {currentPage} 页</span>
+              <span className="text-xs font-bold text-slate-400">共 {pagination.total} 条结果 · 当前第 {currentPage} 页</span>
             </div>
 
             <div className="grid gap-4">
-              {results.map((item) => (
-                <PublicCard key={item.id} as="article" className="grid gap-3">
-                  <h2 className="text-xl font-semibold leading-snug text-slate-950 dark:text-white">
-                    <button
-                      type="button"
-                      className="text-left hover:text-slate-700 dark:hover:text-slate-200"
-                      onClick={() => router.push(item.slug ? `/blog/${item.slug}` : `/blog/${item.id}`)}
-                    >
-                      <HighlightText text={item.title} keyword={queryParam} />
-                    </button>
-                  </h2>
-                  <p className="line-clamp-3 text-sm leading-7 text-slate-600 dark:text-slate-300">
-                    <HighlightText text={item.content_snippet || ""} keyword={queryParam} />
-                  </p>
-                  <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3 dark:border-slate-800">
-                    <span className="text-sm text-slate-500 dark:text-slate-400">{formatDate(item.created_at)}</span>
-                    <button
-                      type="button"
-                      className="text-sm font-medium text-slate-950 hover:underline dark:text-white"
-                      onClick={() => router.push(item.slug ? `/blog/${item.slug}` : `/blog/${item.id}`)}
-                    >
-                      阅读结果
-                    </button>
-                  </div>
-                </PublicCard>
-              ))}
+              {results.map((item) => {
+                const cardColor = getCardColor(item.id);
+                return (
+                  <PublicCard key={item.id} color={cardColor} className="grid gap-3 p-5 shadow-sm hover:shadow hover:-translate-y-0.5 transition-transform duration-300">
+                    <h2 className="text-xl font-extrabold leading-snug text-inherit">
+                      <button
+                        type="button"
+                        className="text-left hover:underline text-inherit"
+                        onClick={() => router.push(item.slug ? `/blog/${item.slug}` : `/blog/${item.id}`)}
+                      >
+                        <HighlightText text={item.title} keyword={queryParam} />
+                      </button>
+                    </h2>
+                    <p className="line-clamp-3 text-xs leading-6 opacity-90 font-bold text-inherit">
+                      <HighlightText text={item.content_snippet || ""} keyword={queryParam} />
+                    </p>
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-black/10 pt-3 text-xs font-bold opacity-80">
+                      <span>{formatDate(item.created_at)}</span>
+                      <AIButton
+                        type="text"
+                        size="small"
+                        className="font-bold flex items-center"
+                        onClick={() => router.push(item.slug ? `/blog/${item.slug}` : `/blog/${item.id}`)}
+                      >
+                        阅读结果
+                        <AIIcon name="icon-critterpedia" size={14} className="ml-1" />
+                      </AIButton>
+                    </div>
+                  </PublicCard>
+                );
+              })}
             </div>
 
             {pagination.totalPages > 1 ? (
-              <PublicCard>
+              <PublicCard color="default" className="p-4">
                 <Pagination
                   currentPage={currentPage}
                   totalPages={pagination.totalPages}
@@ -180,10 +182,10 @@ function SearchContent() {
             ) : null}
           </section>
         ) : (
-          <EmptyState title="没有找到相关内容" description="换个更通用的关键词再试一次。" icon={<FileSearch className="h-6 w-6" />} />
+          <EmptyState title="没有找到相关内容" description="换个更通用的关键词再试一次。" icon={<AIIcon name="icon-camera" size={32} />} />
         )
       ) : (
-        <EmptyState title="输入关键词后开始搜索" description="支持检索标题、摘要和正文片段。" icon={<Search className="h-6 w-6" />} />
+        <EmptyState title="输入关键词后开始搜索" description="支持检索标题、摘要和正文片段。" icon={<AIIcon name="icon-miles" size={32} />} />
       )}
     </main>
   );
@@ -191,8 +193,8 @@ function SearchContent() {
 
 function SearchLoading() {
   return (
-    <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8")}>
-      <LoadingState label="正在加载搜索页" />
+    <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8 px-4")}>
+      <LoadingState label="正在加载搜索服务..." />
     </main>
   );
 }

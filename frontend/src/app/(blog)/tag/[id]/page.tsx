@@ -2,7 +2,6 @@
 
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, Hash } from "lucide-react";
 import { categoryApi, tagApi } from "@/lib/api";
 import type { Blog, Category, PaginatedResponse, Tag } from "@/types";
 import { Pagination } from "@/components/blog/pagination";
@@ -14,8 +13,8 @@ import {
   PostCard,
   PublicCard,
   PUBLIC_CONTAINER,
-  TextButton,
 } from "@/components/blog/public";
+import { Button as AIButton, Icon as AIIcon } from "animal-island-ui";
 import { cn } from "@/lib/utils";
 
 function TagPageContent() {
@@ -66,16 +65,16 @@ function TagPageContent() {
   }, [fetchSidebar]);
 
   return (
-    <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8")}>
+    <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8 px-4")}>
       <PageHero
         eyebrow="Tag"
-        title={currentTag ? `#${currentTag.name}` : "标签文章"}
+        title={currentTag ? `# ${currentTag.name}` : "标签文章"}
         description="当前标签关联的文章已经按时间顺序展开，方便直接阅读。"
         actions={
-          <TextButton variant="secondary" onClick={() => router.push("/tags")}>
-            <ArrowLeft className="h-4 w-4" />
+          <AIButton type="default" className="font-bold" onClick={() => router.push("/tags")}>
+            <AIIcon name="icon-diy" size={16} className="mr-1" />
             返回标签索引
-          </TextButton>
+          </AIButton>
         }
         stats={[
           { label: "Matches", value: pagination.total, description: "匹配文章数" },
@@ -86,20 +85,20 @@ function TagPageContent() {
 
       <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="grid gap-4">
-          <div className="flex flex-wrap items-end justify-between gap-3">
+          <div className="flex flex-wrap items-end justify-between gap-3 px-1">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Related</p>
-              <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">相关文章</h2>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-400">Related</p>
+              <h2 className="mt-1 text-xl font-extrabold tracking-tight text-[#725d42]">相关文章</h2>
             </div>
-            <span className="text-sm text-slate-500 dark:text-slate-400">
+            <span className="text-xs font-bold text-slate-400">
               共 {pagination.total} 篇 {currentTag ? `· #${currentTag.name}` : ""}
             </span>
           </div>
 
           {loading ? (
-            <LoadingState label="正在加载文章" />
+            <LoadingState label="正在加载文章列表..." />
           ) : blogs.length === 0 ? (
-            <EmptyState title="这个标签下还没有文章" description="换一个标签或返回首页看看最新内容。" icon={<Hash className="h-6 w-6" />} />
+            <EmptyState title="这个标签下还没有文章" description="换一个标签或返回首页看看最新内容。" icon={<AIIcon name="icon-diy" size={32} />} />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               {blogs.map((blog) => (
@@ -109,7 +108,7 @@ function TagPageContent() {
           )}
 
           {pagination.totalPages > 1 ? (
-            <PublicCard>
+            <PublicCard color="default" className="p-4">
               <Pagination
                 currentPage={currentPage}
                 totalPages={pagination.totalPages}
@@ -127,8 +126,8 @@ function TagPageContent() {
 
 function LoadingFallback() {
   return (
-    <main className={cn(PUBLIC_CONTAINER, "grid gap-4 py-8")}>
-      <LoadingState label="正在加载标签文章" />
+    <main className={cn(PUBLIC_CONTAINER, "grid gap-4 py-8 px-4")}>
+      <LoadingState label="正在加载标签文章..." />
     </main>
   );
 }

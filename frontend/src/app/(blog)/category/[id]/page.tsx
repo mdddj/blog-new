@@ -2,7 +2,6 @@
 
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft, Folder } from "lucide-react";
 import { categoryApi, tagApi } from "@/lib/api";
 import type { Blog, Category, PaginatedResponse, Tag } from "@/types";
 import { Pagination } from "@/components/blog/pagination";
@@ -14,8 +13,8 @@ import {
   PostCard,
   PublicCard,
   PUBLIC_CONTAINER,
-  TextButton,
 } from "@/components/blog/public";
+import { Button as AIButton, Icon as AIIcon } from "animal-island-ui";
 import { cn } from "@/lib/utils";
 
 function CategoryPageContent() {
@@ -66,16 +65,16 @@ function CategoryPageContent() {
   }, [fetchSidebar]);
 
   return (
-    <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8")}>
+    <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8 px-4")}>
       <PageHero
         eyebrow="Category"
         title={currentCategory?.name || "分类文章"}
         description={currentCategory?.intro || "这个分类下的文章已经按时间顺序展开，直接进入阅读即可。"}
         actions={
-          <TextButton variant="secondary" onClick={() => router.push("/categories")}>
-            <ArrowLeft className="h-4 w-4" />
+          <AIButton type="default" className="font-bold" onClick={() => router.push("/categories")}>
+            <AIIcon name="icon-critterpedia" size={16} className="mr-1" />
             返回分类索引
-          </TextButton>
+          </AIButton>
         }
         stats={[
           { label: "Posts", value: pagination.total, description: "当前分类文章数" },
@@ -86,18 +85,18 @@ function CategoryPageContent() {
 
       <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="grid gap-4">
-          <div className="flex flex-wrap items-end justify-between gap-3">
+          <div className="flex flex-wrap items-end justify-between gap-3 px-1">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Posts</p>
-              <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">分类文章</h2>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-400">Posts</p>
+              <h2 className="mt-1 text-xl font-extrabold tracking-tight text-[#725d42]">分类文章</h2>
             </div>
-            <span className="text-sm text-slate-500 dark:text-slate-400">共 {pagination.total} 篇 · 当前第 {currentPage} 页</span>
+            <span className="text-xs font-bold text-slate-400">共 {pagination.total} 篇 · 当前第 {currentPage} 页</span>
           </div>
 
           {loading ? (
-            <LoadingState label="正在加载文章" />
+            <LoadingState label="正在加载文章列表..." />
           ) : blogs.length === 0 ? (
-            <EmptyState title="这个分类下还没有文章" description="换一个分类或返回首页看看最新内容。" icon={<Folder className="h-6 w-6" />} />
+            <EmptyState title="这个分类下还没有文章" description="换一个分类或返回首页看看最新内容。" icon={<AIIcon name="icon-critterpedia" size={32} />} />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               {blogs.map((blog) => (
@@ -107,7 +106,7 @@ function CategoryPageContent() {
           )}
 
           {pagination.totalPages > 1 ? (
-            <PublicCard>
+            <PublicCard color="default" className="p-4">
               <Pagination
                 currentPage={currentPage}
                 totalPages={pagination.totalPages}
@@ -125,8 +124,8 @@ function CategoryPageContent() {
 
 function LoadingFallback() {
   return (
-    <main className={cn(PUBLIC_CONTAINER, "grid gap-4 py-8")}>
-      <LoadingState label="正在加载分类文章" />
+    <main className={cn(PUBLIC_CONTAINER, "grid gap-4 py-8 px-4")}>
+      <LoadingState label="正在加载分类文章..." />
     </main>
   );
 }

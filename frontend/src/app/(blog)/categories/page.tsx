@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Folder } from "lucide-react";
 import { categoryApi, tagApi } from "@/lib/api";
 import type { Category, Tag } from "@/types";
 import {
@@ -13,8 +12,9 @@ import {
   PageHero,
   PublicCard,
   PUBLIC_CONTAINER,
-  TextButton,
+  getCardColor,
 } from "@/components/blog/public";
+import { Button as AIButton, Icon as AIIcon } from "animal-island-ui";
 import { cn } from "@/lib/utils";
 
 export default function CategoriesPage() {
@@ -41,7 +41,7 @@ export default function CategoriesPage() {
   const totalBlogs = categories.reduce((sum, item) => sum + (item.blog_count || 0), 0);
 
   return (
-    <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8")}>
+    <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8 px-4")}>
       <PageHero
         eyebrow="Categories"
         title="按主题查看全部分类"
@@ -55,45 +55,48 @@ export default function CategoriesPage() {
 
       <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="grid gap-4">
-          <div className="flex flex-wrap items-end justify-between gap-3">
+          <div className="flex flex-wrap items-end justify-between gap-3 px-1">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">All Categories</p>
-              <h2 className="mt-1 text-2xl font-semibold tracking-tight text-slate-950 dark:text-white">全部分类</h2>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-400">All Categories</p>
+              <h2 className="mt-1 text-xl font-extrabold tracking-tight text-[#725d42]">全部分类</h2>
             </div>
-            <span className="text-sm text-slate-500 dark:text-slate-400">共 {categories.length} 个分类 · 累计 {totalBlogs} 篇文章</span>
+            <span className="text-xs font-bold text-slate-400">共 {categories.length} 个分类 · 累计 {totalBlogs} 篇文章</span>
           </div>
 
           {loading ? (
-            <LoadingState label="正在加载分类" />
+            <LoadingState label="正在加载分类数据..." />
           ) : categories.length === 0 ? (
-            <EmptyState title="还没有可展示的分类" description="创建分类后会在这里展示。" icon={<Folder className="h-6 w-6" />} />
+            <EmptyState title="还没有可展示的分类" description="创建分类后会在这里展示。" icon={<AIIcon name="icon-design" size={32} />} />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {categories.map((category) => (
-                <PublicCard key={category.id} as="article" className="grid h-full gap-4">
-                  <div className="flex items-center gap-3">
-                    {category.logo ? (
-                      <div className="relative h-12 w-12 overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-900">
-                        <Image src={category.logo} alt={category.name} fill sizes="48px" className="object-contain p-2" />
+              {categories.map((category) => {
+                const cardColor = getCardColor(category.id);
+                return (
+                  <PublicCard key={category.id} color={cardColor} className="grid h-full gap-4 p-5 hover:-translate-y-1 transition-transform duration-300 shadow-sm hover:shadow">
+                    <div className="flex items-center gap-3">
+                      {category.logo ? (
+                        <div className="relative h-12 w-12 overflow-hidden rounded-xl bg-white/40 border border-black/10 shrink-0">
+                          <Image src={category.logo} alt={category.name} fill sizes="48px" className="object-contain p-2" />
+                        </div>
+                      ) : (
+                        <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/40 border border-black/10 text-[#725d42] shrink-0">
+                          <AIIcon name="icon-design" size={24} />
+                        </span>
+                      )}
+                      <div className="min-w-0">
+                        <h3 className="truncate text-base font-extrabold text-inherit">{category.name}</h3>
+                        <p className="text-xs font-bold opacity-80">{category.blog_count || 0} 篇文章</p>
                       </div>
-                    ) : (
-                      <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-slate-500 dark:bg-slate-900 dark:text-slate-400">
-                        <Folder className="h-5 w-5" />
-                      </span>
-                    )}
-                    <div className="min-w-0">
-                      <h3 className="truncate text-lg font-semibold text-slate-950 dark:text-white">{category.name}</h3>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">{category.blog_count || 0} 篇文章</p>
                     </div>
-                  </div>
-                  {category.intro ? <p className="line-clamp-3 text-sm leading-7 text-slate-600 dark:text-slate-300">{category.intro}</p> : null}
-                  <div className="mt-auto">
-                    <TextButton variant="secondary" onClick={() => router.push(`/category/${category.id}`)}>
-                      查看分类
-                    </TextButton>
-                  </div>
-                </PublicCard>
-              ))}
+                    {category.intro ? <p className="line-clamp-3 text-xs leading-5 opacity-90 font-bold">{category.intro}</p> : null}
+                    <div className="mt-auto">
+                      <AIButton type="default" className="font-bold" onClick={() => router.push(`/category/${category.id}`)}>
+                        查看分类
+                      </AIButton>
+                    </div>
+                  </PublicCard>
+                );
+              })}
             </div>
           )}
         </div>

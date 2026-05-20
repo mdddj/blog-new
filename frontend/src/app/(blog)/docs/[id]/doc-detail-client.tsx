@@ -2,13 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BookOpen, ChevronDown, Clock3, FileText, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { Clock3, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { directoryApi, documentApi } from "@/lib/api";
 import type { DirectoryTreeNode, DocumentResponse } from "@/types";
 import { DocsTreeNav } from "@/components/docs/docs-tree-nav";
 import { DocsSearch } from "@/components/docs/docs-search";
 import { DocumentContentRenderer } from "@/components/docs/document-content-renderer";
-import { EmptyState, LoadingState, PublicCard, PUBLIC_CONTAINER, TextButton, formatDate } from "@/components/blog/public";
+import { EmptyState, LoadingState, PublicCard, PUBLIC_CONTAINER, formatDate } from "@/components/blog/public";
+import { Button as AIButton, Icon as AIIcon } from "animal-island-ui";
 import { cn } from "@/lib/utils";
 
 function extractHeadings(html: string): { id: string; text: string; level: number }[] {
@@ -93,40 +94,40 @@ export function DocDetailClient({ docId }: { docId: number }) {
 
   if (loading) {
     return (
-      <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8")}>
-        <LoadingState label="正在加载文档" />
+      <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8 px-4")}>
+        <LoadingState label="正在加载文档树与文章..." />
       </main>
     );
   }
 
   if (error || !doc) {
     return (
-      <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8")}>
-        <EmptyState title={error || "无法访问文档"} description="返回文档首页继续浏览。" icon={<FileText className="h-6 w-6" />} />
+      <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8 px-4")}>
+        <EmptyState title={error || "无法访问文档"} description="返回文档首页继续浏览。" icon={<AIIcon name="icon-critterpedia" size={32} />} />
         <div className="flex justify-center">
-          <TextButton variant="primary" onClick={() => router.push("/docs")}>
+          <AIButton type="primary" className="font-bold" onClick={() => router.push("/docs")}>
             返回文档首页
-          </TextButton>
+          </AIButton>
         </div>
       </main>
     );
   }
 
   const treePanel = (
-    <PublicCard className="grid gap-4 p-4">
-      <div className="flex items-center justify-between gap-3">
-        <div className="inline-flex items-center gap-2 font-semibold text-slate-950 dark:text-white">
-          <BookOpen className="h-4 w-4" />
+    <PublicCard color="default" className="grid gap-4 p-4 shadow-sm border border-[#725d42]/10">
+      <div className="flex items-center justify-between gap-3 border-b border-[#725d42]/10 pb-2 select-none">
+        <div className="inline-flex items-center gap-1.5 font-extrabold text-[#725d42] text-sm">
+          <AIIcon name="icon-design" size={16} bounce />
           知识目录
         </div>
-        <button
-          type="button"
-          className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-900"
+        <AIButton
+          type="text"
+          size="small"
+          className="font-bold text-xs"
           onClick={() => setExpandAll((value) => (value === true ? false : true))}
         >
           {expandAll ? "收起" : "展开"}
-          <ChevronDown className={cn("h-3.5 w-3.5 transition", expandAll && "rotate-180")} />
-        </button>
+        </AIButton>
       </div>
       <DocsSearch tree={tree} />
       <div className="max-h-[calc(100vh-21rem)] overflow-y-auto pr-1">
@@ -136,12 +137,12 @@ export function DocDetailClient({ docId }: { docId: number }) {
   );
 
   return (
-    <main className={cn(PUBLIC_CONTAINER, "grid min-w-0 gap-6 py-8")}>
+    <main className={cn(PUBLIC_CONTAINER, "grid min-w-0 gap-6 py-8 px-4")}>
       <div className="lg:hidden">
-        <TextButton variant="primary" className="w-full" onClick={() => setSidebarOpen((value) => !value)}>
+        <AIButton type="default" className="w-full font-bold flex items-center justify-center gap-1" onClick={() => setSidebarOpen((value) => !value)}>
           {sidebarOpen ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
           {sidebarOpen ? "收起文档目录" : "打开文档目录"}
-        </TextButton>
+        </AIButton>
       </div>
 
       {sidebarOpen ? <div className="lg:hidden">{treePanel}</div> : null}
@@ -151,45 +152,49 @@ export function DocDetailClient({ docId }: { docId: number }) {
 
         <article className="grid min-w-0 gap-5">
           <header className="grid gap-3">
-            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500 dark:text-slate-400">Documentation</div>
-            <h1 className="break-words text-4xl font-semibold leading-tight tracking-tight text-slate-950 dark:text-white">{doc.name}</h1>
-            <p className="inline-flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-slate-500 dark:text-slate-400">
+            <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-400 select-none">Documentation</div>
+            <h1 className="break-words text-3xl font-extrabold leading-tight tracking-tight text-[#725d42]">{doc.name}</h1>
+            <p className="inline-flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-bold text-slate-400">
               <span>{doc.created_at ? formatDate(doc.created_at) : "未知日期"}</span>
               <span className="inline-flex items-center gap-2">
-                <Clock3 className="h-4 w-4" />
+                <Clock3 className="h-3.5 w-3.5" />
                 预计阅读 {readingTime} 分钟
               </span>
             </p>
           </header>
 
-          <PublicCard className="min-w-0 overflow-hidden p-5 sm:p-8">
+          <PublicCard color="default" className="min-w-0 overflow-hidden p-5 sm:p-8">
             <DocumentContentRenderer
               html={processedHtml}
               references={doc.references}
-              className="prose min-w-0 max-w-none overflow-x-auto break-words prose-slate dark:prose-invert prose-headings:scroll-mt-28 prose-p:leading-8 prose-a:no-underline hover:prose-a:underline prose-code:break-words prose-code:before:content-none prose-code:after:content-none prose-pre:overflow-x-auto prose-pre:rounded-2xl prose-blockquote:not-italic"
+              className="prose min-w-0 max-w-none overflow-x-auto break-words prose-slate dark:prose-invert prose-headings:scroll-mt-28 prose-headings:font-extrabold prose-headings:text-[#725d42] prose-p:leading-8 prose-p:font-bold prose-p:text-[#725d42]/90 prose-a:no-underline hover:prose-a:underline prose-code:break-words prose-code:before:content-none prose-code:after:content-none prose-code:text-[#c45a1f] prose-code:bg-[#725d42]/5 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-lg prose-code:font-bold prose-pre:overflow-x-auto prose-pre:rounded-2xl prose-pre:bg-[#f4efe4] prose-pre:text-[#725d42] prose-pre:border-2 prose-pre:border-[#725d42]/15 [&_pre_code]:bg-transparent [&_pre_code]:bg-none [&_pre_code]:p-0 [&_pre_code]:border-none prose-blockquote:not-italic prose-blockquote:border-l-4 prose-blockquote:border-[#725d42]/30 prose-blockquote:bg-black/5 prose-blockquote:px-4 prose-blockquote:py-1 prose-blockquote:rounded-r-xl"
             />
           </PublicCard>
         </article>
 
         <aside className="hidden xl:block">
           {tocItems.length > 0 ? (
-            <PublicCard className="sticky top-28 grid gap-3 p-4">
-              <div className="text-sm font-semibold text-slate-950 dark:text-white">目录导航</div>
+            <PublicCard color="default" className="sticky top-28 grid gap-3 p-4 shadow-sm border border-[#725d42]/10 select-none">
+              <div className="text-sm font-extrabold text-[#725d42] flex items-center gap-1.5 border-b border-[#725d42]/10 pb-2">
+                <AIIcon name="icon-critterpedia" size={16} />
+                目录导航
+              </div>
               <nav className="grid gap-1">
                 {tocItems.map((item) => (
                   <button
                     key={item.id}
                     type="button"
                     className={cn(
-                      "truncate rounded-lg px-2 py-1.5 text-left text-sm transition",
+                      "truncate rounded-lg px-2 py-1.5 text-left text-xs font-bold transition flex items-center gap-1",
                       activeHeading === item.id
-                        ? "bg-slate-950 text-white dark:bg-white dark:text-slate-950"
-                        : "text-slate-500 hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white",
+                        ? "bg-[#725d42] text-white"
+                        : "text-[#725d42]/80 hover:bg-[#725d42]/5",
                     )}
-                    style={{ paddingLeft: `${Math.max(0, item.level - 2) * 0.75 + 0.5}rem` }}
+                    style={{ paddingLeft: `${Math.max(0, item.level - 2) * 0.5 + 0.25}rem` }}
                     onClick={() => document.getElementById(item.id)?.scrollIntoView({ behavior: "smooth", block: "start" })}
                   >
-                    {item.text}
+                    {activeHeading === item.id && <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#19c8b9] shrink-0" />}
+                    <span className="truncate">{item.text}</span>
                   </button>
                 ))}
               </nav>
