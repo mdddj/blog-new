@@ -5,6 +5,7 @@ use axum::{
     response::Response,
     Router,
 };
+use base64::{engine::general_purpose::STANDARD as BASE64_STANDARD, Engine as _};
 use rmcp::{
     handler::server::{router::tool::ToolRouter, wrapper::Parameters},
     model::{ServerCapabilities, ServerInfo},
@@ -25,18 +26,20 @@ use crate::models::blog::{CreateBlogRequest, UpdateBlogRequest};
 use crate::models::category::{CreateCategoryRequest, UpdateCategoryRequest};
 use crate::models::directory::{CreateDirectoryRequest, UpdateDirectoryRequest};
 use crate::models::document::{CreateDocumentRequest, UpdateDocumentRequest};
+use crate::models::file::{CreateFileRequest, FileResponse};
 use crate::models::friend_link::{CreateFriendLinkRequest, UpdateFriendLinkRequest};
 use crate::models::project::{CreateProjectRequest, UpdateProjectRequest};
 use crate::models::tag::{CreateTagRequest, UpdateTagRequest};
 use crate::repositories::{
     blog_repo::BlogRepository, category_repo::CategoryRepository,
     directory_repo::DirectoryRepository, document_repo::DocumentRepository,
-    friend_link_repo::FriendLinkRepository, project_repo::ProjectRepository,
-    search_repo::SearchRepository, site_config_repo::SiteConfigRepo, tag_repo::TagRepository,
-    text_repo::TextRepository,
+    file_repo::FileRepository, friend_link_repo::FriendLinkRepository,
+    project_repo::ProjectRepository, search_repo::SearchRepository,
+    site_config_repo::SiteConfigRepo, tag_repo::TagRepository, text_repo::TextRepository,
 };
 use crate::services::{
     ai_service::AiService, blog_service::BlogService, cache_service::cache_keys,
+    s3_service::S3Service,
 };
 use crate::utils::markdown::render_markdown;
 use crate::AppState;
@@ -173,6 +176,20 @@ impl ListBlogsArgs {
     fn published_only(&self) -> Option<bool> {
         self.published_only.or(Some(true))
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+struct UploadFileArgs {
+    filename: String,
+    content_base64: String,
+    content_type: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+struct UploadImageArgs {
+    filename: String,
+    content_base64: String,
+    content_type: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -476,6 +493,102 @@ impl BlogMcpServer {
         Ok(AiService::new(&api_key, &base_url, &model))
     }
 
+    async fn get_s3_service(&self) -> Result<S3Service, String> {
+        let db_s3_config = SiteConfigRepo::get_s3_config(&self.state.db)
+            .await
+            .map_err(Self::api_error_to_string)?;
+        let s3_config = crate::config::S3Config {
+            endpoint: db_s3_config.endpoint,
+            region: db_s3_config.region,
+            bucket: db_s3_config.bucket,
+            access_key: db_s3_config.access_key,
+            secret_key: db_s3_config.secret_key,
+            public_url: db_s3_config.public_url,
+        };
+
+        S3Service::new(&s3_config)
+            .await
+            .map_err(Self::api_error_to_string)
+    }
+
+    fn normalize_upload_filename(filename: &str) -> Result<String, String> {
+        let filename = filename.trim();
+        if filename.is_empty() {
+            return Err("filename 不能为空".to_string());
+        }
+        if filename.contains('/') || filename.contains('\\') {
+            return Err("filename 不能包含路径分隔符".to_string());
+        }
+        if filename.len() > 500 {
+            return Err("filename 不能超过 500 字节".to_string());
+        }
+        Ok(filename.to_string())
+    }
+
+    fn decode_base64_content(content_base64: &str) -> Result<Vec<u8>, String> {
+        let content_base64 = content_base64
+            .split_once(',')
+            .map(|(_, data)| data)
+            .unwrap_or(content_base64)
+            .chars()
+            .filter(|ch| !ch.is_whitespace())
+            .collect::<String>();
+        if content_base64.is_empty() {
+            return Err("content_base64 不能为空".to_string());
+        }
+
+        let data = BASE64_STANDARD
+            .decode(&content_base64)
+            .map_err(|error| format!("content_base64 不是有效 base64: {error}"))?;
+        if data.is_empty() {
+            return Err("文件内容不能为空".to_string());
+        }
+
+        Ok(data)
+    }
+
+    async fn upload_file_to_storage(
+        &self,
+        filename: &str,
+        data: Vec<u8>,
+        content_type: &str,
+    ) -> Result<FileResponse, String> {
+        let s3_service = self.get_s3_service().await?;
+        let file_size = data.len() as i64;
+        let upload_result = s3_service
+            .upload_file(data, filename, content_type)
+            .await
+            .map_err(Self::api_error_to_string)?;
+
+        let file_type = content_type.split('/').next().map(ToOwned::to_owned);
+        let stored_filename = upload_result
+            .object_key
+            .split('/')
+            .last()
+            .unwrap_or(&upload_result.object_key)
+            .to_string();
+
+        let file = FileRepository::create(
+            &self.state.db,
+            &CreateFileRequest {
+                filename: stored_filename,
+                original_filename: Some(filename.to_string()),
+                file_type,
+                file_size: Some(file_size),
+                url: upload_result.url,
+                thumbnail_url: None,
+                width: None,
+                height: None,
+                bucket_name: Some(upload_result.bucket),
+                object_key: Some(upload_result.object_key),
+            },
+        )
+        .await
+        .map_err(Self::api_error_to_string)?;
+
+        Ok(FileResponse::from(file))
+    }
+
     fn api_error_to_string(error: ApiError) -> String {
         error.to_string()
     }
@@ -485,7 +598,7 @@ impl BlogMcpServer {
 impl BlogMcpServer {
     #[tool(
         name = "search_blogs",
-        description = "根据关键字搜索博客标题和正文内容"
+        description = "根据关键字搜索博客标题和正文内容，支持正文模糊匹配"
     )]
     async fn search_blogs(
         &self,
@@ -1382,6 +1495,68 @@ impl BlogMcpServer {
     }
 
     #[tool(
+        name = "upload_file",
+        description = "上传文件到站点 S3 存储并返回可访问直链。content_base64 传文件二进制内容的 base64 字符串"
+    )]
+    async fn upload_file(
+        &self,
+        Parameters(args): Parameters<UploadFileArgs>,
+    ) -> Result<McpJson<Value>, String> {
+        let filename = Self::normalize_upload_filename(&args.filename)?;
+        let data = Self::decode_base64_content(&args.content_base64)?;
+        let content_type = args
+            .content_type
+            .as_deref()
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .unwrap_or("application/octet-stream")
+            .to_string();
+        let response = self
+            .upload_file_to_storage(&filename, data, &content_type)
+            .await?;
+        let url = response.url.clone();
+
+        Self::json_result(json!({
+            "file": response,
+            "url": url,
+        }))
+    }
+
+    #[tool(
+        name = "upload_image",
+        description = "上传图片到站点 S3 存储并返回可访问直链。content_base64 支持纯 base64 或 data:image/...;base64,..."
+    )]
+    async fn upload_image(
+        &self,
+        Parameters(args): Parameters<UploadImageArgs>,
+    ) -> Result<McpJson<Value>, String> {
+        let filename = Self::normalize_upload_filename(&args.filename)?;
+        let data = Self::decode_base64_content(&args.content_base64)?;
+        let content_type = args
+            .content_type
+            .as_deref()
+            .map(str::trim)
+            .filter(|value| !value.is_empty())
+            .unwrap_or("image/png")
+            .to_string();
+
+        if !content_type.starts_with("image/") {
+            return Err("content_type 必须是 image/*".to_string());
+        }
+
+        let response = self
+            .upload_file_to_storage(&filename, data, &content_type)
+            .await?;
+        let url = response.url.clone();
+
+        Self::json_result(json!({
+            "file": response,
+            "url": url,
+            "markdown": format!("![{}]({})", filename, url),
+        }))
+    }
+
+    #[tool(
         name = "create_blog_draft",
         description = "创建博客草稿，始终保存为未发布状态"
     )]
@@ -1882,7 +2057,7 @@ impl BlogMcpServer {
 impl ServerHandler for BlogMcpServer {
     fn get_info(&self) -> ServerInfo {
         ServerInfo::new(ServerCapabilities::builder().enable_tools().build()).with_instructions(
-            "典典博客 MCP：支持博客检索、字典文本、文档与目录、分类、标签、友链、项目、博客管理和 AI 文本处理。"
+            "典典博客 MCP：支持博客正文模糊检索、文件上传、字典文本、文档与目录、分类、标签、友链、项目、博客管理和 AI 文本处理。"
                 .to_string(),
         )
     }
@@ -1890,7 +2065,10 @@ impl ServerHandler for BlogMcpServer {
 
 #[cfg(test)]
 mod tests {
-    use super::{CreateBlogDraftArgs, CreateDocumentArgs, UpdateBlogArgs, UpdateDocumentArgs};
+    use super::{
+        CreateBlogDraftArgs, CreateDocumentArgs, UpdateBlogArgs, UpdateDocumentArgs,
+        UploadFileArgs, UploadImageArgs,
+    };
     use serde_json::Value;
 
     fn references_schema_for<T: schemars::JsonSchema>() -> Value {
@@ -1920,5 +2098,33 @@ mod tests {
         assert_references_schema_is_not_boolean::<UpdateBlogArgs>();
         assert_references_schema_is_not_boolean::<CreateDocumentArgs>();
         assert_references_schema_is_not_boolean::<UpdateDocumentArgs>();
+    }
+
+    #[test]
+    fn upload_file_input_schema_is_concrete() {
+        assert_upload_schema_is_concrete::<UploadFileArgs>();
+    }
+
+    #[test]
+    fn upload_image_input_schema_is_concrete() {
+        assert_upload_schema_is_concrete::<UploadImageArgs>();
+    }
+
+    fn assert_upload_schema_is_concrete<T: schemars::JsonSchema>() {
+        let schema = schemars::schema_for!(T).to_value();
+        for field in ["filename", "content_base64", "content_type"] {
+            let field_schema = schema
+                .pointer(&format!("/properties/{field}"))
+                .unwrap_or_else(|| panic!("{field} schema should exist"));
+            assert_ne!(
+                field_schema,
+                &Value::Bool(true),
+                "{field} must not be emitted as an unrestricted boolean schema"
+            );
+            assert!(
+                field_schema.is_object(),
+                "{field} schema should be an object schema, got: {field_schema:?}"
+            );
+        }
     }
 }

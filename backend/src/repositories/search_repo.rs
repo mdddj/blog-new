@@ -21,40 +21,43 @@ impl SearchRepository {
         page_size: i64,
         published_only: bool,
     ) -> Result<(Vec<SearchResultItem>, i64), ApiError> {
+        let keyword = keyword.trim();
         if keyword.is_empty() {
             return Ok((Vec::new(), 0));
         }
 
         let offset = (page - 1) * page_size;
-
-        // Prepare search query for PostgreSQL full-text search
-        // Convert keyword to tsquery format (split words and join with &)
-        let search_query = keyword
-            .split_whitespace()
-            .map(|w| w.to_string())
-            .collect::<Vec<_>>()
-            .join(" & ");
+        let fuzzy_pattern = Self::fuzzy_pattern(keyword);
 
         // Count total matching results
         let total_query = if published_only {
             r#"
             SELECT COUNT(*)
-            FROM blogs
-            WHERE is_published = true
-              AND to_tsvector('simple', coalesce(title, '') || ' ' || coalesce(content, ''))
-                  @@ to_tsquery('simple', $1)
+            FROM blogs b
+            WHERE b.is_published = true
+              AND (
+                  to_tsvector('simple', coalesce(b.title, '') || ' ' || coalesce(b.content, ''))
+                      @@ plainto_tsquery('simple', $1)
+                  OR b.title ILIKE $2 ESCAPE '\'
+                  OR b.content ILIKE $2 ESCAPE '\'
+                  OR coalesce(b.summary, '') ILIKE $2 ESCAPE '\'
+              )
             "#
         } else {
             r#"
             SELECT COUNT(*)
-            FROM blogs
-            WHERE to_tsvector('simple', coalesce(title, '') || ' ' || coalesce(content, ''))
-                  @@ to_tsquery('simple', $1)
+            FROM blogs b
+            WHERE to_tsvector('simple', coalesce(b.title, '') || ' ' || coalesce(b.content, ''))
+                      @@ plainto_tsquery('simple', $1)
+               OR b.title ILIKE $2 ESCAPE '\'
+               OR b.content ILIKE $2 ESCAPE '\'
+               OR coalesce(b.summary, '') ILIKE $2 ESCAPE '\'
             "#
         };
 
         let total = sqlx::query_scalar::<_, i64>(total_query)
-            .bind(&search_query)
+            .bind(keyword)
+            .bind(&fuzzy_pattern)
             .fetch_one(pool)
             .await?;
 
@@ -63,8 +66,7 @@ impl SearchRepository {
         }
 
         // Search with ranking
-        // ts_rank calculates relevance score
-        // ts_headline generates excerpt with highlighted keywords
+        // ts_rank calculates full-text relevance; ILIKE clauses provide fuzzy substring matches.
         let data_query = if published_only {
             r#"
             SELECT
@@ -77,16 +79,26 @@ impl SearchRepository {
                 b.category_id,
                 b.view_count,
                 b.created_at,
-                ts_rank(
-                    to_tsvector('simple', coalesce(b.title, '') || ' ' || coalesce(b.content, '')),
-                    to_tsquery('simple', $1)
+                (
+                    ts_rank(
+                        to_tsvector('simple', coalesce(b.title, '') || ' ' || coalesce(b.content, '')),
+                        plainto_tsquery('simple', $1)
+                    )
+                    + CASE WHEN b.title ILIKE $2 ESCAPE '\' THEN 2.0::real ELSE 0.0::real END
+                    + CASE WHEN b.content ILIKE $2 ESCAPE '\' THEN 1.0::real ELSE 0.0::real END
+                    + CASE WHEN coalesce(b.summary, '') ILIKE $2 ESCAPE '\' THEN 0.5::real ELSE 0.0::real END
                 ) as rank
             FROM blogs b
             WHERE b.is_published = true
-              AND to_tsvector('simple', coalesce(b.title, '') || ' ' || coalesce(b.content, ''))
-                  @@ to_tsquery('simple', $1)
+              AND (
+                  to_tsvector('simple', coalesce(b.title, '') || ' ' || coalesce(b.content, ''))
+                      @@ plainto_tsquery('simple', $1)
+                OR b.title ILIKE $2 ESCAPE '\'
+                OR b.content ILIKE $2 ESCAPE '\'
+                OR coalesce(b.summary, '') ILIKE $2 ESCAPE '\'
+              )
             ORDER BY rank DESC, b.created_at DESC
-            LIMIT $2 OFFSET $3
+            LIMIT $3 OFFSET $4
             "#
         } else {
             r#"
@@ -100,15 +112,23 @@ impl SearchRepository {
                 b.category_id,
                 b.view_count,
                 b.created_at,
-                ts_rank(
-                    to_tsvector('simple', coalesce(b.title, '') || ' ' || coalesce(b.content, '')),
-                    to_tsquery('simple', $1)
+                (
+                    ts_rank(
+                        to_tsvector('simple', coalesce(b.title, '') || ' ' || coalesce(b.content, '')),
+                        plainto_tsquery('simple', $1)
+                    )
+                    + CASE WHEN b.title ILIKE $2 ESCAPE '\' THEN 2.0::real ELSE 0.0::real END
+                    + CASE WHEN b.content ILIKE $2 ESCAPE '\' THEN 1.0::real ELSE 0.0::real END
+                    + CASE WHEN coalesce(b.summary, '') ILIKE $2 ESCAPE '\' THEN 0.5::real ELSE 0.0::real END
                 ) as rank
             FROM blogs b
             WHERE to_tsvector('simple', coalesce(b.title, '') || ' ' || coalesce(b.content, ''))
-                  @@ to_tsquery('simple', $1)
+                      @@ plainto_tsquery('simple', $1)
+               OR b.title ILIKE $2 ESCAPE '\'
+               OR b.content ILIKE $2 ESCAPE '\'
+               OR coalesce(b.summary, '') ILIKE $2 ESCAPE '\'
             ORDER BY rank DESC, b.created_at DESC
-            LIMIT $2 OFFSET $3
+            LIMIT $3 OFFSET $4
             "#
         };
 
@@ -127,7 +147,8 @@ impl SearchRepository {
                 f32,                   // rank
             ),
         >(data_query)
-        .bind(&search_query)
+        .bind(keyword)
+        .bind(&fuzzy_pattern)
         .bind(page_size)
         .bind(offset)
         .fetch_all(pool)
@@ -185,6 +206,24 @@ impl SearchRepository {
         Ok((results, total))
     }
 
+    fn fuzzy_pattern(keyword: &str) -> String {
+        format!("%{}%", Self::escape_like(keyword))
+    }
+
+    fn escape_like(value: &str) -> String {
+        let mut escaped = String::with_capacity(value.len());
+        for ch in value.chars() {
+            match ch {
+                '\\' | '%' | '_' => {
+                    escaped.push('\\');
+                    escaped.push(ch);
+                }
+                _ => escaped.push(ch),
+            }
+        }
+        escaped
+    }
+
     /// Generate an excerpt from content with keyword context
     /// Tries to find the keyword in content and extract surrounding text
     fn generate_excerpt(content: &str, keyword: &str, max_length: usize) -> Option<String> {
@@ -198,52 +237,43 @@ impl SearchRepository {
         // Find the first occurrence of any keyword word
         let keywords: Vec<&str> = keyword.split_whitespace().collect();
         let lower_text = plain_text.to_lowercase();
-
         let mut best_pos: Option<usize> = None;
         for kw in &keywords {
-            if let Some(pos) = lower_text.find(&kw.to_lowercase()) {
+            if let Some(byte_pos) = lower_text.find(&kw.to_lowercase()) {
+                let pos = lower_text[..byte_pos].chars().count();
                 if best_pos.is_none() || pos < best_pos.unwrap() {
                     best_pos = Some(pos);
                 }
             }
         }
 
+        let chars = plain_text.chars().collect::<Vec<_>>();
+        let char_len = chars.len();
+        let max_length = max_length.max(1);
+
         let excerpt = match best_pos {
             Some(pos) => {
-                // Calculate start position (try to include some context before keyword)
-                let context_before = 50;
-                let start = if pos > context_before {
-                    // Find a word boundary
-                    let search_start = pos - context_before;
-                    plain_text[search_start..pos]
-                        .find(' ')
-                        .map(|p| search_start + p + 1)
-                        .unwrap_or(search_start)
-                } else {
-                    0
-                };
-
-                // Calculate end position
-                let end = (start + max_length).min(plain_text.len());
-                let end = plain_text[..end].rfind(' ').map(|p| p).unwrap_or(end);
+                let context_before = 50.min(max_length / 2);
+                let start = pos.saturating_sub(context_before);
+                let end = (start + max_length).min(char_len);
+                let snippet = chars[start..end].iter().collect::<String>();
 
                 let mut result = String::new();
                 if start > 0 {
                     result.push_str("...");
                 }
-                result.push_str(plain_text[start..end].trim());
-                if end < plain_text.len() {
+                result.push_str(snippet.trim());
+                if end < char_len {
                     result.push_str("...");
                 }
                 result
             }
             None => {
-                // No keyword found, just take the beginning
-                let end = max_length.min(plain_text.len());
-                let end = plain_text[..end].rfind(' ').map(|p| p).unwrap_or(end);
+                let end = max_length.min(char_len);
+                let snippet = chars[..end].iter().collect::<String>();
 
-                let mut result = plain_text[..end].trim().to_string();
-                if end < plain_text.len() {
+                let mut result = snippet.trim().to_string();
+                if end < char_len {
                     result.push_str("...");
                 }
                 result
@@ -273,5 +303,36 @@ impl SearchRepository {
 
         // Clean up multiple whitespaces
         result.split_whitespace().collect::<Vec<_>>().join(" ")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::SearchRepository;
+
+    #[test]
+    fn fuzzy_pattern_escapes_like_wildcards() {
+        assert_eq!(
+            SearchRepository::fuzzy_pattern(r"100%_done\ok"),
+            r"%100\%\_done\\ok%"
+        );
+    }
+
+    #[test]
+    fn generate_excerpt_handles_chinese_content() {
+        let content = "前言内容。这里介绍 Rust 异步运行时和 MCP 工具上传文件的实现细节。结尾内容。";
+        let excerpt = SearchRepository::generate_excerpt(content, "上传文件", 20)
+            .expect("excerpt should be generated");
+
+        assert!(excerpt.contains("上传文件"));
+    }
+
+    #[test]
+    fn generate_excerpt_does_not_panic_when_chinese_content_is_truncated() {
+        let content = "这是一个没有命中词的中文段落，用来验证按照字符截断不会在 UTF-8 边界上崩溃。";
+        let excerpt = SearchRepository::generate_excerpt(content, "不存在", 7)
+            .expect("excerpt should be generated");
+
+        assert!(excerpt.chars().count() <= 10);
     }
 }
