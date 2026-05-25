@@ -17,6 +17,7 @@ use rmcp::{
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
+use std::collections::BTreeMap;
 
 use crate::error::ApiError;
 use crate::mcp::auth::mcp_auth_middleware;
@@ -229,13 +230,22 @@ struct DocumentIdArgs {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+struct McpReference {
+    id: Option<String>,
+    title: String,
+    content: String,
+}
+
+type McpReferences = BTreeMap<String, McpReference>;
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 struct CreateDocumentArgs {
     name: String,
     filename: Option<String>,
     content: String,
     directory_id: Option<i64>,
     sort_order: Option<i32>,
-    references: Option<Value>,
+    references: Option<McpReferences>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -246,7 +256,7 @@ struct UpdateDocumentArgs {
     content: Option<String>,
     directory_id: Option<i64>,
     sort_order: Option<i32>,
-    references: Option<Value>,
+    references: Option<McpReferences>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -291,7 +301,7 @@ struct CreateBlogDraftArgs {
     thumbnail: Option<String>,
     category_id: Option<i64>,
     tag_ids: Option<Vec<i64>>,
-    references: Option<Value>,
+    references: Option<McpReferences>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -305,7 +315,7 @@ struct UpdateBlogArgs {
     thumbnail: Option<String>,
     category_id: Option<i64>,
     tag_ids: Option<Vec<i64>>,
-    references: Option<Value>,
+    references: Option<McpReferences>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -390,6 +400,13 @@ impl BlogMcpServer {
     fn json_result<T: Serialize>(value: T) -> Result<McpJson<Value>, String> {
         serde_json::to_value(value)
             .map(McpJson)
+            .map_err(|error| error.to_string())
+    }
+
+    fn references_to_value(references: Option<McpReferences>) -> Result<Option<Value>, String> {
+        references
+            .map(serde_json::to_value)
+            .transpose()
             .map_err(|error| error.to_string())
     }
 
@@ -906,7 +923,7 @@ impl BlogMcpServer {
                 content: args.content,
                 directory_id: args.directory_id,
                 sort_order: args.sort_order,
-                references: args.references,
+                references: Self::references_to_value(args.references)?,
             },
         )
         .await
@@ -947,7 +964,7 @@ impl BlogMcpServer {
                 content: args.content,
                 directory_id: args.directory_id,
                 sort_order: args.sort_order,
-                references: args.references,
+                references: Self::references_to_value(args.references)?,
             },
         )
         .await
@@ -1399,7 +1416,7 @@ impl BlogMcpServer {
             category_id: args.category_id,
             tag_ids: args.tag_ids,
             is_published: Some(false),
-            references: args.references,
+            references: Self::references_to_value(args.references)?,
         };
 
         let html = render_markdown(&args.content);
@@ -1454,7 +1471,7 @@ impl BlogMcpServer {
             category_id: args.category_id,
             tag_ids: args.tag_ids,
             is_published: None,
-            references: args.references,
+            references: Self::references_to_value(args.references)?,
         };
 
         let html = args
@@ -1868,5 +1885,40 @@ impl ServerHandler for BlogMcpServer {
             "典典博客 MCP：支持博客检索、字典文本、文档与目录、分类、标签、友链、项目、博客管理和 AI 文本处理。"
                 .to_string(),
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{CreateBlogDraftArgs, CreateDocumentArgs, UpdateBlogArgs, UpdateDocumentArgs};
+    use serde_json::Value;
+
+    fn references_schema_for<T: schemars::JsonSchema>() -> Value {
+        let schema = schemars::schema_for!(T).to_value();
+        schema
+            .pointer("/properties/references")
+            .expect("references schema should exist")
+            .clone()
+    }
+
+    fn assert_references_schema_is_not_boolean<T: schemars::JsonSchema>() {
+        let references_schema = references_schema_for::<T>();
+        assert_ne!(
+            references_schema,
+            Value::Bool(true),
+            "references must not be emitted as an unrestricted boolean schema"
+        );
+        assert!(
+            references_schema.is_object(),
+            "references schema should be an object schema, got: {references_schema:?}"
+        );
+    }
+
+    #[test]
+    fn reference_input_schemas_are_concrete_objects() {
+        assert_references_schema_is_not_boolean::<CreateBlogDraftArgs>();
+        assert_references_schema_is_not_boolean::<UpdateBlogArgs>();
+        assert_references_schema_is_not_boolean::<CreateDocumentArgs>();
+        assert_references_schema_is_not_boolean::<UpdateDocumentArgs>();
     }
 }
