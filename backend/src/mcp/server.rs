@@ -1,4 +1,10 @@
-use axum::{middleware, Router};
+use axum::{
+    body::Body,
+    http::{header, HeaderValue, Method, Request},
+    middleware::{self, Next},
+    response::Response,
+    Router,
+};
 use rmcp::{
     handler::server::{router::tool::ToolRouter, wrapper::Parameters},
     model::{ServerCapabilities, ServerInfo},
@@ -34,7 +40,16 @@ use crate::services::{
 use crate::utils::markdown::render_markdown;
 use crate::AppState;
 
+const MCP_JSON_MIME: &str = "application/json";
+const MCP_EVENT_STREAM_MIME: &str = "text/event-stream";
+const MCP_POST_ACCEPT: &str = "application/json, text/event-stream";
+const MCP_GET_ACCEPT: &str = "text/event-stream";
+
 pub fn router(state: AppState) -> Router<AppState> {
+    let config = StreamableHttpServerConfig::default()
+        .with_sse_keep_alive(None)
+        .disable_allowed_hosts();
+
     let service: StreamableHttpService<BlogMcpServer, LocalSessionManager> =
         StreamableHttpService::new(
             {
@@ -42,15 +57,45 @@ pub fn router(state: AppState) -> Router<AppState> {
                 move || Ok(BlogMcpServer::new(state.clone()))
             },
             Default::default(),
-            StreamableHttpServerConfig {
-                sse_keep_alive: None,
-                ..Default::default()
-            },
+            config,
         );
 
     Router::new()
         .nest_service("/mcp", service)
+        .layer(middleware::from_fn(mcp_accept_compat_middleware))
         .layer(middleware::from_fn_with_state(state, mcp_auth_middleware))
+}
+
+async fn mcp_accept_compat_middleware(mut request: Request<Body>, next: Next) -> Response {
+    match *request.method() {
+        Method::GET => ensure_accept_header(&mut request, &[MCP_EVENT_STREAM_MIME], MCP_GET_ACCEPT),
+        Method::POST => ensure_accept_header(
+            &mut request,
+            &[MCP_JSON_MIME, MCP_EVENT_STREAM_MIME],
+            MCP_POST_ACCEPT,
+        ),
+        _ => {}
+    }
+
+    next.run(request).await
+}
+
+fn ensure_accept_header(
+    request: &mut Request<Body>,
+    required_mime_types: &[&str],
+    fallback: &'static str,
+) {
+    let has_required_accept = request
+        .headers()
+        .get(header::ACCEPT)
+        .and_then(|value| value.to_str().ok())
+        .is_some_and(|accept| required_mime_types.iter().all(|mime| accept.contains(mime)));
+
+    if !has_required_accept {
+        request
+            .headers_mut()
+            .insert(header::ACCEPT, HeaderValue::from_static(fallback));
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]

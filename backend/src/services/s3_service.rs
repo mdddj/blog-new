@@ -102,7 +102,12 @@ impl S3Service {
 
         // Prefer configured public URL for browser access. Fall back to endpoint-style URLs.
         let url = if self.public_url.trim().is_empty() {
-            format!("{}/{}/{}", self.endpoint.trim_end_matches('/'), self.bucket, object_key)
+            format!(
+                "{}/{}/{}",
+                self.endpoint.trim_end_matches('/'),
+                self.bucket,
+                object_key
+            )
         } else {
             format!("{}/{}", self.public_url.trim_end_matches('/'), object_key)
         };
