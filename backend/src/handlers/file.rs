@@ -29,6 +29,7 @@ pub async fn upload_file(
         bucket: db_s3_config.bucket,
         access_key: db_s3_config.access_key,
         secret_key: db_s3_config.secret_key,
+        public_url: db_s3_config.public_url,
     };
 
     // Initialize S3 service
@@ -167,6 +168,7 @@ pub async fn delete_file(
             bucket: db_s3_config.bucket,
             access_key: db_s3_config.access_key,
             secret_key: db_s3_config.secret_key,
+            public_url: db_s3_config.public_url,
         };
 
         let s3_service = S3Service::new(&s3_config)

@@ -2,128 +2,91 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
-import { Quote } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { BookOpen, X } from "lucide-react";
 import type { BlogReference } from "@/types";
 import { sanitizeReference } from "@/lib/reference-utils";
 
-const MDPreview = dynamic(
-    () => import("@uiw/react-md-editor").then((mod) => mod.default.Markdown),
-    {
-        ssr: false,
-        loading: () => <Skeleton className="h-[100px] w-full" />,
-    }
-);
+const MDPreview = dynamic(() => import("@uiw/react-md-editor").then((mod) => mod.default.Markdown), {
+  ssr: false,
+  loading: () => (
+    <div className="flex min-h-28 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+      正在加载引用
+    </div>
+  ),
+});
 
 interface ReferenceCardProps {
-    reference: BlogReference;
+  reference: BlogReference;
 }
 
 export function ReferenceCard({ reference }: ReferenceCardProps) {
-    const [open, setOpen] = useState(false);
-    const safeReference = sanitizeReference<BlogReference>(reference);
+  const [open, setOpen] = useState(false);
+  const safeReference = sanitizeReference<BlogReference>(reference);
 
-    return (
-        <>
-            <button
-                onClick={() => setOpen(true)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 my-1 text-sm font-medium rounded-lg
-                    bg-linear-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30
-                    border border-amber-200 dark:border-amber-800
-                    text-amber-800 dark:text-amber-200
-                    hover:from-amber-100 hover:to-orange-100 dark:hover:from-amber-950/50 dark:hover:to-orange-950/50
-                    hover:border-amber-300 dark:hover:border-amber-700
-                    transition-all duration-200 cursor-pointer
-                    shadow-sm hover:shadow"
-            >
-                <Quote className="h-3.5 w-3.5" />
-                <span>{safeReference.title}</span>
-            </button>
+  return (
+    <>
+      <button
+        type="button"
+        className="mx-1 inline-flex min-h-8 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 text-sm font-medium text-slate-700 align-baseline transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-200 dark:hover:bg-slate-900"
+        onClick={() => setOpen(true)}
+      >
+        <BookOpen className="h-3.5 w-3.5" />
+        {safeReference.title}
+      </button>
 
-            <Dialog open={open} onOpenChange={setOpen}>
-                <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
-                    <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2 text-amber-800 dark:text-amber-200">
-                            <Quote className="h-5 w-5" />
-                            {safeReference.title}
-                        </DialogTitle>
-                        <DialogDescription className="sr-only">
-                            引用内容详情
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="flex-1 overflow-auto">
-                        <div
-                            data-color-mode="light"
-                            className="dark:hidden prose prose-sm max-w-none"
-                        >
-                            <MDPreview source={safeReference.content} />
-                        </div>
-                        <div
-                            data-color-mode="dark"
-                            className="hidden dark:block prose prose-sm prose-invert max-w-none"
-                        >
-                            <MDPreview source={safeReference.content} />
-                        </div>
-                    </div>
-                </DialogContent>
-            </Dialog>
-        </>
-    );
+      {open ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 p-4" role="dialog" aria-modal="true">
+          <div className="grid max-h-[82vh] w-[min(720px,100%)] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-950">
+            <header className="flex items-center justify-between gap-4 border-b border-slate-200 px-5 py-4 dark:border-slate-800">
+              <h2 className="min-w-0 truncate text-lg font-semibold text-slate-950 dark:text-white">{safeReference.title}</h2>
+              <button
+                type="button"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white"
+                onClick={() => setOpen(false)}
+                aria-label="关闭引用"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </header>
+            <div className="max-h-[65vh] overflow-auto p-5" data-color-mode="light">
+              <MDPreview source={safeReference.content} />
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </>
+  );
 }
 
-// Utility function to parse reference markers in content
 export function parseReferences(
-    content: string,
-    references: Record<string, BlogReference>
+  content: string,
+  references: Record<string, BlogReference>,
 ): { type: "text" | "reference"; content: string; reference?: BlogReference }[] {
-    const refPattern = /:::ref\[([^\]]+)\]/g;
-    const parts: { type: "text" | "reference"; content: string; reference?: BlogReference }[] = [];
-    let lastIndex = 0;
-    let match;
+  const refPattern = /:::ref\[([^\]]+)\]/g;
+  const parts: { type: "text" | "reference"; content: string; reference?: BlogReference }[] = [];
+  let lastIndex = 0;
+  let match;
 
-    while ((match = refPattern.exec(content)) !== null) {
-        // Add text before the reference
-        if (match.index > lastIndex) {
-            parts.push({
-                type: "text",
-                content: content.slice(lastIndex, match.index),
-            });
-        }
-
-        // Add the reference
-        const refId = match[1];
-        const reference = references[refId];
-        if (reference) {
-            parts.push({
-                type: "reference",
-                content: refId,
-                reference,
-            });
-        } else {
-            // Reference not found, keep as text
-            parts.push({
-                type: "text",
-                content: match[0],
-            });
-        }
-
-        lastIndex = match.index + match[0].length;
+  while ((match = refPattern.exec(content)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push({
+        type: "text",
+        content: content.slice(lastIndex, match.index),
+      });
     }
 
-    // Add remaining text
-    if (lastIndex < content.length) {
-        parts.push({
-            type: "text",
-            content: content.slice(lastIndex),
-        });
-    }
+    const refId = match[1];
+    const reference = references[refId];
+    parts.push(reference ? { type: "reference", content: refId, reference } : { type: "text", content: match[0] });
+    lastIndex = match.index + match[0].length;
+  }
 
-    return parts;
+  if (lastIndex < content.length) {
+    parts.push({
+      type: "text",
+      content: content.slice(lastIndex),
+    });
+  }
+
+  return parts;
 }

@@ -1,4 +1,10 @@
-use axum::{middleware, Router};
+use axum::{
+    body::Body,
+    http::{header, HeaderValue, Method, Request},
+    middleware::{self, Next},
+    response::Response,
+    Router,
+};
 use rmcp::{
     handler::server::{router::tool::ToolRouter, wrapper::Parameters},
     model::{ServerCapabilities, ServerInfo},
@@ -11,6 +17,7 @@ use rmcp::{
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
+use std::collections::BTreeMap;
 
 use crate::error::ApiError;
 use crate::mcp::auth::mcp_auth_middleware;
@@ -34,7 +41,16 @@ use crate::services::{
 use crate::utils::markdown::render_markdown;
 use crate::AppState;
 
+const MCP_JSON_MIME: &str = "application/json";
+const MCP_EVENT_STREAM_MIME: &str = "text/event-stream";
+const MCP_POST_ACCEPT: &str = "application/json, text/event-stream";
+const MCP_GET_ACCEPT: &str = "text/event-stream";
+
 pub fn router(state: AppState) -> Router<AppState> {
+    let config = StreamableHttpServerConfig::default()
+        .with_sse_keep_alive(None)
+        .disable_allowed_hosts();
+
     let service: StreamableHttpService<BlogMcpServer, LocalSessionManager> =
         StreamableHttpService::new(
             {
@@ -42,15 +58,45 @@ pub fn router(state: AppState) -> Router<AppState> {
                 move || Ok(BlogMcpServer::new(state.clone()))
             },
             Default::default(),
-            StreamableHttpServerConfig {
-                sse_keep_alive: None,
-                ..Default::default()
-            },
+            config,
         );
 
     Router::new()
         .nest_service("/mcp", service)
+        .layer(middleware::from_fn(mcp_accept_compat_middleware))
         .layer(middleware::from_fn_with_state(state, mcp_auth_middleware))
+}
+
+async fn mcp_accept_compat_middleware(mut request: Request<Body>, next: Next) -> Response {
+    match *request.method() {
+        Method::GET => ensure_accept_header(&mut request, &[MCP_EVENT_STREAM_MIME], MCP_GET_ACCEPT),
+        Method::POST => ensure_accept_header(
+            &mut request,
+            &[MCP_JSON_MIME, MCP_EVENT_STREAM_MIME],
+            MCP_POST_ACCEPT,
+        ),
+        _ => {}
+    }
+
+    next.run(request).await
+}
+
+fn ensure_accept_header(
+    request: &mut Request<Body>,
+    required_mime_types: &[&str],
+    fallback: &'static str,
+) {
+    let has_required_accept = request
+        .headers()
+        .get(header::ACCEPT)
+        .and_then(|value| value.to_str().ok())
+        .is_some_and(|accept| required_mime_types.iter().all(|mime| accept.contains(mime)));
+
+    if !has_required_accept {
+        request
+            .headers_mut()
+            .insert(header::ACCEPT, HeaderValue::from_static(fallback));
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -184,13 +230,22 @@ struct DocumentIdArgs {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+struct McpReference {
+    id: Option<String>,
+    title: String,
+    content: String,
+}
+
+type McpReferences = BTreeMap<String, McpReference>;
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 struct CreateDocumentArgs {
     name: String,
     filename: Option<String>,
     content: String,
     directory_id: Option<i64>,
     sort_order: Option<i32>,
-    references: Option<Value>,
+    references: Option<McpReferences>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -201,7 +256,7 @@ struct UpdateDocumentArgs {
     content: Option<String>,
     directory_id: Option<i64>,
     sort_order: Option<i32>,
-    references: Option<Value>,
+    references: Option<McpReferences>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -246,7 +301,7 @@ struct CreateBlogDraftArgs {
     thumbnail: Option<String>,
     category_id: Option<i64>,
     tag_ids: Option<Vec<i64>>,
-    references: Option<Value>,
+    references: Option<McpReferences>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -260,7 +315,7 @@ struct UpdateBlogArgs {
     thumbnail: Option<String>,
     category_id: Option<i64>,
     tag_ids: Option<Vec<i64>>,
-    references: Option<Value>,
+    references: Option<McpReferences>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -345,6 +400,13 @@ impl BlogMcpServer {
     fn json_result<T: Serialize>(value: T) -> Result<McpJson<Value>, String> {
         serde_json::to_value(value)
             .map(McpJson)
+            .map_err(|error| error.to_string())
+    }
+
+    fn references_to_value(references: Option<McpReferences>) -> Result<Option<Value>, String> {
+        references
+            .map(serde_json::to_value)
+            .transpose()
             .map_err(|error| error.to_string())
     }
 
@@ -861,7 +923,7 @@ impl BlogMcpServer {
                 content: args.content,
                 directory_id: args.directory_id,
                 sort_order: args.sort_order,
-                references: args.references,
+                references: Self::references_to_value(args.references)?,
             },
         )
         .await
@@ -902,7 +964,7 @@ impl BlogMcpServer {
                 content: args.content,
                 directory_id: args.directory_id,
                 sort_order: args.sort_order,
-                references: args.references,
+                references: Self::references_to_value(args.references)?,
             },
         )
         .await
@@ -1354,7 +1416,7 @@ impl BlogMcpServer {
             category_id: args.category_id,
             tag_ids: args.tag_ids,
             is_published: Some(false),
-            references: args.references,
+            references: Self::references_to_value(args.references)?,
         };
 
         let html = render_markdown(&args.content);
@@ -1409,7 +1471,7 @@ impl BlogMcpServer {
             category_id: args.category_id,
             tag_ids: args.tag_ids,
             is_published: None,
-            references: args.references,
+            references: Self::references_to_value(args.references)?,
         };
 
         let html = args
@@ -1823,5 +1885,40 @@ impl ServerHandler for BlogMcpServer {
             "典典博客 MCP：支持博客检索、字典文本、文档与目录、分类、标签、友链、项目、博客管理和 AI 文本处理。"
                 .to_string(),
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{CreateBlogDraftArgs, CreateDocumentArgs, UpdateBlogArgs, UpdateDocumentArgs};
+    use serde_json::Value;
+
+    fn references_schema_for<T: schemars::JsonSchema>() -> Value {
+        let schema = schemars::schema_for!(T).to_value();
+        schema
+            .pointer("/properties/references")
+            .expect("references schema should exist")
+            .clone()
+    }
+
+    fn assert_references_schema_is_not_boolean<T: schemars::JsonSchema>() {
+        let references_schema = references_schema_for::<T>();
+        assert_ne!(
+            references_schema,
+            Value::Bool(true),
+            "references must not be emitted as an unrestricted boolean schema"
+        );
+        assert!(
+            references_schema.is_object(),
+            "references schema should be an object schema, got: {references_schema:?}"
+        );
+    }
+
+    #[test]
+    fn reference_input_schemas_are_concrete_objects() {
+        assert_references_schema_is_not_boolean::<CreateBlogDraftArgs>();
+        assert_references_schema_is_not_boolean::<UpdateBlogArgs>();
+        assert_references_schema_is_not_boolean::<CreateDocumentArgs>();
+        assert_references_schema_is_not_boolean::<UpdateDocumentArgs>();
     }
 }

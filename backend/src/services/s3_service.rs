@@ -17,6 +17,7 @@ pub struct S3Service {
     client: Client,
     bucket: String,
     endpoint: String,
+    public_url: String,
 }
 
 /// Result of a file upload operation
@@ -52,6 +53,7 @@ impl S3Service {
             client,
             bucket: config.bucket.clone(),
             endpoint: config.endpoint.clone(),
+            public_url: config.public_url.clone(),
         })
     }
 
@@ -98,8 +100,17 @@ impl S3Service {
                 ApiError::FileUploadError(format!("Failed to upload file: {}", e))
             })?;
 
-        // Generate public URL
-        let url = format!("{}/{}/{}", self.endpoint, self.bucket, object_key);
+        // Prefer configured public URL for browser access. Fall back to endpoint-style URLs.
+        let url = if self.public_url.trim().is_empty() {
+            format!(
+                "{}/{}/{}",
+                self.endpoint.trim_end_matches('/'),
+                self.bucket,
+                object_key
+            )
+        } else {
+            format!("{}/{}", self.public_url.trim_end_matches('/'), object_key)
+        };
 
         tracing::info!("File uploaded successfully: {}", object_key);
 

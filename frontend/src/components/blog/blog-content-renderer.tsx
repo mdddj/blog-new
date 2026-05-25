@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useMemo } from "react";
 import { ReferenceCard } from "./reference-card";
 import type { BlogReference } from "@/types";
 import { sanitizeReferenceRecord } from "@/lib/reference-utils";

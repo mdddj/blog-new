@@ -29,7 +29,7 @@ npm-debug.log*
 *.tmp
 *.temp
 
-# Data files (optional, uncomment if needed)
-# *.sql
-# *.json
+# Local database dumps / one-off migration exports
+/*.sql
+/blog_data.json
 sql/

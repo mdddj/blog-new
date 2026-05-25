@@ -1,27 +1,12 @@
 import { Suspense } from "react";
-import { IslandHome } from "@/components/blog/island";
+import { LoadingState, PublicHome, PUBLIC_CONTAINER } from "@/components/blog/public";
 import { blogApi, categoryApi, tagApi } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 function LoadingSkeleton() {
     return (
-        <main className="island-main">
-            <div className="island-container island-page">
-                <div className="island-home-hero">
-                    <div className="island-panel island-skeleton min-h-[360px]" />
-                    <div className="island-panel island-skeleton min-h-[360px]" />
-                </div>
-                <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
-                    <div className="grid gap-4">
-                        <div className="island-panel island-skeleton h-24" />
-                        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                            {Array.from({ length: 9 }).map((_, i) => (
-                                <div key={i} className="island-panel island-skeleton h-60" />
-                            ))}
-                        </div>
-                    </div>
-                    <div className="island-panel island-skeleton h-96" />
-                </div>
-            </div>
+        <main className={cn(PUBLIC_CONTAINER, "grid gap-4 py-8")}>
+            <LoadingState label="正在加载首页内容" />
         </main>
     );
 }
@@ -53,7 +38,7 @@ export default async function HomePage(props: { searchParams: Promise<{ [key: st
 
     return (
         <Suspense fallback={<LoadingSkeleton />}>
-            <IslandHome initialData={initialData} />
+            <PublicHome initialData={initialData} />
         </Suspense>
     );
 }

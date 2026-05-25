@@ -15,8 +15,6 @@ COPY Cargo.toml Cargo.lock ./
 # Create dummy source files to build dependencies
 RUN mkdir -p src/bin && \
     echo "fn main() {}" > src/main.rs && \
-    echo "fn main() {}" > src/bin/migrate.rs && \
-    echo "fn main() {}" > src/bin/import_from_api.rs && \
     echo "fn main() {}" > src/bin/create_admin.rs
 
 # Build dependencies (this layer will be cached)
@@ -27,7 +25,7 @@ COPY src ./src
 COPY migrations ./migrations
 
 # Build the application
-RUN touch src/main.rs src/bin/migrate.rs src/bin/import_from_api.rs src/bin/create_admin.rs && \
+RUN touch src/main.rs src/bin/create_admin.rs && \
     cargo build --release
 
 # Runtime stage
@@ -44,7 +42,6 @@ RUN sed -i "s|deb.debian.org|mirrors.ustc.edu.cn|g" /etc/apt/sources.list.d/debi
 
 # Copy the binary from builder
 COPY --from=builder /app/target/release/blog-backend /app/blog-backend
-COPY --from=builder /app/target/release/migrate /app/migrate
 COPY --from=builder /app/migrations /app/migrations
 
 # Create non-root user

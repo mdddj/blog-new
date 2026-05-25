@@ -191,35 +191,6 @@ DATABASE_MIN_CONNECTIONS=5
 RUST_LOG=warn
 ```
 
-## MySQL 数据迁移
-
-如果你有旧的 MySQL 数据需要迁移到新的 PostgreSQL 数据库：
-
-### 方法一：使用 Python 脚本转换为 JSON
-
-```bash
-# 1. 导出 MySQL 数据为 SQL 文件
-# 2. 转换为 JSON
-python3 convert_mysql_to_json.py your_mysql_export.sql blog_data.json
-
-# 3. 通过 API 导入
-curl -X POST http://your-server-ip:8080/api/v1/admin/data/import \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -d @blog_data.json
-```
-
-### 方法二：直接使用 SQL 导入
-
-```bash
-# 1. 转换 SQL
-python3 import_data.py
-
-# 2. 导入到 PostgreSQL
-docker compose -f docker-compose.prod.yml exec -T postgres \
-  psql -U bloguser -d blog < postgres_import_ready.sql
-```
-
 ## 数据备份
 
 ### 备份数据库

@@ -2,93 +2,92 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-import { BriefcaseBusiness, Download, ExternalLink, Github } from "lucide-react";
+import { Download, ExternalLink, Github } from "lucide-react";
 import { projectApi } from "@/lib/api";
 import type { Project } from "@/types";
+import { EmptyState, LoadingState, PageHero, PublicCard, PUBLIC_CONTAINER, getCardColor } from "@/components/blog/public";
+import { Button as AIButton, Icon as AIIcon } from "animal-island-ui";
+import { cn } from "@/lib/utils";
+
+function openExternal(url: string) {
+  window.open(url, "_blank", "noopener,noreferrer");
+}
 
 export default function ProjectsPage() {
-    const [projects, setProjects] = useState<Project[]>([]);
-    const [loading, setLoading] = useState(true);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
 
-    const fetchProjects = useCallback(async () => {
-        setLoading(true);
-        try {
-            const result = await projectApi.list();
-            setProjects(result);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+  const fetchProjects = useCallback(async () => {
+    setLoading(true);
+    try {
+      setProjects(await projectApi.list());
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-    useEffect(() => {
-        fetchProjects();
-    }, [fetchProjects]);
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
 
-    return (
-        <main className="island-main">
-            <div className="island-container island-page">
-                <section className="island-panel px-6 py-5">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div>
-                            <h1 className="island-section-title">项目礁石</h1>
-                            <p className="island-subtle mt-2">记录正在打磨与持续维护的项目。</p>
-                        </div>
-                        <span className="island-chip">{projects.length} 个项目</span>
+  return (
+    <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8 px-4")}>
+      <PageHero
+        eyebrow="Projects"
+        title="记录正在打磨与持续维护的项目"
+        description="这里保留项目仓库、预览和下载入口，方便直接查看完整成果。"
+        stats={[{ label: "Projects", value: projects.length, description: "公开项目" }]}
+      />
+
+      {loading ? (
+        <LoadingState label="正在加载项目数据..." />
+      ) : projects.length === 0 ? (
+        <EmptyState title="暂无项目数据" description="添加项目后会在这里展示。" icon={<AIIcon name="icon-shopping" size={32} />} />
+      ) : (
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {projects.map((project) => {
+            const cardColor = getCardColor(project.id);
+            return (
+              <PublicCard key={project.id} color={cardColor} className="grid h-full gap-4 p-5 hover:-translate-y-1 transition-transform duration-300 shadow-sm hover:shadow">
+                <div className="flex items-center gap-3">
+                  {project.logo ? (
+                    <div className="relative h-14 w-14 overflow-hidden rounded-xl bg-white/40 border border-black/10 shrink-0">
+                      <Image src={project.logo} alt={project.name} fill sizes="56px" className="object-cover" />
                     </div>
-                </section>
+                  ) : (
+                    <span className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/40 border border-black/10 text-[#725d42] shrink-0">
+                      <AIIcon name="icon-shopping" size={24} />
+                    </span>
+                  )}
+                  <h2 className="min-w-0 text-lg font-extrabold leading-tight text-inherit">{project.name}</h2>
+                </div>
 
-                {loading ? (
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {Array.from({ length: 6 }).map((_, idx) => (
-                            <div key={idx} className="island-panel island-skeleton h-64" />
-                        ))}
-                    </div>
-                ) : projects.length === 0 ? (
-                    <div className="island-panel p-10 text-center text-sm text-[var(--is-text-muted)]">暂无项目数据</div>
-                ) : (
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {projects.map((project) => (
-                            <article key={project.id} className="island-card p-4 sm:p-5">
-                                <div className="flex items-center gap-3">
-                                    {project.logo ? (
-                                        <div className="relative h-14 w-14 overflow-hidden rounded-xl border border-[var(--is-border)] bg-[var(--is-surface-soft)]">
-                                            <Image src={project.logo} alt={project.name} fill sizes="56px" className="object-cover" />
-                                        </div>
-                                    ) : (
-                                        <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-[var(--is-border)] bg-[var(--is-surface-soft)] text-[var(--is-text-faint)]">
-                                            <BriefcaseBusiness className="h-4 w-4" />
-                                        </div>
-                                    )}
-                                    <h2 className="font-[var(--is-font-title)] text-lg text-[var(--is-text)]">{project.name}</h2>
-                                </div>
-
-                                {project.description && <p className="mt-3 line-clamp-4 text-sm leading-7 text-[var(--is-text-muted)]">{project.description}</p>}
-
-                                <div className="mt-4 flex flex-wrap gap-2">
-                                    {project.github_url && (
-                                        <a href={project.github_url} target="_blank" rel="noopener noreferrer" className="island-chip island-focus-ring">
-                                            <Github className="h-3.5 w-3.5" />
-                                            GitHub
-                                        </a>
-                                    )}
-                                    {project.preview_url && (
-                                        <a href={project.preview_url} target="_blank" rel="noopener noreferrer" className="island-chip island-focus-ring">
-                                            <ExternalLink className="h-3.5 w-3.5" />
-                                            预览
-                                        </a>
-                                    )}
-                                    {project.download_url && (
-                                        <a href={project.download_url} target="_blank" rel="noopener noreferrer" className="island-chip island-focus-ring">
-                                            <Download className="h-3.5 w-3.5" />
-                                            下载
-                                        </a>
-                                    )}
-                                </div>
-                            </article>
-                        ))}
-                    </div>
-                )}
-            </div>
-        </main>
-    );
+                {project.description ? <p className="line-clamp-5 text-xs leading-6 opacity-90 font-bold">{project.description}</p> : null}
+                <div className="mt-auto flex flex-wrap gap-2 border-t border-black/10 pt-4">
+                  {project.github_url ? (
+                    <AIButton type="default" size="small" onClick={() => openExternal(project.github_url!)} className="font-bold flex items-center gap-1">
+                      <Github className="h-3.5 w-3.5 mr-0.5 inline" />
+                      GitHub
+                    </AIButton>
+                  ) : null}
+                  {project.preview_url ? (
+                    <AIButton type="primary" size="small" onClick={() => openExternal(project.preview_url!)} className="font-bold flex items-center gap-1">
+                      <ExternalLink className="h-3.5 w-3.5 mr-0.5 inline" />
+                      预览
+                    </AIButton>
+                  ) : null}
+                  {project.download_url ? (
+                    <AIButton type="default" size="small" onClick={() => openExternal(project.download_url!)} className="font-bold flex items-center gap-1">
+                      <Download className="h-3.5 w-3.5 mr-0.5 inline" />
+                      下载
+                    </AIButton>
+                  ) : null}
+                </div>
+              </PublicCard>
+            );
+          })}
+        </section>
+      )}
+    </main>
+  );
 }

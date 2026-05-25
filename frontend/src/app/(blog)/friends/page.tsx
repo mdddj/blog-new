@@ -1,90 +1,101 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { ExternalLink, Link2, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
 import { friendLinkApi } from "@/lib/api";
 import type { FriendLink } from "@/types";
+import { EmptyState, LoadingState, PageHero, PublicCard, PUBLIC_CONTAINER, getCardColor } from "@/components/blog/public";
+import { Button as AIButton, Icon as AIIcon } from "animal-island-ui";
+import { cn } from "@/lib/utils";
+
+function safeHostname(url: string) {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return url;
+  }
+}
 
 export default function FriendsPage() {
-    const [links, setLinks] = useState<FriendLink[]>([]);
-    const [loading, setLoading] = useState(true);
+  const [links, setLinks] = useState<FriendLink[]>([]);
+  const [loading, setLoading] = useState(true);
 
-    const fetchLinks = useCallback(async () => {
-        setLoading(true);
-        try {
-            const result = await friendLinkApi.list();
-            setLinks(result);
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+  const fetchLinks = useCallback(async () => {
+    setLoading(true);
+    try {
+      setLinks(await friendLinkApi.list());
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-    useEffect(() => {
-        fetchLinks();
-    }, [fetchLinks]);
+  useEffect(() => {
+    fetchLinks();
+  }, [fetchLinks]);
 
-    return (
-        <main className="island-main">
-            <div className="island-container island-page">
-                <section className="island-panel px-6 py-5">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div>
-                            <h1 className="island-section-title">友链航线</h1>
-                            <p className="island-subtle mt-2">连接那些值得长期阅读与交流的站点。</p>
-                        </div>
-                        <span className="island-chip">{links.length} 个站点</span>
-                    </div>
-                </section>
+  const linksWithMail = useMemo(() => links.filter((link) => Boolean(link.email)).length, [links]);
 
-                {loading ? (
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {Array.from({ length: 6 }).map((_, idx) => (
-                            <div key={idx} className="island-panel island-skeleton h-44" />
-                        ))}
+  return (
+    <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8 px-4")}>
+      <PageHero
+        eyebrow="Friends"
+        title="连接那些值得长期阅读与交流的站点"
+        description="这里展示公开友链，保留站点简介、邮箱和外链入口。"
+        stats={[
+          { label: "Sites", value: links.length, description: "公开站点" },
+          { label: "Mail", value: linksWithMail, description: "留有邮箱" },
+        ]}
+      />
+
+      {loading ? (
+        <LoadingState label="正在加载友链数据..." />
+      ) : links.length === 0 ? (
+        <EmptyState title="暂无友链" description="通过后台添加通过审核的友链后会在这里展示。" icon={<AIIcon name="icon-chat" size={32} />} />
+      ) : (
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {links.map((link) => {
+            const cardColor = getCardColor(link.id);
+            return (
+              <PublicCard key={link.id} color={cardColor} className="grid h-full gap-4 p-5 hover:-translate-y-1 transition-transform duration-300 shadow-sm hover:shadow">
+                <div className="flex items-center gap-3">
+                  {link.logo ? (
+                    <div className="relative h-12 w-12 overflow-hidden rounded-full bg-white/40 border border-black/10 shrink-0">
+                      <Image src={link.logo} alt={link.name} fill sizes="48px" className="object-cover" />
                     </div>
-                ) : links.length === 0 ? (
-                    <div className="island-panel p-10 text-center text-sm text-[var(--is-text-muted)]">
-                        暂无友链
-                    </div>
-                ) : (
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                        {links.map((link) => (
-                            <a
-                                key={link.id}
-                                href={link.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="island-card island-focus-ring p-4"
-                            >
-                                <div className="flex items-center gap-3">
-                                    {link.logo ? (
-                                        <div className="relative h-12 w-12 overflow-hidden rounded-full border border-[var(--is-border)]">
-                                            <Image src={link.logo} alt={link.name} fill sizes="48px" className="object-cover" />
-                                        </div>
-                                    ) : (
-                                        <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[var(--is-border)] bg-[var(--is-surface-soft)] text-[var(--is-text-faint)]">
-                                            <Link2 className="h-4 w-4" />
-                                        </div>
-                                    )}
-                                    <div className="min-w-0">
-                                        <h2 className="truncate font-medium text-[var(--is-text)]">{link.name}</h2>
-                                        <p className="truncate text-xs text-[var(--is-text-faint)]">{new URL(link.url).hostname}</p>
-                                    </div>
-                                    <ExternalLink className="ml-auto h-3.5 w-3.5 text-[var(--is-text-faint)]" />
-                                </div>
-                                {link.intro && <p className="mt-3 line-clamp-2 text-sm leading-7 text-[var(--is-text-muted)]">{link.intro}</p>}
-                                {link.email && (
-                                    <p className="mt-3 inline-flex items-center gap-1.5 text-xs text-[var(--is-text-faint)]">
-                                        <Mail className="h-3.5 w-3.5" />
-                                        {link.email}
-                                    </p>
-                                )}
-                            </a>
-                        ))}
-                    </div>
-                )}
-            </div>
-        </main>
-    );
+                  ) : (
+                    <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/40 border border-black/10 text-[#725d42] shrink-0">
+                      <AIIcon name="icon-chat" size={24} />
+                    </span>
+                  )}
+                  <div className="min-w-0">
+                    <h2 className="truncate text-base font-extrabold text-inherit">{link.name}</h2>
+                    <p className="truncate text-xs font-bold opacity-75">{safeHostname(link.url)}</p>
+                  </div>
+                </div>
+                {link.intro ? <p className="line-clamp-3 text-xs leading-5 opacity-90 font-bold">{link.intro}</p> : null}
+                {link.email ? (
+                  <p className="inline-flex items-center gap-2 text-xs font-bold opacity-80">
+                    <Mail className="h-3.5 w-3.5" />
+                    {link.email}
+                  </p>
+                ) : null}
+                <div className="mt-auto border-t border-black/10 pt-4">
+                  <AIButton
+                    type="primary"
+                    size="small"
+                    className="font-bold flex items-center"
+                    onClick={() => window.open(link.url, "_blank", "noopener,noreferrer")}
+                  >
+                    访问站点
+                    <AIIcon name="icon-miles" size={14} className="ml-1" />
+                  </AIButton>
+                </div>
+              </PublicCard>
+            );
+          })}
+        </section>
+      )}
+    </main>
+  );
 }

@@ -56,6 +56,7 @@ pub struct S3Config {
     pub bucket: String,
     pub access_key: String,
     pub secret_key: String,
+    pub public_url: String,
 }
 
 impl Config {
@@ -136,6 +137,7 @@ impl Config {
                 bucket: env::var("S3_BUCKET").unwrap_or_else(|_| "blog".to_string()),
                 access_key: env::var("S3_ACCESS_KEY").unwrap_or_else(|_| "minioadmin".to_string()),
                 secret_key: env::var("S3_SECRET_KEY").unwrap_or_else(|_| "minioadmin".to_string()),
+                public_url: env::var("S3_PUBLIC_URL").unwrap_or_default(),
             },
         })
     }
