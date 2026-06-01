@@ -436,10 +436,13 @@ export const textApi = {
 
   getById: (id: number) => request<Text>(`/admin/texts/${id}`),
 
+  getPublicByKey: (key: string | number) =>
+    request<Text>(`/texts/${encodeURIComponent(String(key))}`),
+
   getPublicById: (id: number) => request<Text>(`/texts/${id}`),
 
-  verify: (id: number, data: VerifyTextRequest) =>
-    request<Text>(`/texts/${id}/verify`, {
+  verify: (key: string | number, data: VerifyTextRequest) =>
+    request<Text>(`/texts/${encodeURIComponent(String(key))}/verify`, {
       method: "POST",
       body: JSON.stringify(data),
     }),

@@ -83,7 +83,7 @@ function TagPageContent() {
         ]}
       />
 
-      <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
+      <section className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_280px]">
         <div className="grid gap-4">
           <div className="flex flex-wrap items-end justify-between gap-3 px-1">
             <div>
@@ -118,7 +118,9 @@ function TagPageContent() {
           ) : null}
         </div>
 
-        {sideLoading ? <LoadingState label="正在加载索引" /> : <BlogSidebar categories={categories} tags={tags} title="分类导航" />}
+        <div className="xl:sticky xl:top-24">
+          {sideLoading ? <LoadingState label="正在加载索引" /> : <BlogSidebar categories={categories} tags={tags} title="分类导航" />}
+        </div>
       </section>
     </main>
   );

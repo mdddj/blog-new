@@ -1,6 +1,7 @@
 import { PublicFooter, PublicHeader, BlogCursor } from "@/components/blog/public";
 import { SiteConfigProvider } from "@/contexts/site-config-context";
 import { AnalyticsScript } from "@/components/analytics-script";
+import { PageMotion } from "@/components/page-motion";
 import { siteConfigApi, type PublicSiteConfig } from "@/lib/api";
 import "animal-island-ui/style";
 
@@ -29,7 +30,7 @@ export default async function BlogLayout({
           </a>
           <PublicHeader />
           <div id="public-main-content" className="min-h-[calc(100dvh-13rem)]">
-            {children}
+            <PageMotion>{children}</PageMotion>
           </div>
           <PublicFooter />
         </div>

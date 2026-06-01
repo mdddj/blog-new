@@ -273,10 +273,10 @@ export interface Text {
     id: number;
     name: string;
     intro?: string;
-    content: string;
+    content?: string | null;
     is_encrypted: boolean;
-    created_at: string;
-    updated_at: string;
+    created_at?: string;
+    updated_at?: string;
 }
 
 export interface CreateTextRequest {

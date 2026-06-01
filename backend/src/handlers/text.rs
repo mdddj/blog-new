@@ -18,11 +18,11 @@ use crate::AppState;
 /// For encrypted texts, content is hidden until password is verified
 pub async fn get_text(
     State(state): State<AppState>,
-    Path(id): Path<i64>,
+    Path(key): Path<String>,
 ) -> Result<Json<ApiResponse<TextResponse>>, ApiError> {
-    let text = TextRepository::find_by_id(&state.db, id)
+    let text = TextRepository::find_by_public_key(&state.db, &key)
         .await?
-        .ok_or_else(|| ApiError::NotFound(format!("Text with id {} not found", id)))?;
+        .ok_or_else(|| ApiError::NotFound(format!("Text {} not found", key)))?;
 
     // For public access, hide content if encrypted
     let is_encrypted = text.is_encrypted.unwrap_or(false);
@@ -37,12 +37,12 @@ pub async fn get_text(
 /// Returns the text content if password is correct
 pub async fn verify_text_password(
     State(state): State<AppState>,
-    Path(id): Path<i64>,
+    Path(key): Path<String>,
     Json(req): Json<VerifyPasswordRequest>,
 ) -> Result<Json<ApiResponse<TextResponse>>, ApiError> {
-    let text = TextRepository::find_by_id(&state.db, id)
+    let text = TextRepository::find_by_public_key(&state.db, &key)
         .await?
-        .ok_or_else(|| ApiError::NotFound(format!("Text with id {} not found", id)))?;
+        .ok_or_else(|| ApiError::NotFound(format!("Text {} not found", key)))?;
 
     // Check if text is encrypted
     let is_encrypted = text.is_encrypted.unwrap_or(false);

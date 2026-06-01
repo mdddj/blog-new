@@ -39,6 +39,35 @@ impl TextRepository {
         Ok(text)
     }
 
+    /// Find text by exact name
+    pub async fn find_by_name(pool: &PgPool, name: &str) -> Result<Option<Text>, ApiError> {
+        let text = sqlx::query_as::<_, Text>(
+            r#"
+            SELECT id, name, intro, content, is_encrypted, view_password, created_at, updated_at
+            FROM texts
+            WHERE name = $1
+            ORDER BY id DESC
+            LIMIT 1
+            "#,
+        )
+        .bind(name)
+        .fetch_optional(pool)
+        .await?;
+
+        Ok(text)
+    }
+
+    /// Find text by public key. Numeric keys resolve by ID first, then fall back to name.
+    pub async fn find_by_public_key(pool: &PgPool, key: &str) -> Result<Option<Text>, ApiError> {
+        match key.parse::<i64>() {
+            Ok(id) => match Self::find_by_id(pool, id).await? {
+                Some(text) => Ok(Some(text)),
+                None => Self::find_by_name(pool, key).await,
+            },
+            Err(_) => Self::find_by_name(pool, key).await,
+        }
+    }
+
     /// Create a new text
     pub async fn create(pool: &PgPool, req: &CreateTextRequest) -> Result<Text, ApiError> {
         let is_encrypted = req.is_encrypted.unwrap_or(false);

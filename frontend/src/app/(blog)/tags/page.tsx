@@ -98,7 +98,7 @@ export default function TagsPage() {
         ]}
       />
 
-      <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
+      <section className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_280px]">
         <div className="grid gap-6">
           {loading ? (
             <LoadingState label="正在加载标签数据..." />
@@ -142,7 +142,9 @@ export default function TagsPage() {
           )}
         </div>
 
-        <BlogSidebar categories={categories} tags={tags} title="分类导航" />
+        <div className="xl:sticky xl:top-24">
+          <BlogSidebar categories={categories} tags={tags} title="分类导航" />
+        </div>
       </section>
     </main>
   );

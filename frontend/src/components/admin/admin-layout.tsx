@@ -6,6 +6,7 @@ import { Sidebar } from "./sidebar";
 import { Header } from "./header";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PageMotion } from "@/components/page-motion";
 
 interface AdminLayoutProps {
     children: React.ReactNode;
@@ -64,7 +65,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                     sidebarCollapsed ? "pl-16" : "pl-64"
                 )}
             >
-                <div className="p-6">{children}</div>
+                <PageMotion className="p-6">{children}</PageMotion>
             </main>
         </div>
     );

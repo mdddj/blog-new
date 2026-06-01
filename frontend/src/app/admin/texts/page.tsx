@@ -10,7 +10,11 @@ import {
   Lock,
   Unlock,
   Eye,
+  ExternalLink,
+  QrCode,
+  Copy,
 } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -64,6 +68,10 @@ export default function TextListPage() {
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [viewingText, setViewingText] = useState<Text | null>(null);
 
+  // Public link QR dialog state
+  const [qrDialogOpen, setQrDialogOpen] = useState(false);
+  const [qrText, setQrText] = useState<Text | null>(null);
+
   // Delete dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [textToDelete, setTextToDelete] = useState<Text | null>(null);
@@ -107,7 +115,7 @@ export default function TextListPage() {
       setFormData({
         name: fullText.name,
         intro: fullText.intro || "",
-        content: fullText.content,
+        content: fullText.content || "",
         is_encrypted: fullText.is_encrypted,
         view_password: "", // Don't show existing password
       });
@@ -176,6 +184,33 @@ export default function TextListPage() {
   const openDeleteDialog = (text: Text) => {
     setTextToDelete(text);
     setDeleteDialogOpen(true);
+  };
+
+  const getPublicTextKey = (text: Text) => text.name || String(text.id);
+
+  const getPublicTextPath = (text: Text) =>
+    `/texts/${encodeURIComponent(getPublicTextKey(text))}`;
+
+  const getPublicTextUrl = (text: Text) => {
+    const path = getPublicTextPath(text);
+    if (typeof window === "undefined") return path;
+    return new URL(path, window.location.origin).toString();
+  };
+
+  const openQrDialog = (text: Text) => {
+    setQrText(text);
+    setQrDialogOpen(true);
+  };
+
+  const copyQrUrl = async () => {
+    if (!qrText) return;
+    const url = getPublicTextUrl(qrText);
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success("访问链接已复制");
+    } catch {
+      toast.error("复制失败，请手动复制链接");
+    }
   };
 
   const handleDelete = async () => {
@@ -316,13 +351,29 @@ export default function TextListPage() {
                       )}
                     </TableCell>
                     <TableCell className="text-muted-foreground text-xs">
-                      {formatDate(text.created_at)}
+                      {text.created_at ? formatDate(text.created_at) : "-"}
                     </TableCell>
                     <TableCell className="text-muted-foreground text-xs">
-                      {formatDate(text.updated_at)}
+                      {text.updated_at ? formatDate(text.updated_at) : "-"}
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => window.open(getPublicTextPath(text), "_blank", "noopener,noreferrer")}
+                          title="前台打开"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => openQrDialog(text)}
+                          title="访问二维码"
+                        >
+                          <QrCode className="h-4 w-4" />
+                        </Button>
                         <Button
                           variant="ghost"
                           size="icon-sm"
@@ -486,6 +537,44 @@ export default function TextListPage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setViewDialogOpen(false)}>
               关闭
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Public Link QR Dialog */}
+      <Dialog open={qrDialogOpen} onOpenChange={setQrDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>访问二维码</DialogTitle>
+            <DialogDescription>
+              手机扫码打开「{qrText?.name}」的前台访问页面。
+            </DialogDescription>
+          </DialogHeader>
+          {qrText ? (
+            <div className="grid gap-4 py-4">
+              <div className="mx-auto rounded-lg border bg-white p-4">
+                <QRCodeSVG
+                  value={getPublicTextUrl(qrText)}
+                  size={220}
+                  level="M"
+                  includeMargin
+                />
+              </div>
+              <div className="rounded-md border bg-muted px-3 py-2">
+                <p className="break-all font-mono text-xs text-muted-foreground">
+                  {getPublicTextUrl(qrText)}
+                </p>
+              </div>
+            </div>
+          ) : null}
+          <DialogFooter className="sm:justify-between">
+            <Button variant="outline" onClick={() => setQrDialogOpen(false)}>
+              关闭
+            </Button>
+            <Button onClick={copyQrUrl} disabled={!qrText}>
+              <Copy className="mr-2 h-4 w-4" />
+              复制链接
             </Button>
           </DialogFooter>
         </DialogContent>
