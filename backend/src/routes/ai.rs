@@ -6,9 +6,15 @@ use axum::{
 };
 
 use crate::handlers::ai::{
-    ai_status, batch_confirm, batch_preview, batch_summarize_all, polish_text, summarize_text,
+    ai_status, batch_confirm, batch_preview, batch_summarize_all, generate_public_image,
+    polish_text, summarize_text,
 };
 use crate::AppState;
+
+/// Public AI routes
+pub fn public_routes() -> Router<AppState> {
+    Router::new().route("/ai/image/generate", post(generate_public_image))
+}
 
 /// Admin AI routes (require authentication)
 pub fn admin_routes() -> Router<AppState> {

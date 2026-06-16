@@ -184,6 +184,11 @@ pub mod cache_keys {
         format!("view:rate:{}:{}", blog_id, ip)
     }
 
+    /// YLS image generation rate limit key
+    pub fn yls_image_rate_limit(ip: &str) -> String {
+        format!("yls:image:rate:{}", ip)
+    }
+
     /// Site config cache key
     pub fn site_config() -> String {
         "site:config".to_string()
@@ -216,6 +221,9 @@ pub mod cache_ttl {
 
     /// View rate limit TTL: 1 hour
     pub const VIEW_RATE_LIMIT: Duration = Duration::from_secs(60 * 60);
+
+    /// YLS image generation rate limit TTL: 10 minutes
+    pub const YLS_IMAGE_RATE_LIMIT: Duration = Duration::from_secs(10 * 60);
 
     /// Site config TTL: 10 minutes
     pub const SITE_CONFIG: Duration = Duration::from_secs(10 * 60);

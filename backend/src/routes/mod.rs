@@ -49,6 +49,8 @@ pub fn create_routes() -> Router<AppState> {
         .merge(project::routes())
         // Text routes (public)
         .merge(text::routes())
+        // AI routes (public)
+        .merge(ai::public_routes())
         // Search routes (public)
         .merge(search::routes())
         // Site config routes (public)

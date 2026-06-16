@@ -92,6 +92,9 @@ pub enum ApiError {
     #[error("Forbidden: {0}")]
     Forbidden(String),
 
+    #[error("Too many requests: {0}")]
+    TooManyRequests(String),
+
     #[error("Not found: {0}")]
     NotFound(String),
 
@@ -118,6 +121,7 @@ pub enum ErrorCode {
     BadRequest = 400,
     Unauthorized = 401,
     Forbidden = 403,
+    TooManyRequests = 429,
     NotFound = 404,
     InternalError = 500,
     DatabaseError = 1001,
@@ -133,6 +137,7 @@ impl ApiError {
             ApiError::BadRequest(_) => StatusCode::BAD_REQUEST,
             ApiError::Unauthorized(_) => StatusCode::UNAUTHORIZED,
             ApiError::Forbidden(_) => StatusCode::FORBIDDEN,
+            ApiError::TooManyRequests(_) => StatusCode::TOO_MANY_REQUESTS,
             ApiError::NotFound(_) => StatusCode::NOT_FOUND,
             ApiError::InternalError(_) => StatusCode::INTERNAL_SERVER_ERROR,
             ApiError::DatabaseError(_) => StatusCode::INTERNAL_SERVER_ERROR,
@@ -148,6 +153,7 @@ impl ApiError {
             ApiError::BadRequest(_) => ErrorCode::BadRequest as i32,
             ApiError::Unauthorized(_) => ErrorCode::Unauthorized as i32,
             ApiError::Forbidden(_) => ErrorCode::Forbidden as i32,
+            ApiError::TooManyRequests(_) => ErrorCode::TooManyRequests as i32,
             ApiError::NotFound(_) => ErrorCode::NotFound as i32,
             ApiError::InternalError(_) => ErrorCode::InternalError as i32,
             ApiError::DatabaseError(_) => ErrorCode::DatabaseError as i32,

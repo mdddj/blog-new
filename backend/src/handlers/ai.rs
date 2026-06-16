@@ -2,12 +2,19 @@
 //!
 //! Handles AI-powered text processing requests.
 
-use axum::{extract::State, Json};
+use axum::{
+    extract::{ConnectInfo, State},
+    http::{header, HeaderMap, HeaderValue},
+    Json,
+};
+use chrono::Utc;
 use serde::{Deserialize, Serialize};
+use std::net::SocketAddr;
 
 use crate::error::{ApiError, ApiResponse};
 use crate::repositories::site_config_repo::SiteConfigRepo;
 use crate::services::ai_service::AiService;
+use crate::services::yls_image_service::YlsImageService;
 use crate::AppState;
 
 /// Request for AI text processing
@@ -68,6 +75,101 @@ pub struct BatchConfirmResponse {
 #[derive(Debug, Serialize)]
 pub struct AiStatusResponse {
     pub enabled: bool,
+}
+
+/// Public request for YLS image generation
+#[derive(Deserialize)]
+pub struct YlsImageGenerateRequest {
+    pub codex_key: String,
+    pub prompt: String,
+}
+
+/// Public response for YLS image generation
+#[derive(Debug, Serialize)]
+pub struct YlsImageGenerateResponse {
+    pub mime_type: String,
+    pub data_base64: String,
+    pub size_bytes: usize,
+    pub file_name: String,
+}
+
+fn image_extension_from_mime(mime_type: &str) -> &'static str {
+    match mime_type {
+        "image/jpeg" => "jpg",
+        "image/webp" => "webp",
+        "image/gif" => "gif",
+        "image/bmp" => "bmp",
+        "image/tiff" => "tiff",
+        _ => "png",
+    }
+}
+
+fn build_image_file_name(mime_type: &str) -> String {
+    let extension = image_extension_from_mime(mime_type);
+    let timestamp = Utc::now().format("%Y%m%d-%H%M%S");
+    format!("yls-image-{timestamp}.{extension}")
+}
+
+fn get_client_ip_from_headers(headers: &HeaderMap, addr: &SocketAddr) -> String {
+    if let Some(forwarded) = headers.get("x-forwarded-for") {
+        if let Ok(value) = forwarded.to_str() {
+            if let Some(ip) = value.split(',').next() {
+                return ip.trim().to_string();
+            }
+        }
+    }
+
+    if let Some(real_ip) = headers.get("x-real-ip") {
+        if let Ok(value) = real_ip.to_str() {
+            return value.trim().to_string();
+        }
+    }
+
+    addr.ip().to_string()
+}
+
+/// POST /api/v1/ai/image/generate
+///
+/// Generate a YLS image with a one-time Codex key. The server does not persist
+/// request payloads or generated files.
+pub async fn generate_public_image(
+    State(state): State<AppState>,
+    ConnectInfo(addr): ConnectInfo<SocketAddr>,
+    headers: HeaderMap,
+    Json(req): Json<YlsImageGenerateRequest>,
+) -> Result<impl axum::response::IntoResponse, ApiError> {
+    if req.codex_key.trim().len() > 512 {
+        return Err(ApiError::ValidationError(
+            "YLS Codex Key 长度异常，请检查后重试".to_string(),
+        ));
+    }
+
+    if req.prompt.trim().chars().count() > 4_000 {
+        return Err(ApiError::ValidationError(
+            "提示词过长，请控制在 4000 个字符以内".to_string(),
+        ));
+    }
+
+    let client_ip = get_client_ip_from_headers(&headers, &addr);
+    YlsImageService::check_rate_limit(&state.cache, &client_ip).await?;
+
+    let image_service = YlsImageService::new(&req.codex_key)?;
+    let generated = image_service.generate_image(&req.prompt).await?;
+
+    let response = YlsImageGenerateResponse {
+        mime_type: generated.mime_type.clone(),
+        data_base64: generated.data_base64,
+        size_bytes: generated.size_bytes,
+        file_name: build_image_file_name(&generated.mime_type),
+    };
+
+    Ok((
+        [
+            (header::CACHE_CONTROL, HeaderValue::from_static("no-store")),
+            (header::PRAGMA, HeaderValue::from_static("no-cache")),
+        ],
+        Json(ApiResponse::success(response)),
+    ))
 }
 
 /// GET /api/v1/admin/ai/status

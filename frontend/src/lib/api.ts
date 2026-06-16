@@ -272,6 +272,25 @@ export const aiApi = {
     }),
 };
 
+export interface YlsImageGenerateResponse {
+  mime_type: string;
+  data_base64: string;
+  size_bytes: number;
+  file_name: string;
+}
+
+export const ylsImageApi = {
+  generate: (codexKey: string, prompt: string) =>
+    request<YlsImageGenerateResponse>("/ai/image/generate", {
+      method: "POST",
+      cache: "no-store",
+      body: JSON.stringify({
+        codex_key: codexKey,
+        prompt,
+      }),
+    }),
+};
+
 // Category API
 export const categoryApi = {
   list: () => request<Category[]>("/categories", { next: { revalidate: 60 } }),
