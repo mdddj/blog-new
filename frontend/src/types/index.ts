@@ -267,6 +267,24 @@ export interface CreateProjectRequest {
 
 export type UpdateProjectRequest = Partial<CreateProjectRequest>;
 
+// Resume Types
+export interface Resume {
+    id: number;
+    file_name: string;
+    html_content: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface ResumePayload {
+    resume: Resume | null;
+}
+
+export interface UpdateResumeRequest {
+    file_name: string;
+    html_content: string;
+}
+
 
 // Text Types
 export interface Text {

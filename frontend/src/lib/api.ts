@@ -23,6 +23,9 @@ import type {
   Project,
   CreateProjectRequest,
   UpdateProjectRequest,
+  Resume,
+  ResumePayload,
+  UpdateResumeRequest,
   Text,
   CreateTextRequest,
   UpdateTextRequest,
@@ -447,6 +450,25 @@ export const projectApi = {
 
   delete: (id: number) =>
     request<void>(`/admin/projects/${id}`, { method: "DELETE" }),
+};
+
+// Resume API
+export const resumeApi = {
+  getPublic: () =>
+    request<ResumePayload>("/resume", {
+      cache: "no-store",
+    }),
+
+  getAdmin: () =>
+    request<ResumePayload>("/admin/resume", {
+      cache: "no-store",
+    }),
+
+  update: (data: UpdateResumeRequest) =>
+    request<Resume>("/admin/resume", {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
 };
 
 // Text API

@@ -10,6 +10,7 @@ import {
     Image,
     Link2,
     Briefcase,
+    FileUser,
     FileCode,
     FolderOpen,
     Database,
@@ -72,6 +73,11 @@ const navItems: { title: string; href: string; icon: typeof LayoutDashboard; ext
         title: "项目管理",
         href: "/admin/projects",
         icon: Briefcase,
+    },
+    {
+        title: "简历管理",
+        href: "/admin/resume",
+        icon: FileUser,
     },
     {
         title: "字典文本",

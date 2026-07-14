@@ -12,6 +12,7 @@ pub mod file;
 pub mod friend_link;
 pub mod mcp;
 pub mod project;
+pub mod resume;
 pub mod search;
 pub mod site_config;
 pub mod stats;

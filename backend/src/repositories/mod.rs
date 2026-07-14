@@ -8,6 +8,7 @@ pub mod document_repo;
 pub mod file_repo;
 pub mod friend_link_repo;
 pub mod project_repo;
+pub mod resume_repo;
 pub mod search_repo;
 pub mod site_config_repo;
 pub mod tag_repo;

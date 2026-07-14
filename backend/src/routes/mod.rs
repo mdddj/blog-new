@@ -18,6 +18,7 @@ pub mod friend_link;
 pub mod health;
 pub mod mcp;
 pub mod project;
+pub mod resume;
 pub mod search;
 pub mod site_config;
 pub mod stats;
@@ -47,6 +48,8 @@ pub fn create_routes() -> Router<AppState> {
         .merge(friend_link::routes())
         // Project routes (public)
         .merge(project::routes())
+        // Resume route (public)
+        .merge(resume::routes())
         // Text routes (public)
         .merge(text::routes())
         // AI routes (public)
@@ -77,6 +80,8 @@ pub fn create_admin_routes(state: AppState) -> Router<AppState> {
         .merge(friend_link::admin_routes())
         // Project admin routes
         .merge(project::admin_routes())
+        // Resume admin routes
+        .merge(resume::admin_routes())
         // Text admin routes
         .merge(text::admin_routes())
         // Stats admin routes
