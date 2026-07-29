@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import {
     isAuthenticated,
@@ -120,13 +120,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
         router.push("/admin/login");
     }, [router]);
 
-    const value: AuthContextType = {
-        user,
-        isLoading,
-        isLoggedIn: !!user,
-        login,
-        logout,
-    };
+    const value = useMemo<AuthContextType>(
+        () => ({
+            user,
+            isLoading,
+            isLoggedIn: !!user,
+            login,
+            logout,
+        }),
+        [user, isLoading, login, logout]
+    );
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

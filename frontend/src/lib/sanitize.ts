@@ -1,0 +1,29 @@
+import DOMPurify from "dompurify";
+
+const ALLOWED_TAGS = [
+  "a", "abbr", "article", "b", "blockquote", "br", "caption", "code",
+  "dd", "del", "div", "dl", "dt", "em", "figcaption", "figure",
+  "h1", "h2", "h3", "h4", "h5", "h6", "hr", "i", "img", "ins",
+  "kbd", "li", "mark", "ol", "p", "picture", "pre", "q", "s",
+  "section", "small", "source", "span", "stro", "sub", "sup",
+  "table", "tbody", "td", "tfoot", "th", "thead", "time", "tr",
+  "u", "ul", "var", "video", "wbr",
+];
+
+const ALLOWED_ATTR = [
+  "alt", "class", "colspan", "href", "id", "rel", "rowspan",
+  "src", "srcset", "target", "title", "type", "width", "height",
+  "loading", "sizes", "decoding",
+];
+
+const config = {
+  ALLOWED_TAGS,
+  ALLOWED_ATTR,
+  ALLOW_DATA_ATTR: false,
+  ADD_ATTR: ["target"],
+};
+
+export function sanitizeHtml(html: string): string {
+  if (typeof window === "undefined") return html;
+  return DOMPurify.sanitize(html, config);
+}

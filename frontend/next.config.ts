@@ -1,39 +1,60 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
+  compress: true,
   experimental: {
     useTypeScriptCli: true,
+    optimizePackageImports: ["lucide-react", "framer-motion"],
   },
-  // Enable standalone output for Docker deployment
-  output: 'standalone',
-
+  output: "standalone",
   images: {
-    // Enable modern image formats for better compression
-    formats: ['image/avif', 'image/webp'],
-    // Configure remote image domains (add your S3/CDN domains here)
+    formats: ["image/avif", "image/webp"],
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: '**',
+        protocol: "https",
+        hostname: "**",
       },
       {
-        protocol: 'http',
-        hostname: '**',
+        protocol: "http",
+        hostname: "**",
       },
     ],
-    // Device sizes for responsive images
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
-    // Image sizes for the sizes attribute
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    // Minimum cache TTL for optimized images (in seconds)
-    minimumCacheTTL: 60 * 60 * 24, // 24 hours
-    // Allow localhost and private IPs for development
+    minimumCacheTTL: 60 * 60 * 24,
     dangerouslyAllowSVG: true,
     dangerouslyAllowLocalIP: true,
-
   },
-  // Allow localhost images in development
-  allowedDevOrigins: ['localhost', '127.0.0.1'],
+  allowedDevOrigins: ["localhost", "127.0.0.1"],
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "X-XSS-Protection", value: "1; mode=block" },
+          {
+            key: "Content-Security-Policy",
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googletagmanager.com https://*.google-analytics.com https://*.baidu.com",
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' data: https: http: blob:",
+              "font-src 'self'",
+              "connect-src 'self' https://api.itbug.shop https://*.itbug.shop http://localhost:8080 http://127.0.0.1:*",
+              "frame-src 'self'",
+              "object-src 'none'",
+              "base-uri 'self'",
+              "form-action 'self'",
+            ].join("; "),
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

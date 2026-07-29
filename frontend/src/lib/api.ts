@@ -176,9 +176,17 @@ export const blogApi = {
       { next: { revalidate: 60 } },
     ),
 
-  getById: (id: number) => request<Blog>(`/blogs/${id}`),
+  getById: (id: number) =>
+    request<Blog>(`/blogs/${id}`, { next: { revalidate: 60 } }),
 
-  getBySlug: (slug: string) => request<Blog>(`/blogs/slug/${slug}`),
+  getBySlug: (slug: string) =>
+    request<Blog>(`/blogs/slug/${slug}`, { next: { revalidate: 60 } }),
+
+  getPrevNext: (id: number) =>
+    request<{ prev: Blog | null; next: Blog | null }>(
+      `/blogs/${id}/prev-next`,
+      { next: { revalidate: 60 } },
+    ),
 
   create: (data: CreateBlogRequest) =>
     request<Blog>("/admin/blogs", {
@@ -301,6 +309,7 @@ export const categoryApi = {
   getBlogs: (id: number, page = 1, pageSize = 10) =>
     request<PaginatedResponse<Blog>>(
       `/categories/${id}/blogs?page=${page}&page_size=${pageSize}`,
+      { next: { revalidate: 60 } },
     ),
 
   create: (data: CreateCategoryRequest) =>
@@ -326,6 +335,7 @@ export const tagApi = {
   getBlogs: (id: number, page = 1, pageSize = 10) =>
     request<PaginatedResponse<Blog>>(
       `/tags/${id}/blogs?page=${page}&page_size=${pageSize}`,
+      { next: { revalidate: 60 } },
     ),
 
   create: (data: CreateTagRequest) =>
@@ -340,7 +350,8 @@ export const tagApi = {
 
 // Directory API
 export const directoryApi = {
-  getTree: () => request<DirectoryTreeNode[]>("/directories"),
+  getTree: () =>
+    request<DirectoryTreeNode[]>("/directories", { next: { revalidate: 60 } }),
 
   create: (data: CreateDirectoryRequest) =>
     request<Directory>("/admin/directories", {
@@ -360,7 +371,8 @@ export const directoryApi = {
 
 // Document API
 export const documentApi = {
-  getById: (id: number) => request<DocumentResponse>(`/documents/${id}`),
+  getById: (id: number) =>
+    request<DocumentResponse>(`/documents/${id}`, { next: { revalidate: 60 } }),
 
   create: (data: CreateDocumentRequest) =>
     request<DocumentResponse>("/admin/documents", {
@@ -411,7 +423,7 @@ export const fileApi = {
 // Friend Link API
 export const friendLinkApi = {
   // Public endpoint - only approved links
-  list: () => request<FriendLink[]>("/friend-links"),
+  list: () => request<FriendLink[]>("/friend-links", { next: { revalidate: 300 } }),
 
   // Admin endpoint - all links
   listAll: () => request<FriendLink[]>("/admin/friend-links"),
@@ -434,7 +446,7 @@ export const friendLinkApi = {
 
 // Project API
 export const projectApi = {
-  list: () => request<Project[]>("/projects"),
+  list: () => request<Project[]>("/projects", { next: { revalidate: 300 } }),
 
   create: (data: CreateProjectRequest) =>
     request<Project>("/admin/projects", {
@@ -478,9 +490,10 @@ export const textApi = {
   getById: (id: number) => request<Text>(`/admin/texts/${id}`),
 
   getPublicByKey: (key: string | number) =>
-    request<Text>(`/texts/${encodeURIComponent(String(key))}`),
+    request<Text>(`/texts/${encodeURIComponent(String(key))}`, { next: { revalidate: 60 } }),
 
-  getPublicById: (id: number) => request<Text>(`/texts/${id}`),
+  getPublicById: (id: number) =>
+    request<Text>(`/texts/${id}`, { next: { revalidate: 60 } }),
 
   verify: (key: string | number, data: VerifyTextRequest) =>
     request<Text>(`/texts/${encodeURIComponent(String(key))}/verify`, {
@@ -536,7 +549,7 @@ export const authApi = {
 
 // Archive API
 export const archiveApi = {
-  list: () => request<ArchiveResponse>("/archives"),
+  list: () => request<ArchiveResponse>("/archives", { next: { revalidate: 300 } }),
 };
 
 // Search API

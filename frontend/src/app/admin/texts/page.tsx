@@ -14,7 +14,7 @@ import {
   QrCode,
   Copy,
 } from "lucide-react";
-import { QRCodeSVG } from "qrcode.react";
+import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -47,6 +47,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { textApi } from "@/lib/api";
 import type { Text, CreateTextRequest, UpdateTextRequest } from "@/types";
 import { toast } from "sonner";
+
+const QRCodeSVG = dynamic(() => import("qrcode.react").then((mod) => mod.QRCodeSVG), {
+  ssr: false,
+  loading: () => <Skeleton className="h-[220px] w-[220px] rounded-lg" />,
+});
 
 export default function TextListPage() {
   const [texts, setTexts] = useState<Text[]>([]);

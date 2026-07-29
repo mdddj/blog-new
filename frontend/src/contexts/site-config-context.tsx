@@ -4,6 +4,7 @@ import {
     createContext,
     useContext,
     useEffect,
+    useMemo,
     useState,
     ReactNode,
 } from "react";
@@ -72,8 +73,13 @@ export function SiteConfigProvider({
         fetchConfig();
     }, [initialConfig]);
 
+    const value = useMemo(
+        () => ({ config, isLoading }),
+        [config, isLoading]
+    );
+
     return (
-        <SiteConfigContext.Provider value={{ config, isLoading }}>
+        <SiteConfigContext.Provider value={value}>
             {children}
         </SiteConfigContext.Provider>
     );

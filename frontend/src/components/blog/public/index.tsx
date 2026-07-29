@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
-import { useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import {
   ArrowRight,
   BookOpen,
@@ -24,6 +24,7 @@ import {
   Sun,
   UserRound,
 } from "lucide-react";
+import { sanitizeHtml } from "@/lib/sanitize";
 import { cn } from "@/lib/utils";
 import { useSiteConfig } from "@/contexts/site-config-context";
 import { blogApi, categoryApi, tagApi } from "@/lib/api";
@@ -89,7 +90,7 @@ const NAV_LINKS = [
   { href: "/friends", label: "友链", icon: "icon-chat" as const },
 ];
 
-export function PublicCard({
+export const PublicCard = memo(function PublicCard({
   children,
   className,
   as: Component = "div",
@@ -105,7 +106,7 @@ export function PublicCard({
       {children}
     </AICard>
   );
-}
+});
 
 export function TextButton({
   children,
@@ -316,7 +317,7 @@ export function PublicFooter() {
           <div
             className="max-w-3xl text-sm leading-7 text-slate-600 dark:text-slate-300 font-bold [&_a]:text-[#028b57] dark:[&_a]:text-[#03c27b] [&_a]:underline hover:[&_a]:text-[#016f45] dark:hover:[&_a]:text-[#04e894] transition-colors"
             dangerouslySetInnerHTML={{
-              __html: config.footer_text || config.site_description || config.site_subtitle || "持续整理文章、项目与文档。"
+              __html: sanitizeHtml(config.footer_text || config.site_description || config.site_subtitle || "持续整理文章、项目与文档。")
             }}
           />
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-500 dark:text-slate-400 font-bold">
@@ -354,7 +355,7 @@ export function PublicFooter() {
   );
 }
 
-export function PageHero({
+export const PageHero = memo(function PageHero({
   eyebrow,
   title,
   description,
@@ -409,7 +410,7 @@ export function PageHero({
       <AIDivider type="wave-yellow" className="w-full mt-2" />
     </section>
   );
-}
+});
 
 export function LoadingState({ label = "正在加载" }: { label?: string }) {
   return (
@@ -464,7 +465,7 @@ export function blogHref(blog: Pick<Blog, "id" | "slug">) {
   return blog.slug ? `/blog/${blog.slug}` : `/blog/${blog.id}`;
 }
 
-export function PostCard({ blog, compact = false }: { blog: Blog; compact?: boolean }) {
+export const PostCard = memo(function PostCard({ blog, compact = false }: { blog: Blog; compact?: boolean }) {
   const router = useRouter();
   const excerpt = buildExcerpt(blog, compact ? 96 : 150);
   const readTime = readingMinutes(blog);
@@ -520,7 +521,7 @@ export function PostCard({ blog, compact = false }: { blog: Blog; compact?: bool
       </div>
     </AICard>
   );
-}
+});
 
 export function FeaturedPost({ blog }: { blog: Blog }) {
   const router = useRouter();

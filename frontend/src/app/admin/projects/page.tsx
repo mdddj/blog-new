@@ -8,7 +8,6 @@ import {
     RefreshCw,
     Briefcase,
     ExternalLink,
-    Github,
     Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -271,7 +270,7 @@ export default function ProjectListPage() {
                                                         className="text-muted-foreground hover:text-foreground"
                                                         title="GitHub"
                                                     >
-                                                        <Github className="h-4 w-4" />
+                                                        <ExternalLink className="h-4 w-4" />
                                                     </a>
                                                 )}
                                                 {project.preview_url && (

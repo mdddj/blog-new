@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { archiveApi } from "@/lib/api";
 import type { ArchiveMonth, ArchiveResponse, ArchiveYear } from "@/types";
@@ -53,7 +53,7 @@ export default function ArchivePage() {
   );
 }
 
-function YearBlock({ yearData, defaultExpanded }: { yearData: ArchiveYear; defaultExpanded: boolean }) {
+const YearBlock = memo(function YearBlock({ yearData, defaultExpanded }: { yearData: ArchiveYear; defaultExpanded: boolean }) {
   const header = (
     <div className="flex w-full items-center justify-between gap-4 font-extrabold text-[#725d42]">
       <span className="inline-flex items-center gap-2 text-base">
@@ -82,9 +82,9 @@ function YearBlock({ yearData, defaultExpanded }: { yearData: ArchiveYear; defau
       className="border-2 border-[#725d42]/10 rounded-2xl overflow-hidden shadow-sm"
     />
   );
-}
+});
 
-function MonthBlock({ monthData }: { monthData: ArchiveMonth }) {
+const MonthBlock = memo(function MonthBlock({ monthData }: { monthData: ArchiveMonth }) {
   const router = useRouter();
 
   return (
@@ -113,4 +113,4 @@ function MonthBlock({ monthData }: { monthData: ArchiveMonth }) {
       </div>
     </PublicCard>
   );
-}
+});

@@ -70,7 +70,7 @@ export function BlogDetailClient({ slug }: { slug: string }) {
         const detail = Number.isNaN(Number(slug)) ? await blogApi.getBySlug(slug) : await blogApi.getById(Number(slug));
         setBlog(detail);
         try {
-          const all = await blogApi.list(1, 100);
+          const all = await blogApi.list(1, 20);
           const idx = all.items.findIndex((item) => item.id === detail.id);
           if (idx > 0) setNextBlog(all.items[idx - 1]);
           if (idx < all.items.length - 1) setPrevBlog(all.items[idx + 1]);

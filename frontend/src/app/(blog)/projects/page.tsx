@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-import { Download, ExternalLink, Github } from "lucide-react";
+import { Download, ExternalLink } from "lucide-react";
 import { projectApi } from "@/lib/api";
 import type { Project } from "@/types";
 import { EmptyState, LoadingState, PageHero, PublicCard, PUBLIC_CONTAINER, getCardColor } from "@/components/blog/public";
@@ -66,7 +66,7 @@ export default function ProjectsPage() {
                 <div className="mt-auto flex flex-wrap gap-2 border-t border-black/10 pt-4">
                   {project.github_url ? (
                     <AIButton type="default" size="small" onClick={() => openExternal(project.github_url!)} className="font-bold flex items-center gap-1">
-                      <Github className="h-3.5 w-3.5 mr-0.5 inline" />
+                      <ExternalLink className="h-3.5 w-3.5 mr-0.5 inline" />
                       GitHub
                     </AIButton>
                   ) : null}

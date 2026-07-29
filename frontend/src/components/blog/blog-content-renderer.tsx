@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { ReferenceCard } from "./reference-card";
 import type { BlogReference } from "@/types";
 import { sanitizeReferenceRecord } from "@/lib/reference-utils";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 interface BlogContentRendererProps {
     html: string;
@@ -17,7 +18,6 @@ export function BlogContentRenderer({ html, references = {}, className }: BlogCo
         [references]
     );
 
-    // Parse HTML and split by reference markers
     const parts = useMemo(() => {
         const result: { type: "html" | "reference"; content: string; refId?: string }[] = [];
         const refPattern = /:::ref\[([^\]]+)\]/g;
@@ -25,7 +25,6 @@ export function BlogContentRenderer({ html, references = {}, className }: BlogCo
         let match;
 
         while ((match = refPattern.exec(html)) !== null) {
-            // Add HTML before the reference
             if (match.index > lastIndex) {
                 result.push({
                     type: "html",
@@ -33,7 +32,6 @@ export function BlogContentRenderer({ html, references = {}, className }: BlogCo
                 });
             }
 
-            // Add the reference marker
             const refId = match[1];
             if (safeReferences[refId]) {
                 result.push({
@@ -42,7 +40,6 @@ export function BlogContentRenderer({ html, references = {}, className }: BlogCo
                     refId,
                 });
             } else {
-                // Reference not found, keep as HTML
                 result.push({
                     type: "html",
                     content: match[0],
@@ -52,7 +49,6 @@ export function BlogContentRenderer({ html, references = {}, className }: BlogCo
             lastIndex = match.index + match[0].length;
         }
 
-        // Add remaining HTML
         if (lastIndex < html.length) {
             result.push({
                 type: "html",
@@ -77,7 +73,7 @@ export function BlogContentRenderer({ html, references = {}, className }: BlogCo
                 return (
                     <span
                         key={`html-${index}`}
-                        dangerouslySetInnerHTML={{ __html: part.content }}
+                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(part.content) }}
                     />
                 );
             })}
