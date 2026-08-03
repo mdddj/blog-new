@@ -14,6 +14,8 @@ const ALLOWED_ATTR = [
   "alt", "class", "colspan", "href", "id", "rel", "rowspan",
   "src", "srcset", "target", "title", "type", "width", "height",
   "loading", "sizes", "decoding",
+  // 图片预览触发器的图片地址（后端 ~~[查看图片]url~~ 语法生成）
+  "data-preview-url",
 ];
 
 const config = {

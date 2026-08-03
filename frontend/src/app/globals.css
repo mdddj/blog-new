@@ -248,3 +248,78 @@
   color: #0099bb;
   border-bottom-color: #0099bb;
 }
+
+/* Image Preview Popover */
+.image-preview-popover {
+  position: fixed;
+  z-index: 9999;
+  padding: 8px;
+  background: #ffffff;
+  border: 1px solid rgba(114, 93, 66, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  pointer-events: auto;
+  animation: image-preview-in 0.18s ease-out;
+}
+
+.dark .image-preview-popover {
+  background: #1e293b;
+  border-color: rgba(148, 163, 184, 0.25);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+
+.image-preview-img {
+  display: block;
+  max-width: 100%;
+  max-height: 344px;
+  width: auto;
+  height: auto;
+  border-radius: 8px;
+  object-fit: contain;
+  background: rgba(0, 0, 0, 0.03);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.image-preview-img.is-loaded {
+  opacity: 1;
+}
+
+.image-preview-loading {
+  min-width: 120px;
+  min-height: 80px;
+  display: grid;
+  place-items: center;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.image-preview-fallback {
+  min-width: 160px;
+  min-height: 90px;
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.image-preview-fallback a {
+  color: #00d4ff;
+  text-decoration: underline;
+}
+
+.dark .image-preview-fallback a {
+  color: #22d3ee;
+}
+
+@keyframes image-preview-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

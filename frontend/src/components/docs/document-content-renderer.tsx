@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { ReferenceCard } from "./document-reference-card";
+import { ImagePreview } from "@/components/blog/image-preview";
 import type { DocumentReference } from "@/types";
 import { sanitizeReferenceRecord } from "@/lib/reference-utils";
 import { sanitizeHtml } from "@/lib/sanitize";
@@ -60,7 +61,7 @@ export function DocumentContentRenderer({ html, references = {}, className }: Do
     }, [html, safeReferences]);
 
     return (
-        <div className={className}>
+        <ImagePreview className={className}>
             {parts.map((part, index) => {
                 if (part.type === "reference" && part.refId && safeReferences[part.refId]) {
                     return (
@@ -77,6 +78,6 @@ export function DocumentContentRenderer({ html, references = {}, className }: Do
                     />
                 );
             })}
-        </div>
+        </ImagePreview>
     );
 }
