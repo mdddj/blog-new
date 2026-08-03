@@ -18,12 +18,12 @@ interface PreviewState {
  * ImagePreview
  *
  * 为博客 / 文档正文中的 `.image-preview-trigger[data-preview-url]` 元素提供
- * 悬停（桌面端）或点击（触摸端）显示图片预览的能力。
+ * 点击显示图片预览的能力。
  *
  * 后端会把 `~~[查看图片]url~~` 语法渲染成：
  *   <span class="image-preview-trigger" data-preview-url="url">查看图片</span>
  * 本组件负责读取该 URL 并通过 Portal 在 body 层弹出浮动预览图，
- * 避免被正文容器的 overflow 裁剪。
+ * 避免被正文容器的 overflow 裁剪。再次点击或滚动 / 按 Esc 关闭。
  */
 export function ImagePreview({
   children,
@@ -36,15 +36,7 @@ export function ImagePreview({
   const [preview, setPreview] = useState<PreviewState | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
-  const hideTimerRef = useRef<number | null>(null);
   const openUrlRef = useRef<string | null>(null);
-
-  const clearTimer = useCallback(() => {
-    if (hideTimerRef.current !== null) {
-      window.clearTimeout(hideTimerRef.current);
-      hideTimerRef.current = null;
-    }
-  }, []);
 
   const resetState = useCallback(() => {
     setLoaded(false);
@@ -52,22 +44,15 @@ export function ImagePreview({
   }, []);
 
   const hidePreview = useCallback(() => {
-    clearTimer();
     openUrlRef.current = null;
     setPreview(null);
     resetState();
-  }, [clearTimer, resetState]);
-
-  const scheduleHide = useCallback(() => {
-    clearTimer();
-    hideTimerRef.current = window.setTimeout(hidePreview, 120);
-  }, [clearTimer, hidePreview]);
+  }, [resetState]);
 
   const openPreview = useCallback(
     (trigger: HTMLElement) => {
       const url = trigger.getAttribute("data-preview-url");
       if (!url) return;
-      clearTimer();
       const rect = trigger.getBoundingClientRect();
       const width = Math.min(PREVIEW_MAX_W, window.innerWidth - 24);
       let left = rect.left + rect.width / 2 - width / 2;
@@ -85,7 +70,7 @@ export function ImagePreview({
       });
       resetState();
     },
-    [clearTimer, resetState]
+    [resetState]
   );
 
   useEffect(() => {
@@ -94,23 +79,6 @@ export function ImagePreview({
 
     const getTrigger = (e: Event): HTMLElement | null =>
       (e.target as HTMLElement).closest<HTMLElement>(".image-preview-trigger");
-
-    const onMouseOver = (e: MouseEvent) => {
-      const trigger = getTrigger(e);
-      if (!trigger) return;
-      openPreview(trigger);
-    };
-
-    const onMouseOut = (e: MouseEvent) => {
-      const next = e.relatedTarget as HTMLElement | null;
-      if (
-        next &&
-        (next.closest(".image-preview-trigger") || next.closest(".image-preview-popover"))
-      ) {
-        return;
-      }
-      scheduleHide();
-    };
 
     const onClick = (e: MouseEvent) => {
       const trigger = getTrigger(e);
@@ -124,16 +92,11 @@ export function ImagePreview({
       }
     };
 
-    container.addEventListener("mouseover", onMouseOver);
-    container.addEventListener("mouseout", onMouseOut);
     container.addEventListener("click", onClick);
     return () => {
-      container.removeEventListener("mouseover", onMouseOver);
-      container.removeEventListener("mouseout", onMouseOut);
       container.removeEventListener("click", onClick);
-      clearTimer();
     };
-  }, [openPreview, scheduleHide, hidePreview, clearTimer]);
+  }, [openPreview, hidePreview]);
 
   // 滚动 / 窗口变化 / Esc 时隐藏预览
   useEffect(() => {
@@ -168,8 +131,6 @@ export function ImagePreview({
                 maxWidth: PREVIEW_MAX_W,
                 maxHeight: PREVIEW_MAX_H,
               }}
-              onMouseEnter={clearTimer}
-              onMouseLeave={scheduleHide}
               role="tooltip"
             >
               {failed ? (
