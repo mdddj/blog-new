@@ -5,14 +5,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use sqlx::FromRow;
 
-/// Document reference item
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct DocumentReference {
-    pub id: String,
-    pub title: String,
-    pub content: String,
-}
-
 /// Document entity from database
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct Document {
@@ -78,7 +70,7 @@ pub struct DocumentResponse {
 
 impl Document {
     /// Convert to response with rendered HTML
-    pub fn to_response(self, html: Option<String>) -> DocumentResponse {
+    pub fn into_response_with_html(self, html: Option<String>) -> DocumentResponse {
         DocumentResponse {
             id: self.id,
             name: self.name,

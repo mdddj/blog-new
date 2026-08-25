@@ -67,42 +67,6 @@ impl DirectoryRepository {
         Ok(directory)
     }
 
-    /// Find directories by parent ID
-    pub async fn find_by_parent_id(
-        pool: &PgPool,
-        parent_id: Option<i64>,
-    ) -> Result<Vec<Directory>, ApiError> {
-        let directories = match parent_id {
-            Some(pid) => {
-                sqlx::query_as::<_, Directory>(
-                    r#"
-                    SELECT id, name, intro, parent_id, sort_order, created_at
-                    FROM directories
-                    WHERE parent_id = $1
-                    ORDER BY sort_order ASC, id ASC
-                    "#,
-                )
-                .bind(pid)
-                .fetch_all(pool)
-                .await?
-            }
-            None => {
-                sqlx::query_as::<_, Directory>(
-                    r#"
-                    SELECT id, name, intro, parent_id, sort_order, created_at
-                    FROM directories
-                    WHERE parent_id IS NULL
-                    ORDER BY sort_order ASC, id ASC
-                    "#,
-                )
-                .fetch_all(pool)
-                .await?
-            }
-        };
-
-        Ok(directories)
-    }
-
     /// Get directory tree structure
     pub async fn get_tree(pool: &PgPool) -> Result<Vec<DirectoryTreeNode>, ApiError> {
         // Fetch all directories
@@ -356,33 +320,5 @@ impl DirectoryRepository {
         .await?;
 
         Ok(result.rows_affected() > 0)
-    }
-
-    /// Count documents in a directory
-    pub async fn count_documents(pool: &PgPool, directory_id: i64) -> Result<i64, ApiError> {
-        let count = sqlx::query_scalar::<_, i64>(
-            r#"
-            SELECT COUNT(*) FROM documents WHERE directory_id = $1
-            "#,
-        )
-        .bind(directory_id)
-        .fetch_one(pool)
-        .await?;
-
-        Ok(count)
-    }
-
-    /// Count child directories
-    pub async fn count_children(pool: &PgPool, directory_id: i64) -> Result<i64, ApiError> {
-        let count = sqlx::query_scalar::<_, i64>(
-            r#"
-            SELECT COUNT(*) FROM directories WHERE parent_id = $1
-            "#,
-        )
-        .bind(directory_id)
-        .fetch_one(pool)
-        .await?;
-
-        Ok(count)
     }
 }

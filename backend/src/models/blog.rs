@@ -8,14 +8,6 @@ use sqlx::FromRow;
 use super::category::Category;
 use super::tag::Tag;
 
-/// Blog reference item
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct BlogReference {
-    pub id: String,
-    pub title: String,
-    pub content: String,
-}
-
 /// Blog entity from database
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct Blog {

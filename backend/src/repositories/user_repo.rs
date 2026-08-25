@@ -93,41 +93,4 @@ impl UserRepository {
 
         Ok(password_hash)
     }
-
-    /// Update user's password
-    pub async fn update_password(
-        pool: &PgPool,
-        user_id: i64,
-        new_password: &str,
-    ) -> Result<(), ApiError> {
-        let password_hash = Self::hash_password(new_password)?;
-
-        sqlx::query(
-            r#"
-            UPDATE users
-            SET password_hash = $1, updated_at = NOW()
-            WHERE id = $2
-            "#,
-        )
-        .bind(&password_hash)
-        .bind(user_id)
-        .execute(pool)
-        .await?;
-
-        Ok(())
-    }
-
-    /// Check if username already exists
-    pub async fn username_exists(pool: &PgPool, username: &str) -> Result<bool, ApiError> {
-        let result = sqlx::query_scalar::<_, bool>(
-            r#"
-            SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)
-            "#,
-        )
-        .bind(username)
-        .fetch_one(pool)
-        .await?;
-
-        Ok(result)
-    }
 }

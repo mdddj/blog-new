@@ -60,7 +60,6 @@ dotenvy = "0.15"
 thiserror = "2"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-validator = { version = "0.20", features = ["derive"] }
 yls-agi-rust-sdk = "0.1.5"
 
 [[bin]]

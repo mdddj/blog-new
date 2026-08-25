@@ -11,24 +11,6 @@ use sqlx::PgPool;
 pub struct BlogRepository;
 
 impl BlogRepository {
-    /// Find all published blogs with pagination
-    pub async fn find_all_published(
-        pool: &PgPool,
-        page: i64,
-        page_size: i64,
-    ) -> Result<(Vec<BlogListItem>, i64), ApiError> {
-        Self::find_with_filters(pool, page, page_size, None, None, Some(true)).await
-    }
-
-    /// Find all blogs (admin) with pagination
-    pub async fn find_all(
-        pool: &PgPool,
-        page: i64,
-        page_size: i64,
-    ) -> Result<(Vec<BlogListItem>, i64), ApiError> {
-        Self::find_with_filters(pool, page, page_size, None, None, None).await
-    }
-
     /// Find blogs with filters (category, tag, published status)
     pub async fn find_with_filters(
         pool: &PgPool,
@@ -447,15 +429,5 @@ impl BlogRepository {
         };
 
         Ok(exists)
-    }
-
-    /// Find blogs by category ID with pagination
-    pub async fn find_by_category(
-        pool: &PgPool,
-        category_id: i64,
-        page: i64,
-        page_size: i64,
-    ) -> Result<(Vec<BlogListItem>, i64), ApiError> {
-        Self::find_with_filters(pool, page, page_size, Some(category_id), None, Some(true)).await
     }
 }

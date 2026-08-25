@@ -38,15 +38,6 @@ impl<T: Serialize> ApiResponse<T> {
 }
 
 impl ApiResponse<()> {
-    /// Create a success response without data
-    pub fn ok() -> Self {
-        Self {
-            code: 0,
-            message: "success".to_string(),
-            data: None,
-        }
-    }
-
     /// Create an error response
     pub fn error(code: i32, message: impl Into<String>) -> Self {
         Self {
@@ -117,7 +108,6 @@ pub enum ApiError {
 /// Error codes
 #[derive(Debug, Clone, Copy)]
 pub enum ErrorCode {
-    Success = 0,
     BadRequest = 400,
     Unauthorized = 401,
     Forbidden = 403,
@@ -192,17 +182,4 @@ impl From<redis::RedisError> for ApiError {
         tracing::error!("Redis error: {:?}", err);
         ApiError::CacheError(err.to_string())
     }
-}
-
-/// Result type alias for API handlers
-pub type ApiResult<T> = Result<Json<ApiResponse<T>>, ApiError>;
-
-/// Helper function to create a success JSON response
-pub fn json_ok<T: Serialize>(data: T) -> ApiResult<T> {
-    Ok(Json(ApiResponse::success(data)))
-}
-
-/// Helper function to create a success JSON response without data
-pub fn json_success() -> ApiResult<()> {
-    Ok(Json(ApiResponse::ok()))
 }

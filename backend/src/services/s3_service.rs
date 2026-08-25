@@ -141,35 +141,4 @@ impl S3Service {
 
         Ok(())
     }
-
-    /// Check if a file exists in S3
-    pub async fn file_exists(&self, object_key: &str) -> Result<bool, ApiError> {
-        match self
-            .client
-            .head_object()
-            .bucket(&self.bucket)
-            .key(object_key)
-            .send()
-            .await
-        {
-            Ok(_) => Ok(true),
-            Err(e) => {
-                // Check if it's a "not found" error
-                let service_error = e.into_service_error();
-                if service_error.is_not_found() {
-                    Ok(false)
-                } else {
-                    Err(ApiError::FileUploadError(format!(
-                        "Failed to check file existence: {}",
-                        service_error
-                    )))
-                }
-            }
-        }
-    }
-
-    /// Get the bucket name
-    pub fn bucket(&self) -> &str {
-        &self.bucket
-    }
 }

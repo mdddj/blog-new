@@ -159,11 +159,6 @@ pub mod cache_keys {
         "directory:tree".to_string()
     }
 
-    /// Document cache key
-    pub fn document(id: i64) -> String {
-        format!("document:{}", id)
-    }
-
     /// Friend link list cache key
     pub fn friend_link_list() -> String {
         "friend_link:list".to_string()
@@ -172,11 +167,6 @@ pub mod cache_keys {
     /// Project list cache key
     pub fn project_list() -> String {
         "project:list".to_string()
-    }
-
-    /// User session cache key
-    pub fn user_session(user_id: i64) -> String {
-        format!("user:session:{}", user_id)
     }
 
     /// View count rate limit key
@@ -209,15 +199,6 @@ pub mod cache_ttl {
 
     /// Blog detail TTL: 30 minutes
     pub const BLOG_DETAIL: Duration = Duration::from_secs(30 * 60);
-
-    /// Category/Tag list TTL: 1 hour
-    pub const CATEGORY_TAG_LIST: Duration = Duration::from_secs(60 * 60);
-
-    /// Directory tree TTL: 1 hour
-    pub const DIRECTORY_TREE: Duration = Duration::from_secs(60 * 60);
-
-    /// User session TTL: 24 hours
-    pub const USER_SESSION: Duration = Duration::from_secs(24 * 60 * 60);
 
     /// View rate limit TTL: 1 hour
     pub const VIEW_RATE_LIMIT: Duration = Duration::from_secs(60 * 60);

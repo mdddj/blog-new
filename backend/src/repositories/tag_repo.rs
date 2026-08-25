@@ -11,21 +11,6 @@ use sqlx::PgPool;
 pub struct TagRepository;
 
 impl TagRepository {
-    /// Find all tags
-    pub async fn find_all(pool: &PgPool) -> Result<Vec<Tag>, ApiError> {
-        let tags = sqlx::query_as::<_, Tag>(
-            r#"
-            SELECT id, name
-            FROM tags
-            ORDER BY name ASC
-            "#,
-        )
-        .fetch_all(pool)
-        .await?;
-
-        Ok(tags)
-    }
-
     /// Find all tags with blog count
     pub async fn find_all_with_count(pool: &PgPool) -> Result<Vec<TagWithCount>, ApiError> {
         let rows = sqlx::query_as::<_, (i64, String, i64)>(
@@ -66,22 +51,6 @@ impl TagRepository {
             "#,
         )
         .bind(id)
-        .fetch_optional(pool)
-        .await?;
-
-        Ok(tag)
-    }
-
-    /// Find tag by name
-    pub async fn find_by_name(pool: &PgPool, name: &str) -> Result<Option<Tag>, ApiError> {
-        let tag = sqlx::query_as::<_, Tag>(
-            r#"
-            SELECT id, name
-            FROM tags
-            WHERE name = $1
-            "#,
-        )
-        .bind(name)
         .fetch_optional(pool)
         .await?;
 
@@ -259,24 +228,6 @@ impl TagRepository {
         .await?;
 
         Ok(tags)
-    }
-
-    /// Get blog IDs that have a specific tag (for filtering blogs by tag)
-    pub async fn get_blog_ids_by_tag(pool: &PgPool, tag_id: i64) -> Result<Vec<i64>, ApiError> {
-        let blog_ids = sqlx::query_scalar::<_, i64>(
-            r#"
-            SELECT bt.blog_id
-            FROM blog_tags bt
-            INNER JOIN blogs b ON b.id = bt.blog_id
-            WHERE bt.tag_id = $1 AND b.is_published = true
-            ORDER BY b.created_at DESC
-            "#,
-        )
-        .bind(tag_id)
-        .fetch_all(pool)
-        .await?;
-
-        Ok(blog_ids)
     }
 
     /// Get paginated blogs by tag ID

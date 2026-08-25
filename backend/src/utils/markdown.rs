@@ -124,15 +124,6 @@ impl MarkdownRenderer {
             }
         }
     }
-
-    /// Render Markdown to HTML without syntax highlighting (faster)
-    pub fn render_simple(markdown: &str) -> String {
-        let options = Options::all();
-        let parser = Parser::new_ext(markdown, options);
-        let mut html_output = String::new();
-        html::push_html(&mut html_output, parser);
-        html_output
-    }
 }
 
 /// Escape HTML special characters
@@ -238,11 +229,6 @@ fn html_escape_attr(s: &str) -> String {
         .replace('>', "&gt;")
         .replace('"', "&quot;")
         .replace('\'', "&#39;")
-}
-
-/// Render markdown to HTML without syntax highlighting (faster)
-pub fn render_markdown_simple(markdown: &str) -> String {
-    MarkdownRenderer::render_simple(markdown)
 }
 
 #[cfg(test)]

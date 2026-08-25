@@ -113,28 +113,6 @@ impl FriendLinkRepository {
         Ok(link)
     }
 
-    /// Update friend link status
-    pub async fn update_status(
-        pool: &PgPool,
-        id: i64,
-        status: i16,
-    ) -> Result<Option<FriendLink>, ApiError> {
-        let link = sqlx::query_as::<_, FriendLink>(
-            r#"
-            UPDATE friend_links
-            SET status = $2
-            WHERE id = $1
-            RETURNING id, name, url, logo, intro, email, status, created_at
-            "#,
-        )
-        .bind(id)
-        .bind(status)
-        .fetch_optional(pool)
-        .await?;
-
-        Ok(link)
-    }
-
     /// Delete a friend link by ID
     pub async fn delete(pool: &PgPool, id: i64) -> Result<bool, ApiError> {
         let result = sqlx::query(

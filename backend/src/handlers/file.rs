@@ -80,8 +80,8 @@ pub async fn upload_file(
         // Generate filename from object key
         let filename = upload_result
             .object_key
-            .split('/')
-            .last()
+            .rsplit('/')
+            .next()
             .unwrap_or(&upload_result.object_key)
             .to_string();
 

@@ -4,6 +4,7 @@ use crate::error::ApiError;
 use crate::models::archive::{ArchiveBlogItem, ArchiveMonth, ArchiveResponse, ArchiveYear};
 use chrono::{DateTime, Utc};
 use sqlx::PgPool;
+use std::cmp::Reverse;
 use std::collections::BTreeMap;
 
 /// Archive repository for database operations
@@ -92,55 +93,7 @@ impl ArchiveRepository {
             .collect();
 
         // Sort years in descending order
-        years.sort_by(|a, b| b.year.cmp(&a.year));
-
-        Ok(ArchiveResponse { total, years })
-    }
-
-    /// Get archive statistics (year/month counts only, without blog details)
-    pub async fn get_archive_stats(pool: &PgPool) -> Result<ArchiveResponse, ApiError> {
-        // Query counts grouped by year and month
-        let rows = sqlx::query_as::<_, (i32, i32, i64)>(
-            r#"
-            SELECT 
-                EXTRACT(YEAR FROM created_at)::INT as year,
-                EXTRACT(MONTH FROM created_at)::INT as month,
-                COUNT(*) as count
-            FROM blogs
-            WHERE is_published = true AND created_at IS NOT NULL
-            GROUP BY year, month
-            ORDER BY year DESC, month DESC
-            "#,
-        )
-        .fetch_all(pool)
-        .await?;
-
-        let mut total: i64 = 0;
-        let mut year_map: BTreeMap<i32, Vec<ArchiveMonth>> = BTreeMap::new();
-
-        for (year, month, count) in rows {
-            total += count;
-            year_map.entry(year).or_default().push(ArchiveMonth {
-                month,
-                count,
-                blogs: vec![], // Empty for stats-only query
-            });
-        }
-
-        let mut years: Vec<ArchiveYear> = year_map
-            .into_iter()
-            .map(|(year, months)| {
-                let year_count = months.iter().map(|m| m.count).sum();
-                ArchiveYear {
-                    year,
-                    count: year_count,
-                    months,
-                }
-            })
-            .collect();
-
-        // Sort years in descending order
-        years.sort_by(|a, b| b.year.cmp(&a.year));
+        years.sort_by_key(|year| Reverse(year.year));
 
         Ok(ArchiveResponse { total, years })
     }

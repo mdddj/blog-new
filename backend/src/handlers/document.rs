@@ -28,7 +28,9 @@ pub async fn get_document(
     // Render markdown to HTML
     let html = render_markdown(&document.content);
 
-    Ok(Json(ApiResponse::success(document.to_response(Some(html)))))
+    Ok(Json(ApiResponse::success(
+        document.into_response_with_html(Some(html)),
+    )))
 }
 
 /// GET /api/v1/documents
@@ -75,7 +77,9 @@ pub async fn create_document(
 
     tracing::info!("Created document: {} (id: {})", document.name, document.id);
 
-    Ok(Json(ApiResponse::success(document.to_response(Some(html)))))
+    Ok(Json(ApiResponse::success(
+        document.into_response_with_html(Some(html)),
+    )))
 }
 
 /// PUT /api/v1/admin/documents/:id
@@ -122,7 +126,9 @@ pub async fn update_document(
 
     tracing::info!("Updated document: {} (id: {})", document.name, document.id);
 
-    Ok(Json(ApiResponse::success(document.to_response(Some(html)))))
+    Ok(Json(ApiResponse::success(
+        document.into_response_with_html(Some(html)),
+    )))
 }
 
 /// DELETE /api/v1/admin/documents/:id

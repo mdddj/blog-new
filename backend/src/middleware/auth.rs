@@ -65,6 +65,11 @@ pub async fn auth_middleware(
 
     // Insert authenticated user into request extensions
     let auth_user = AuthUser::from(claims);
+    tracing::debug!(
+        user_id = auth_user.user_id,
+        username = %auth_user.username,
+        "Authenticated request"
+    );
     request.extensions_mut().insert(auth_user);
 
     // Continue to the next handler

@@ -10,21 +10,6 @@ use sqlx::PgPool;
 pub struct CategoryRepository;
 
 impl CategoryRepository {
-    /// Find all categories
-    pub async fn find_all(pool: &PgPool) -> Result<Vec<Category>, ApiError> {
-        let categories = sqlx::query_as::<_, Category>(
-            r#"
-            SELECT id, name, intro, logo, created_at
-            FROM categories
-            ORDER BY id ASC
-            "#,
-        )
-        .fetch_all(pool)
-        .await?;
-
-        Ok(categories)
-    }
-
     /// Find all categories with blog count
     pub async fn find_all_with_count(pool: &PgPool) -> Result<Vec<CategoryWithCount>, ApiError> {
         let rows = sqlx::query_as::<
@@ -82,22 +67,6 @@ impl CategoryRepository {
             "#,
         )
         .bind(id)
-        .fetch_optional(pool)
-        .await?;
-
-        Ok(category)
-    }
-
-    /// Find category by name
-    pub async fn find_by_name(pool: &PgPool, name: &str) -> Result<Option<Category>, ApiError> {
-        let category = sqlx::query_as::<_, Category>(
-            r#"
-            SELECT id, name, intro, logo, created_at
-            FROM categories
-            WHERE name = $1
-            "#,
-        )
-        .bind(name)
         .fetch_optional(pool)
         .await?;
 

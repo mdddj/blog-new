@@ -563,8 +563,8 @@ impl BlogMcpServer {
         let file_type = content_type.split('/').next().map(ToOwned::to_owned);
         let stored_filename = upload_result
             .object_key
-            .split('/')
-            .last()
+            .rsplit('/')
+            .next()
             .unwrap_or(&upload_result.object_key)
             .to_string();
 
@@ -1013,7 +1013,7 @@ impl BlogMcpServer {
             .ok_or_else(|| format!("文档 {} 不存在", document_id))?;
         let html = render_markdown(&document.content);
 
-        Self::json_result(document.to_response(Some(html)))
+        Self::json_result(document.into_response_with_html(Some(html)))
     }
 
     #[tool(name = "create_document", description = "创建文档")]
@@ -1044,7 +1044,7 @@ impl BlogMcpServer {
 
         let _ = self.state.cache.delete(&cache_keys::directory_tree()).await;
         let html = render_markdown(&document.content);
-        Self::json_result(document.to_response(Some(html)))
+        Self::json_result(document.into_response_with_html(Some(html)))
     }
 
     #[tool(name = "update_document", description = "更新文档")]
@@ -1086,7 +1086,7 @@ impl BlogMcpServer {
 
         let _ = self.state.cache.delete(&cache_keys::directory_tree()).await;
         let html = render_markdown(&document.content);
-        Self::json_result(document.to_response(Some(html)))
+        Self::json_result(document.into_response_with_html(Some(html)))
     }
 
     #[tool(name = "delete_document", description = "删除文档")]

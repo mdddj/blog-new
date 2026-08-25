@@ -158,9 +158,4 @@ impl AuthService {
             expires_in: self.jwt_config.access_token_expire_hours * 3600,
         })
     }
-
-    /// Get access token expiration in seconds
-    pub fn get_access_token_expire_seconds(&self) -> i64 {
-        self.jwt_config.access_token_expire_hours * 3600
-    }
 }
