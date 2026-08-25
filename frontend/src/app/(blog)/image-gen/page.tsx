@@ -217,7 +217,7 @@ export default function ImageGenPage() {
           ) : null}
 
           {loading ? (
-            <div className="grid min-h-[28rem] place-items-center rounded-[28px] border border-dashed border-[#725d42]/15 bg-white/60 px-6 text-center text-sm font-bold text-slate-500 dark:bg-slate-900/40 dark:text-slate-400">
+            <div className="grid min-h-112 place-items-center rounded-[28px] border border-dashed border-[#725d42]/15 bg-white/60 px-6 text-center text-sm font-bold text-slate-500 dark:bg-slate-900/40 dark:text-slate-400">
               <div className="grid justify-items-center gap-3">
                 <Loader2 className="h-6 w-6 animate-spin text-[#028b57]" />
                 <p>正在向 YLS 请求图片，可能需要 1-4 分钟，请保持页面打开。</p>
@@ -225,14 +225,14 @@ export default function ImageGenPage() {
             </div>
           ) : result && imageUrl ? (
             <div className="grid gap-4">
-              <div className="relative min-h-[24rem] overflow-hidden rounded-[28px] border border-[#725d42]/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.96),rgba(247,241,228,0.86))] p-3 shadow-inner dark:bg-[linear-gradient(135deg,rgba(15,23,42,0.96),rgba(30,41,59,0.9))] sm:min-h-[30rem]">
+              <div className="relative min-h-96 overflow-hidden rounded-[28px] border border-[#725d42]/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.96),rgba(247,241,228,0.86))] p-3 shadow-inner dark:bg-[linear-gradient(135deg,rgba(15,23,42,0.96),rgba(30,41,59,0.9))] sm:min-h-[30rem]">
                 <Image
                   src={imageUrl}
                   alt={prompt || "YLS 生成图片"}
                   fill
                   unoptimized
                   sizes="(max-width: 1024px) 100vw, 60vw"
-                  className="rounded-[20px] object-contain p-3 shadow-sm"
+                  className="rounded-4xl object-contain p-3 shadow-sm"
                 />
               </div>
 
@@ -255,7 +255,7 @@ export default function ImageGenPage() {
               </div>
             </div>
           ) : (
-            <div className="grid min-h-[28rem] place-items-center rounded-[28px] border border-dashed border-[#725d42]/15 bg-white/60 px-6 text-center dark:bg-slate-900/35">
+            <div className="grid min-h-112 place-items-center rounded-[28px] border border-dashed border-[#725d42]/15 bg-white/60 px-6 text-center dark:bg-slate-900/35">
               <div className="grid max-w-sm gap-3 text-center">
                 <div className="mx-auto rounded-full bg-white/80 p-3 text-[#725d42] shadow-sm dark:bg-slate-800">
                   <Sparkles className="h-6 w-6" />

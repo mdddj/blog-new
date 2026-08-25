@@ -181,7 +181,7 @@ export function BlogDetailClient({ slug }: { slug: string }) {
               </div>
 
               <div className="grid gap-4">
-                <h1 className="break-words text-3xl font-extrabold leading-tight tracking-tight text-[#725d42] sm:text-4xl">
+                <h1 className="wrap-break-word text-3xl font-extrabold leading-tight tracking-tight text-[#725d42] sm:text-4xl">
                   {blog.title}
                 </h1>
                 {blog.summary ? (
@@ -232,7 +232,7 @@ export function BlogDetailClient({ slug }: { slug: string }) {
               ) : null}
 
               {hasThumbnail ? (
-                <div className="relative aspect-[16/9] overflow-hidden rounded-2xl bg-white/40 border border-[#725d42]/10">
+                <div className="relative aspect-video overflow-hidden rounded-2xl bg-white/40 border border-[#725d42]/10">
                   <Image
                     src={blog.thumbnail!}
                     alt={blog.title}
@@ -250,7 +250,7 @@ export function BlogDetailClient({ slug }: { slug: string }) {
               <BlogContentRenderer
                 html={html}
                 references={blog.references}
-                className="prose min-w-0 max-w-none overflow-x-auto break-words prose-slate dark:prose-invert prose-headings:scroll-mt-28 prose-headings:font-extrabold prose-headings:text-[#725d42] prose-p:leading-8 prose-p:font-bold prose-p:text-[#725d42]/90 prose-a:no-underline hover:prose-a:underline prose-code:break-words prose-code:before:content-none prose-code:after:content-none prose-code:text-[#c45a1f] prose-code:bg-[#725d42]/5 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-lg prose-code:font-bold prose-pre:overflow-x-auto prose-pre:rounded-2xl prose-pre:bg-[#f4efe4] prose-pre:text-[#725d42] prose-pre:border-2 prose-pre:border-[#725d42]/15 [&_pre_code]:bg-transparent [&_pre_code]:bg-none [&_pre_code]:p-0 [&_pre_code]:border-none prose-blockquote:not-italic prose-blockquote:border-l-4 prose-blockquote:border-[#725d42]/30 prose-blockquote:bg-black/5 prose-blockquote:px-4 prose-blockquote:py-1 prose-blockquote:rounded-r-xl"
+                className="prose min-w-0 max-w-none overflow-x-auto wrap-break-word prose-slate dark:prose-invert prose-headings:scroll-mt-28 prose-headings:font-extrabold prose-headings:text-[#725d42] prose-p:leading-8 prose-p:font-bold prose-p:text-[#725d42]/90 prose-a:no-underline hover:prose-a:underline prose-code:wrap-break-word prose-code:before:content-none prose-code:after:content-none prose-code:text-[#c45a1f] prose-code:bg-[#725d42]/5 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-lg prose-code:font-bold prose-pre:overflow-x-auto prose-pre:rounded-2xl prose-pre:bg-[#f4efe4] prose-pre:text-[#725d42] prose-pre:border-2 prose-pre:border-[#725d42]/15 [&_pre_code]:bg-transparent [&_pre_code]:bg-none [&_pre_code]:p-0 [&_pre_code]:border-none prose-blockquote:not-italic prose-blockquote:border-l-4 prose-blockquote:border-[#725d42]/30 prose-blockquote:bg-black/5 prose-blockquote:px-4 prose-blockquote:py-1 prose-blockquote:rounded-r-xl"
               />
             </PublicCard>
           </div>
@@ -292,7 +292,7 @@ export function BlogDetailClient({ slug }: { slug: string }) {
           </aside>
         </article>
 
-        <section className="mx-auto grid w-full max-w-[760px] min-w-0 gap-4 sm:grid-cols-2">
+        <section className="mx-auto grid w-full max-w-190 min-w-0 gap-4 sm:grid-cols-2">
           {prevBlog ? (
             <PublicCard color={prevCardColor} className="grid gap-2 p-4 shadow-sm hover:shadow">
               <div className="text-[10px] font-extrabold uppercase tracking-[0.14em] opacity-80">

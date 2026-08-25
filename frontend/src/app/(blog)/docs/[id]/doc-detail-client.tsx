@@ -181,7 +181,7 @@ export function DocDetailClient({ docId }: { docId: number }) {
             <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-400 select-none">
               Documentation
             </div>
-            <h1 className="break-words text-3xl font-extrabold leading-tight tracking-tight text-[#725d42]">
+            <h1 className="wrap-break-word text-3xl font-extrabold leading-tight tracking-tight text-[#725d42]">
               {doc.name}
             </h1>
             <p className="inline-flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-bold text-slate-400">
@@ -197,7 +197,7 @@ export function DocDetailClient({ docId }: { docId: number }) {
             <DocumentContentRenderer
               html={processedHtml}
               references={doc.references}
-              className="prose min-w-0 max-w-none overflow-x-auto break-words prose-slate dark:prose-invert prose-headings:scroll-mt-28 prose-headings:font-extrabold prose-headings:text-[#725d42] prose-p:leading-8 prose-p:font-bold prose-p:text-[#725d42]/90 prose-a:no-underline hover:prose-a:underline prose-code:break-words prose-code:before:content-none prose-code:after:content-none prose-code:text-[#c45a1f] prose-code:bg-[#725d42]/5 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-lg prose-code:font-bold prose-pre:overflow-x-auto prose-pre:rounded-2xl prose-pre:bg-[#f4efe4] prose-pre:text-[#725d42] prose-pre:border-2 prose-pre:border-[#725d42]/15 [&_pre_code]:bg-transparent [&_pre_code]:bg-none [&_pre_code]:p-0 [&_pre_code]:border-none prose-blockquote:not-italic prose-blockquote:border-l-4 prose-blockquote:border-[#725d42]/30 prose-blockquote:bg-black/5 prose-blockquote:px-4 prose-blockquote:py-1 prose-blockquote:rounded-r-xl"
+              className="prose min-w-0 max-w-none overflow-x-auto wrap-break-word prose-slate dark:prose-invert prose-headings:scroll-mt-28 prose-headings:font-extrabold prose-headings:text-[#725d42] prose-p:leading-8 prose-p:font-bold prose-p:text-[#725d42]/90 prose-a:no-underline hover:prose-a:underline prose-code:break-words prose-code:before:content-none prose-code:after:content-none prose-code:text-[#c45a1f] prose-code:bg-[#725d42]/5 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-lg prose-code:font-bold prose-pre:overflow-x-auto prose-pre:rounded-2xl prose-pre:bg-[#f4efe4] prose-pre:text-[#725d42] prose-pre:border-2 prose-pre:border-[#725d42]/15 [&_pre_code]:bg-transparent [&_pre_code]:bg-none [&_pre_code]:p-0 [&_pre_code]:border-none prose-blockquote:not-italic prose-blockquote:border-l-4 prose-blockquote:border-[#725d42]/30 prose-blockquote:bg-black/5 prose-blockquote:px-4 prose-blockquote:py-1 prose-blockquote:rounded-r-xl"
             />
           </PublicCard>
         </article>
