@@ -225,7 +225,7 @@ export default function ImageGenPage() {
             </div>
           ) : result && imageUrl ? (
             <div className="grid gap-4">
-              <div className="relative min-h-96 overflow-hidden rounded-[28px] border border-[#725d42]/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.96),rgba(247,241,228,0.86))] p-3 shadow-inner dark:bg-[linear-gradient(135deg,rgba(15,23,42,0.96),rgba(30,41,59,0.9))] sm:min-h-[30rem]">
+              <div className="relative min-h-96 overflow-hidden rounded-[28px] border border-[#725d42]/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.96),rgba(247,241,228,0.86))] p-3 shadow-inner dark:bg-[linear-gradient(135deg,rgba(15,23,42,0.96),rgba(30,41,59,0.9))] sm:min-h-120">
                 <Image
                   src={imageUrl}
                   alt={prompt || "YLS 生成图片"}
