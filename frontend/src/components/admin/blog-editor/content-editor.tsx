@@ -1,10 +1,9 @@
-import { useCallback } from "react";
 import dynamic from "next/dynamic";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AiToolbar } from "@/components/ai-toolbar";
 import { commands } from "@uiw/react-md-editor";
-import type { ICommand, TextAreaTextApi } from "@uiw/react-md-editor";
+import type { ICommand } from "@uiw/react-md-editor";
 import { createAutoSaveCommand } from "./auto-save-command";
 import { createReferenceCommand } from "./reference-command";
 import "./auto-save.css";

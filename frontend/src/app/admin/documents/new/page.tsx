@@ -33,7 +33,7 @@ export default function NewDocumentPage() {
     const [filename, setFilename] = useState("");
     const [content, setContent] = useState("");
     const [directoryId, setDirectoryId] = useState<string>(directoryIdParam || "none");
-    const [sortOrder, setSortOrder] = useState(0);
+    const [sortOrder] = useState(0);
     const [references, setReferences] = useState<Record<string, DocumentReference>>({});
     const [referenceManagerOpen, setReferenceManagerOpen] = useState(false);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { blogApi, aiApi } from "@/lib/api";
 import type { CreateBlogRequest, BlogReference } from "@/types";

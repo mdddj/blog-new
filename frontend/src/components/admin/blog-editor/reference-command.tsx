@@ -1,4 +1,3 @@
-import { Quote } from "lucide-react";
 import type { ICommand } from "@uiw/react-md-editor";
 
 export function createReferenceCommand(onOpenManager: () => void): ICommand {

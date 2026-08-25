@@ -3,25 +3,19 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useTheme } from "next-themes";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { memo, useCallback, useEffect, useState } from "react";
 import {
-  ArrowRight,
   BookOpen,
   CalendarDays,
   ChevronLeft,
   ChevronRight,
   Clock3,
   FileText,
-  Folder,
-  Hash,
   Loader2,
   Mail,
-  Moon,
   MessageCircle,
   Search,
-  Sun,
   UserRound,
 } from "lucide-react";
 import { sanitizeHtml } from "@/lib/sanitize";
@@ -36,12 +30,6 @@ import {
   Button as AIButton,
   Footer as AIFooter,
   Divider as AIDivider,
-  Time as AITime,
-  Phone as AIPhone,
-  Collapse as AICollapse,
-  Input as AIInput,
-  Tabs as AITabs,
-  Table as AITable,
   Icon as AIIcon,
   CardColor,
 } from "animal-island-ui";
@@ -93,7 +81,7 @@ const NAV_LINKS = [
 export const PublicCard = memo(function PublicCard({
   children,
   className,
-  as: Component = "div",
+  as: _Component = "div",
   color = "default",
 }: {
   children: ReactNode;
@@ -190,33 +178,6 @@ const BRAND_ICON_PATHS = {
   wechat:
     "M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178A1.17 1.17 0 0 1 4.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178 1.17 1.17 0 0 1-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 0 1 .598.082l1.584.926a.272.272 0 0 0 .14.047c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.582.582 0 0 1-.023-.156.49.49 0 0 1 .201-.398C23.024 18.48 24 16.82 24 14.98c0-3.21-2.931-5.837-6.656-6.088V8.89c-.135-.01-.27-.027-.407-.03zm-2.53 3.274c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.97-.982zm4.844 0c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.969-.982z",
 };
-
-function ThemeToggle() {
-  const { resolvedTheme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => setMounted(true), 0);
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  if (!mounted) {
-    return <span className="h-9 w-9 rounded-full border border-slate-200 dark:border-slate-800" aria-hidden="true" />;
-  }
-
-  const isDark = resolvedTheme === "dark";
-
-  return (
-    <button
-      type="button"
-      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 dark:hover:text-white"
-      onClick={() => setTheme(isDark ? "light" : "dark")}
-      aria-label={isDark ? "切换到浅色模式" : "切换到深色模式"}
-    >
-      {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-    </button>
-  );
-}
 
 export function PublicHeader() {
   const pathname = usePathname();
@@ -658,7 +619,6 @@ function LoadingCards({ count = 6 }: { count?: number }) {
 }
 
 export function PublicHome({ initialData }: { initialData?: PublicHomeInitialData }) {
-  const { config } = useSiteConfig();
   const searchParams = useSearchParams();
   const router = useRouter();
   const currentPage = Number(searchParams.get("page")) || 1;
@@ -707,8 +667,6 @@ export function PublicHome({ initialData }: { initialData?: PublicHomeInitialDat
 
   const feedBlogs = blogs;
   const pageTitle = currentPage === 1 ? "最新文章" : `第 ${currentPage} 页文章`;
-  const description =
-    config.site_description || config.site_subtitle || "这里收录博客、项目、文档与长期积累下来的技术线索。";
 
   return (
     <main className={cn(PUBLIC_CONTAINER, "grid gap-8 py-8 px-4")}>
