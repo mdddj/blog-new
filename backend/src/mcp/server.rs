@@ -48,11 +48,19 @@ const MCP_JSON_MIME: &str = "application/json";
 const MCP_EVENT_STREAM_MIME: &str = "text/event-stream";
 const MCP_POST_ACCEPT: &str = "application/json, text/event-stream";
 const MCP_GET_ACCEPT: &str = "text/event-stream";
+const MCP_MAX_REQUEST_BODY_BYTES: usize = 16 * 1024 * 1024;
+
+fn streamable_http_config() -> StreamableHttpServerConfig {
+    StreamableHttpServerConfig::default()
+        .with_sse_keep_alive(None)
+        .with_legacy_session_mode(true)
+        .with_json_response(true)
+        .with_max_request_body_bytes(MCP_MAX_REQUEST_BODY_BYTES)
+        .disable_allowed_hosts()
+}
 
 pub fn router(state: AppState) -> Router<AppState> {
-    let config = StreamableHttpServerConfig::default()
-        .with_sse_keep_alive(None)
-        .disable_allowed_hosts();
+    let config = streamable_http_config();
 
     let service: StreamableHttpService<BlogMcpServer, LocalSessionManager> =
         StreamableHttpService::new(
@@ -2053,23 +2061,46 @@ impl BlogMcpServer {
     }
 }
 
+fn server_info() -> ServerInfo {
+    ServerInfo::new(ServerCapabilities::builder().enable_tools().build()).with_instructions(
+        "典典博客 MCP：支持博客正文模糊检索、文件上传、字典文本、文档与目录、分类、标签、友链、项目、博客管理和 AI 文本处理。"
+            .to_string(),
+    )
+}
+
 #[tool_handler(router = self.tool_router)]
 impl ServerHandler for BlogMcpServer {
     fn get_info(&self) -> ServerInfo {
-        ServerInfo::new(ServerCapabilities::builder().enable_tools().build()).with_instructions(
-            "典典博客 MCP：支持博客正文模糊检索、文件上传、字典文本、文档与目录、分类、标签、友链、项目、博客管理和 AI 文本处理。"
-                .to_string(),
-        )
+        server_info()
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::{
-        CreateBlogDraftArgs, CreateDocumentArgs, UpdateBlogArgs, UpdateDocumentArgs,
-        UploadFileArgs, UploadImageArgs,
+        server_info, streamable_http_config, CreateBlogDraftArgs, CreateDocumentArgs,
+        UpdateBlogArgs, UpdateDocumentArgs, UploadFileArgs, UploadImageArgs,
+        MCP_MAX_REQUEST_BODY_BYTES,
     };
+    use rmcp::model::ProtocolVersion;
     use serde_json::Value;
+
+    #[test]
+    fn rmcp_v3_server_info_advertises_tools_on_latest_stable_protocol() {
+        let info = server_info();
+
+        assert_eq!(info.protocol_version, ProtocolVersion::LATEST);
+        assert!(info.capabilities.tools.is_some());
+    }
+
+    #[test]
+    fn rmcp_v3_transport_preserves_legacy_clients_and_supports_modern_json() {
+        let config = streamable_http_config();
+
+        assert!(config.legacy_session_mode);
+        assert!(config.json_response);
+        assert_eq!(config.max_request_body_bytes, MCP_MAX_REQUEST_BODY_BYTES);
+    }
 
     fn references_schema_for<T: schemars::JsonSchema>() -> Value {
         let schema = schemars::schema_for!(T).to_value();
