@@ -8,7 +8,7 @@ interface AutoSaveCommandProps {
   showSuccess?: boolean;
 }
 
-// Create auto-save toggle command with success animation
+// Create auto-save toggle command
 export function createAutoSaveCommand({
   autoSaveEnabled,
   isAutoSaving,
@@ -22,8 +22,7 @@ export function createAutoSaveCommand({
       "aria-label": autoSaveEnabled ? "关闭自动保存" : "开启自动保存",
       title: autoSaveEnabled ? "关闭自动保存" : "开启自动保存",
       style: {
-        color: autoSaveEnabled ? "#22c55e" : "inherit", // 绿色图标表示已开启
-        transition: "all 0.3s ease",
+        color: autoSaveEnabled ? "#22c55e" : "inherit",
         position: "relative",
         overflow: "hidden",
       },
@@ -36,7 +35,6 @@ export function createAutoSaveCommand({
           gap: "4px",
           fontSize: "10px",
           fontWeight: "bold",
-          animation: "fadeInScale 0.3s ease",
         }}
       >
         <svg
@@ -65,9 +63,7 @@ export function createAutoSaveCommand({
             width: "8px",
             height: "8px",
             border: "2px solid currentColor",
-            borderTop: "2px solid transparent",
             borderRadius: "50%",
-            animation: "spin 1s linear infinite",
           }}
         />
         <span>保存中</span>

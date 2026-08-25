@@ -71,7 +71,7 @@ export default function FriendsPage() {
               <PublicCard
                 key={link.id}
                 color={cardColor}
-                className="grid h-full gap-4 p-5 hover:-translate-y-1 transition-transform duration-300 shadow-sm hover:shadow"
+                className="grid h-full gap-4 p-5 shadow-sm hover:shadow"
               >
                 <div className="flex items-center gap-3">
                   {link.logo ? (

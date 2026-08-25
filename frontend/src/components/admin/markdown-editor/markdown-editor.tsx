@@ -11,7 +11,6 @@ import { useEditorSurfaceEvents } from "@/components/admin/use-editor-surface-ev
 import { createAutoSaveCommand } from "../blog-editor/auto-save-command";
 import { createReferenceCommand } from "../blog-editor/reference-command";
 import { createImageUploadCommand, kbdCommand } from "../blog-editor/utils";
-import "../blog-editor/auto-save.css";
 
 // Dynamic import for MDEditor to avoid SSR issues
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), {

@@ -495,7 +495,7 @@ export function McpConfigTab() {
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin" />
+          <Loader2 className="h-6 w-6" />
         </CardContent>
       </Card>
     );
@@ -551,7 +551,7 @@ export function McpConfigTab() {
         <div className="flex flex-wrap gap-3">
           <Button onClick={handleSave} disabled={isSaving || !hasChanges}>
             {isSaving ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="mr-2 h-4 w-4" />
             ) : (
               <RefreshCw className="mr-2 h-4 w-4" />
             )}
@@ -559,7 +559,7 @@ export function McpConfigTab() {
           </Button>
           <Button variant="secondary" onClick={handleRotate} disabled={isRotating}>
             {isRotating ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="mr-2 h-4 w-4" />
             ) : (
               <KeyRound className="mr-2 h-4 w-4" />
             )}

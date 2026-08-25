@@ -95,7 +95,7 @@ export function AiToolbar({
           disabled={disabled || isPolishing || !content.trim()}
         >
           {isPolishing ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="mr-2 h-4 w-4" />
           ) : (
             <Sparkles className="mr-2 h-4 w-4" />
           )}
@@ -108,7 +108,7 @@ export function AiToolbar({
           disabled={disabled || isSummarizing || !content.trim()}
         >
           {isSummarizing ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="mr-2 h-4 w-4" />
           ) : (
             <FileText className="mr-2 h-4 w-4" />
           )}

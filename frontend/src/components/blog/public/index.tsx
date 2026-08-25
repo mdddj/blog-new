@@ -439,7 +439,7 @@ export function LoadingState({ label = "正在加载" }: { label?: string }) {
       className="flex min-h-60 items-center justify-center border-2 border-[#725d42]/10"
     >
       <div className="inline-flex items-center gap-3 text-sm font-bold text-[#725d42]">
-        <Loader2 className="h-4 w-4 animate-spin" />
+        <Loader2 className="h-4 w-4" />
         {label}
       </div>
     </AICard>
@@ -513,7 +513,7 @@ export const PostCard = memo(function PostCard({
   return (
     <AICard
       color={cardColor}
-      className="group flex flex-col justify-between h-full p-4 border-2 border-[#725d42]/10 hover:-translate-y-1 transition-transform duration-300 shadow-sm hover:shadow"
+      className="group flex flex-col justify-between h-full p-4 border-2 border-[#725d42]/10 shadow-sm hover:shadow"
     >
       <div>
         {blog.thumbnail ? (
@@ -528,7 +528,7 @@ export const PostCard = memo(function PostCard({
               alt={blog.title}
               fill
               sizes="(max-width: 768px) 100vw, 33vw"
-              className="object-cover transition duration-500 group-hover:scale-[1.03]"
+              className="object-cover"
             />
           </button>
         ) : null}
@@ -742,7 +742,7 @@ function LoadingCards({ count = 6 }: { count?: number }) {
           key={idx}
           className="flex min-h-48 items-center justify-center border-2 border-[#725d42]/10"
         >
-          <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
+          <Loader2 className="h-5 w-5 text-slate-400" />
         </AICard>
       ))}
     </div>

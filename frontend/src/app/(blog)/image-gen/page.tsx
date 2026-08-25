@@ -164,7 +164,7 @@ export default function ImageGenPage() {
               >
                 {loading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4" />
                     正在生成...
                   </>
                 ) : (
@@ -219,7 +219,7 @@ export default function ImageGenPage() {
           {loading ? (
             <div className="grid min-h-112 place-items-center rounded-[28px] border border-dashed border-[#725d42]/15 bg-white/60 px-6 text-center text-sm font-bold text-slate-500 dark:bg-slate-900/40 dark:text-slate-400">
               <div className="grid justify-items-center gap-3">
-                <Loader2 className="h-6 w-6 animate-spin text-[#028b57]" />
+                <Loader2 className="h-6 w-6 text-[#028b57]" />
                 <p>正在向 YLS 请求图片，可能需要 1-4 分钟，请保持页面打开。</p>
               </div>
             </div>

@@ -173,7 +173,7 @@ function SearchContent() {
                   <PublicCard
                     key={item.id}
                     color={cardColor}
-                    className="grid gap-3 p-5 shadow-sm hover:shadow hover:-translate-y-0.5 transition-transform duration-300"
+                    className="grid gap-3 p-5 shadow-sm hover:shadow"
                   >
                     <h2 className="text-xl font-extrabold leading-snug text-inherit">
                       <button

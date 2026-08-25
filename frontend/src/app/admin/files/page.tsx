@@ -226,13 +226,13 @@ export default function FileListPage() {
             onClick={() => fetchFiles(currentPage, fileTypeFilter)}
             disabled={isLoading}
           >
-            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+            <RefreshCw className="mr-2 h-4 w-4" />
             刷新
           </Button>
           <Button size="sm" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
             {isUploading ? (
               <>
-                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                <RefreshCw className="mr-2 h-4 w-4" />
                 上传中...
               </>
             ) : (

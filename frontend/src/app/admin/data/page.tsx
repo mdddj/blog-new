@@ -173,7 +173,7 @@ export default function DataManagementPage() {
           <Button onClick={handleExport} disabled={isExporting}>
             {isExporting ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4" />
                 导出中...
               </>
             ) : (
@@ -238,7 +238,7 @@ export default function DataManagementPage() {
                 <Button onClick={handleSqlImport} disabled={isImportingSql || !sqlContent.trim()}>
                   {isImportingSql ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="mr-2 h-4 w-4" />
                       执行中...
                     </>
                   ) : (
@@ -277,7 +277,7 @@ export default function DataManagementPage() {
               >
                 {isImporting ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4" />
                     导入中...
                   </>
                 ) : (

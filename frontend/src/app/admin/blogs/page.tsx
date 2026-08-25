@@ -173,7 +173,7 @@ export default function BlogListPage() {
               title="为文章生成 AI 摘要"
             >
               {isSummarizing ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4" />
               ) : (
                 <Sparkles className="mr-2 h-4 w-4" />
               )}
@@ -188,7 +188,7 @@ export default function BlogListPage() {
             title="将所有缺少 HTML 的文章从 Markdown 转换为 HTML"
           >
             {isConverting ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="mr-2 h-4 w-4" />
             ) : (
               <FileCode className="mr-2 h-4 w-4" />
             )}
@@ -200,7 +200,7 @@ export default function BlogListPage() {
             onClick={() => fetchBlogs(currentPage)}
             disabled={isLoading}
           >
-            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+            <RefreshCw className="mr-2 h-4 w-4" />
             刷新
           </Button>
           <Link href="/admin/blogs/new">

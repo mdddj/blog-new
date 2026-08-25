@@ -115,7 +115,7 @@ export default function TagListPage() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={fetchTags} disabled={isLoading}>
-            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+            <RefreshCw className="mr-2 h-4 w-4" />
             刷新
           </Button>
           <Button size="sm" onClick={openCreateDialog}>

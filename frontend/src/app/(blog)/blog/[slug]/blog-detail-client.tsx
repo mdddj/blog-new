@@ -341,7 +341,7 @@ export function BlogDetailClient({ slug }: { slug: string }) {
       {showTop ? (
         <button
           type="button"
-          className="fixed bottom-6 right-6 z-30 inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#19c8b9] text-white shadow-lg transition hover:bg-[#16b5a8] hover:scale-105 active:scale-95 focus-visible:outline-none"
+          className="fixed bottom-6 right-6 z-30 inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#19c8b9] text-white shadow-lg hover:bg-[#16b5a8] focus-visible:outline-none"
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           aria-label="回到顶部"
         >

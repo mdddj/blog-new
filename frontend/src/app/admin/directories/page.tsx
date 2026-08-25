@@ -212,7 +212,7 @@ export default function DirectoryManagementPage() {
             全部展开
           </Button>
           <Button variant="outline" size="sm" onClick={fetchDirectories} disabled={isLoading}>
-            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+            <RefreshCw className="mr-2 h-4 w-4" />
             刷新
           </Button>
           <Button size="sm" onClick={() => openCreateDirDialog()}>

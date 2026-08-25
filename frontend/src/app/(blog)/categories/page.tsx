@@ -87,7 +87,7 @@ export default function CategoriesPage() {
                   <PublicCard
                     key={category.id}
                     color={cardColor}
-                    className="grid h-full gap-3 p-4 hover:-translate-y-0.5 transition-transform duration-300 shadow-sm hover:shadow"
+                    className="grid h-full gap-3 p-4 shadow-sm hover:shadow"
                   >
                     <div className="flex items-center gap-3">
                       {category.logo ? (

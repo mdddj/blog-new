@@ -88,7 +88,7 @@ export default function SettingsPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <Loader2 className="h-8 w-8" />
       </div>
     );
   }
@@ -101,11 +101,7 @@ export default function SettingsPage() {
           <p className="text-muted-foreground">管理站点配置信息</p>
         </div>
         <Button onClick={handleSave} disabled={isSaving || !hasChanges}>
-          {isSaving ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            <Save className="h-4 w-4 mr-2" />
-          )}
+          {isSaving ? <Loader2 className="h-4 w-4 mr-2" /> : <Save className="h-4 w-4 mr-2" />}
           保存更改
         </Button>
       </div>

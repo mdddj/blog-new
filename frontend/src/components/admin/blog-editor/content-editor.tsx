@@ -9,7 +9,6 @@ import type { ICommand } from "@uiw/react-md-editor";
 import { useEditorSurfaceEvents } from "@/components/admin/use-editor-surface-events";
 import { createAutoSaveCommand } from "./auto-save-command";
 import { createReferenceCommand } from "./reference-command";
-import "./auto-save.css";
 
 // Dynamic import for MDEditor to avoid SSR issues
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), {
