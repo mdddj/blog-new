@@ -41,11 +41,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function DocDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function DocDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   return <DocDetailClient docId={Number(id)} />;
 }

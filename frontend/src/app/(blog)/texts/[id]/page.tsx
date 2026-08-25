@@ -36,11 +36,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function TextDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function TextDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   return <TextDetailClient textKey={id} />;
 }

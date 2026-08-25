@@ -4,7 +4,13 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, CalendarDays, FileText, Lock, Unlock } from "lucide-react";
 import { Button as AIButton, Icon as AIIcon } from "animal-island-ui";
-import { EmptyState, LoadingState, PublicCard, PUBLIC_CONTAINER, formatDate } from "@/components/blog/public";
+import {
+  EmptyState,
+  LoadingState,
+  PublicCard,
+  PUBLIC_CONTAINER,
+  formatDate,
+} from "@/components/blog/public";
 import { Input } from "@/components/ui/input";
 import { textApi } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -82,7 +88,11 @@ export function TextDetailClient({ textKey }: { textKey: string }) {
   if (error || !text) {
     return (
       <main className={cn(PUBLIC_CONTAINER, "grid gap-6 px-4 py-8")}>
-        <EmptyState title={error || "无法访问字典文本"} description="返回首页继续浏览内容。" icon={<AIIcon name="icon-critterpedia" size={32} />} />
+        <EmptyState
+          title={error || "无法访问字典文本"}
+          description="返回首页继续浏览内容。"
+          icon={<AIIcon name="icon-critterpedia" size={32} />}
+        />
         <div className="flex justify-center">
           <AIButton type="primary" className="font-bold" onClick={() => router.push("/")}>
             返回首页
@@ -127,7 +137,11 @@ export function TextDetailClient({ textKey }: { textKey: string }) {
 
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-bold text-slate-400">
             <span className="inline-flex items-center gap-2">
-              {text.is_encrypted ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}
+              {text.is_encrypted ? (
+                <Lock className="h-3.5 w-3.5" />
+              ) : (
+                <Unlock className="h-3.5 w-3.5" />
+              )}
               {text.is_encrypted ? (isLocked ? "需要密码查看" : "已解锁") : "公开文本"}
             </span>
             {text.created_at ? (
@@ -158,11 +172,18 @@ export function TextDetailClient({ textKey }: { textKey: string }) {
                 className="h-11 border-[#725d42]/20 bg-white/70 font-bold text-[#725d42] focus-visible:ring-[#19c8b9]/40"
                 aria-invalid={Boolean(passwordError)}
               />
-              <AIButton type="primary" htmlType="submit" className="h-11 font-bold" disabled={unlocking}>
+              <AIButton
+                type="primary"
+                htmlType="submit"
+                className="h-11 font-bold"
+                disabled={unlocking}
+              >
                 {unlocking ? "验证中..." : "查看正文"}
               </AIButton>
             </form>
-            {passwordError ? <p className="text-sm font-bold text-red-600">{passwordError}</p> : null}
+            {passwordError ? (
+              <p className="text-sm font-bold text-red-600">{passwordError}</p>
+            ) : null}
           </PublicCard>
         ) : (
           <PublicCard color="default" className="min-w-0 overflow-hidden p-0">

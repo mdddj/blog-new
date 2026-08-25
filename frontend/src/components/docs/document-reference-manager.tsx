@@ -30,10 +30,13 @@ function ActionButton({
   variant = "secondary",
   className,
   ...props
-}: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "secondary" | "danger" | "ghost" }) {
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: "primary" | "secondary" | "danger" | "ghost";
+}) {
   const variants = {
     primary: "bg-slate-950 text-white hover:bg-slate-800",
-    secondary: "border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50",
+    secondary:
+      "border border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50",
     danger: "text-red-600 hover:bg-red-50",
     ghost: "text-slate-600 hover:bg-slate-100",
   };
@@ -41,7 +44,11 @@ function ActionButton({
   return (
     <button
       type="button"
-      className={cn("inline-flex min-h-9 items-center justify-center gap-2 rounded-full px-4 text-sm font-medium transition disabled:opacity-50", variants[variant], className)}
+      className={cn(
+        "inline-flex min-h-9 items-center justify-center gap-2 rounded-full px-4 text-sm font-medium transition disabled:opacity-50",
+        variants[variant],
+        className,
+      )}
       {...props}
     >
       {children}
@@ -154,7 +161,12 @@ export function DocumentReferenceManager({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 p-4" role="dialog" aria-modal="true">
+    <dialog
+      open
+      className="fixed inset-0 z-50 m-0 flex h-full max-h-none w-full max-w-none items-center justify-center border-0 bg-slate-950/55 p-4"
+      aria-modal="true"
+      aria-label="引用管理"
+    >
       <div className="grid max-h-[86vh] w-[min(980px,100%)] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
         <header className="flex items-center justify-between gap-4 border-b border-slate-200 px-5 py-4">
           <h2 className="inline-flex min-w-0 items-center gap-2 text-lg font-semibold text-slate-950">
@@ -172,7 +184,9 @@ export function DocumentReferenceManager({
         </header>
 
         <div className="grid max-h-[70vh] gap-4 overflow-y-auto p-5">
-          <p className="text-sm text-slate-500">管理文档中的引用内容。引用会以按钮形式展示，点击可查看完整内容。</p>
+          <p className="text-sm text-slate-500">
+            管理文档中的引用内容。引用会以按钮形式展示，点击可查看完整内容。
+          </p>
 
           {isCreating || editingRef ? (
             <div className="grid gap-4">
@@ -182,19 +196,25 @@ export function DocumentReferenceManager({
                   placeholder="输入引用标题..."
                   value={titleValue}
                   onChange={(event) =>
-                    editingRef ? setEditingRef({ ...editingRef, title: event.target.value }) : setNewTitle(event.target.value)
+                    editingRef
+                      ? setEditingRef({ ...editingRef, title: event.target.value })
+                      : setNewTitle(event.target.value)
                   }
                   className="h-10 rounded-xl border border-slate-200 px-3 text-sm outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200"
                 />
               </label>
 
               <div className="grid gap-2">
-                <span className="text-sm font-semibold text-slate-700">引用内容 (支持 Markdown)</span>
+                <span className="text-sm font-semibold text-slate-700">
+                  引用内容 (支持 Markdown)
+                </span>
                 <div data-color-mode="light">
                   <MDEditor
                     value={contentValue}
                     onChange={(value) =>
-                      editingRef ? setEditingRef({ ...editingRef, content: value || "" }) : setNewContent(value || "")
+                      editingRef
+                        ? setEditingRef({ ...editingRef, content: value || "" })
+                        : setNewContent(value || "")
                     }
                     height={300}
                     preview="edit"
@@ -204,7 +224,10 @@ export function DocumentReferenceManager({
 
               <div className="flex flex-wrap gap-2">
                 <ActionButton onClick={resetEditor}>取消</ActionButton>
-                <ActionButton variant="primary" onClick={editingRef ? handleSaveEdit : handleSaveNew}>
+                <ActionButton
+                  variant="primary"
+                  onClick={editingRef ? handleSaveEdit : handleSaveNew}
+                >
                   保存
                 </ActionButton>
               </div>
@@ -224,21 +247,41 @@ export function DocumentReferenceManager({
                       <div className="flex flex-wrap items-center gap-2">
                         <Quote className="h-4 w-4 text-slate-400" />
                         <h3 className="font-semibold text-slate-950">{ref.title}</h3>
-                        <code className="rounded bg-slate-100 px-2 py-1 text-xs text-slate-600">{ref.id}</code>
+                        <code className="rounded bg-slate-100 px-2 py-1 text-xs text-slate-600">
+                          {ref.id}
+                        </code>
                       </div>
-                      <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-500">{getReferencePreview(ref.content)}</p>
+                      <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-500">
+                        {getReferencePreview(ref.content)}
+                      </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      <ActionButton variant="ghost" onClick={() => handleCopyId(ref.id)} title="复制引用标记">
+                      <ActionButton
+                        variant="ghost"
+                        onClick={() => handleCopyId(ref.id)}
+                        title="复制引用标记"
+                      >
                         {copiedId === ref.id ? "已复制" : "复制"}
                       </ActionButton>
-                      <ActionButton variant="ghost" onClick={() => handleInsert(ref.id)} title="插入到正文">
+                      <ActionButton
+                        variant="ghost"
+                        onClick={() => handleInsert(ref.id)}
+                        title="插入到正文"
+                      >
                         插入
                       </ActionButton>
-                      <ActionButton variant="ghost" onClick={() => setEditingRef({ ...ref })} title="编辑">
+                      <ActionButton
+                        variant="ghost"
+                        onClick={() => setEditingRef({ ...ref })}
+                        title="编辑"
+                      >
                         编辑
                       </ActionButton>
-                      <ActionButton variant="danger" onClick={() => handleDelete(ref.id)} title="删除">
+                      <ActionButton
+                        variant="danger"
+                        onClick={() => handleDelete(ref.id)}
+                        title="删除"
+                      >
                         删除
                       </ActionButton>
                     </div>
@@ -259,6 +302,6 @@ export function DocumentReferenceManager({
           </footer>
         ) : null}
       </div>
-    </div>
+    </dialog>
   );
 }

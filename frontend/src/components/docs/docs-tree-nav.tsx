@@ -44,7 +44,10 @@ interface TreeNodeProps {
 function TreeNode({ node, currentDocId, onNavigate, level, expandAll }: TreeNodeProps) {
   const hasChildren = Boolean(node.children?.length || node.documents?.length);
   const header = (
-    <span className="flex w-full min-w-0 items-center gap-2 text-left" style={{ paddingLeft: `${level * 0.8}rem` }}>
+    <span
+      className="flex w-full min-w-0 items-center gap-2 text-left"
+      style={{ paddingLeft: `${level * 0.8}rem` }}
+    >
       <Folder className="h-4 w-4 shrink-0 text-slate-400" />
       <span className="truncate font-medium text-slate-700 dark:text-slate-200">{node.name}</span>
     </span>
@@ -66,7 +69,13 @@ function TreeNode({ node, currentDocId, onNavigate, level, expandAll }: TreeNode
       </summary>
       <div className="grid gap-1 py-1">
         {node.documents?.map((doc) => (
-          <DocumentItem key={doc.id} doc={doc} isActive={doc.id === currentDocId} onNavigate={onNavigate} level={level + 1} />
+          <DocumentItem
+            key={doc.id}
+            doc={doc}
+            isActive={doc.id === currentDocId}
+            onNavigate={onNavigate}
+            level={level + 1}
+          />
         ))}
         {node.children?.map((child) => (
           <TreeNode

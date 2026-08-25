@@ -16,13 +16,7 @@ import {
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -149,11 +143,7 @@ export default function TextListPage() {
       toast.error("文本内容不能为空");
       return;
     }
-    if (
-      formData.is_encrypted &&
-      !editingText &&
-      !formData.view_password?.trim()
-    ) {
+    if (formData.is_encrypted && !editingText && !formData.view_password?.trim()) {
       toast.error("加密文本需要设置查看密码");
       return;
     }
@@ -193,8 +183,7 @@ export default function TextListPage() {
 
   const getPublicTextKey = (text: Text) => text.name || String(text.id);
 
-  const getPublicTextPath = (text: Text) =>
-    `/texts/${encodeURIComponent(getPublicTextKey(text))}`;
+  const getPublicTextPath = (text: Text) => `/texts/${encodeURIComponent(getPublicTextKey(text))}`;
 
   const getPublicTextUrl = (text: Text) => {
     const path = getPublicTextPath(text);
@@ -251,15 +240,8 @@ export default function TextListPage() {
           <p className="text-muted-foreground">管理字典文本片段</p>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={fetchTexts}
-            disabled={isLoading}
-          >
-            <RefreshCw
-              className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
-            />
+          <Button variant="outline" size="sm" onClick={fetchTexts} disabled={isLoading}>
+            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
             刷新
           </Button>
           <Button size="sm" onClick={openCreateDialog}>
@@ -317,10 +299,7 @@ export default function TextListPage() {
                 ))
               ) : texts.length === 0 ? (
                 <TableRow>
-                  <TableCell
-                    colSpan={7}
-                    className="text-center text-muted-foreground py-8"
-                  >
+                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                     <FileCode className="mx-auto h-8 w-8 mb-2 opacity-50" />
                     暂无文本
                   </TableCell>
@@ -328,17 +307,12 @@ export default function TextListPage() {
               ) : (
                 texts.map((text) => (
                   <TableRow key={text.id}>
-                    <TableCell className="font-mono text-xs">
-                      {text.id}
-                    </TableCell>
+                    <TableCell className="font-mono text-xs">{text.id}</TableCell>
                     <TableCell>
                       <span className="font-medium">{text.name}</span>
                     </TableCell>
                     <TableCell>
-                      <div
-                        className="max-w-xs truncate text-muted-foreground"
-                        title={text.intro}
-                      >
+                      <div className="max-w-xs truncate text-muted-foreground" title={text.intro}>
                         {text.intro || "-"}
                       </div>
                     </TableCell>
@@ -366,7 +340,9 @@ export default function TextListPage() {
                         <Button
                           variant="ghost"
                           size="icon-sm"
-                          onClick={() => window.open(getPublicTextPath(text), "_blank", "noopener,noreferrer")}
+                          onClick={() =>
+                            window.open(getPublicTextPath(text), "_blank", "noopener,noreferrer")
+                          }
                           title="前台打开"
                         >
                           <ExternalLink className="h-4 w-4" />
@@ -430,9 +406,7 @@ export default function TextListPage() {
                 <Input
                   id="name"
                   value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="输入文本名称"
                 />
               </div>
@@ -458,16 +432,12 @@ export default function TextListPage() {
             </div>
             {formData.is_encrypted && (
               <div className="space-y-2">
-                <Label htmlFor="view_password">
-                  查看密码 {!editingText && "*"}
-                </Label>
+                <Label htmlFor="view_password">查看密码 {!editingText && "*"}</Label>
                 <Input
                   id="view_password"
                   type="password"
                   value={formData.view_password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, view_password: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, view_password: e.target.value })}
                   placeholder={editingText ? "留空保持原密码" : "输入查看密码"}
                 />
               </div>
@@ -477,9 +447,7 @@ export default function TextListPage() {
               <Input
                 id="intro"
                 value={formData.intro}
-                onChange={(e) =>
-                  setFormData({ ...formData, intro: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, intro: e.target.value })}
                 placeholder="输入文本简介"
               />
             </div>
@@ -488,9 +456,7 @@ export default function TextListPage() {
               <Textarea
                 id="content"
                 value={formData.content}
-                onChange={(e) =>
-                  setFormData({ ...formData, content: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                 placeholder="输入文本内容"
                 rows={12}
                 className="font-mono text-sm min-h-48 max-h-[42vh] overflow-y-auto"
@@ -498,11 +464,7 @@ export default function TextListPage() {
             </div>
           </div>
           <DialogFooter className="border-t pt-3 bg-background">
-            <Button
-              variant="outline"
-              onClick={() => setDialogOpen(false)}
-              disabled={isSaving}
-            >
+            <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={isSaving}>
               取消
             </Button>
             <Button onClick={handleSave} disabled={isSaving}>
@@ -529,14 +491,10 @@ export default function TextListPage() {
           </DialogHeader>
           <div className="py-4">
             {viewingText?.intro && (
-              <p className="text-sm text-muted-foreground mb-4">
-                {viewingText.intro}
-              </p>
+              <p className="text-sm text-muted-foreground mb-4">{viewingText.intro}</p>
             )}
             <div className="bg-muted rounded-md p-4 max-h-96 overflow-auto">
-              <pre className="text-sm whitespace-pre-wrap font-mono">
-                {viewingText?.content}
-              </pre>
+              <pre className="text-sm whitespace-pre-wrap font-mono">{viewingText?.content}</pre>
             </div>
           </div>
           <DialogFooter>
@@ -552,19 +510,12 @@ export default function TextListPage() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>访问二维码</DialogTitle>
-            <DialogDescription>
-              手机扫码打开「{qrText?.name}」的前台访问页面。
-            </DialogDescription>
+            <DialogDescription>手机扫码打开「{qrText?.name}」的前台访问页面。</DialogDescription>
           </DialogHeader>
           {qrText ? (
             <div className="grid gap-4 py-4">
               <div className="mx-auto rounded-lg border bg-white p-4">
-                <QRCodeSVG
-                  value={getPublicTextUrl(qrText)}
-                  size={220}
-                  level="M"
-                  includeMargin
-                />
+                <QRCodeSVG value={getPublicTextUrl(qrText)} size={220} level="M" includeMargin />
               </div>
               <div className="rounded-md border bg-muted px-3 py-2">
                 <p className="break-all font-mono text-xs text-muted-foreground">
@@ -602,11 +553,7 @@ export default function TextListPage() {
             >
               取消
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={isDeleting}
-            >
+            <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
               {isDeleting ? "删除中..." : "删除"}
             </Button>
           </DialogFooter>

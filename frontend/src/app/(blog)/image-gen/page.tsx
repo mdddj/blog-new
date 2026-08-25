@@ -2,25 +2,14 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import {
-  AlertTriangle,
-  Download,
-  Loader2,
-  Shield,
-  Sparkles,
-  Trash2,
-} from "lucide-react";
+import { AlertTriangle, Download, Loader2, Shield, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  PageHero,
-  PublicCard,
-  PUBLIC_CONTAINER,
-} from "@/components/blog/public";
+import { PageHero, PublicCard, PUBLIC_CONTAINER } from "@/components/blog/public";
 import { ylsImageApi, type YlsImageGenerateResponse } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
@@ -37,9 +26,7 @@ export default function ImageGenPage() {
   const [result, setResult] = useState<YlsImageGenerateResponse | null>(null);
   const [error, setError] = useState("");
 
-  const imageUrl = result
-    ? `data:${result.mime_type};base64,${result.data_base64}`
-    : "";
+  const imageUrl = result ? `data:${result.mime_type};base64,${result.data_base64}` : "";
 
   const handleGenerate = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -202,10 +189,7 @@ export default function ImageGenPage() {
           </form>
         </PublicCard>
 
-        <PublicCard
-          color={result ? "app-green" : "default"}
-          className="grid gap-4 p-5 sm:p-6"
-        >
+        <PublicCard color={result ? "app-green" : "default"} className="grid gap-4 p-5 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="grid gap-1">
               <div className="text-xl font-extrabold text-inherit">生成结果</div>
@@ -232,7 +216,7 @@ export default function ImageGenPage() {
             </div>
           ) : null}
 
-            {loading ? (
+          {loading ? (
             <div className="grid min-h-[28rem] place-items-center rounded-[28px] border border-dashed border-[#725d42]/15 bg-white/60 px-6 text-center text-sm font-bold text-slate-500 dark:bg-slate-900/40 dark:text-slate-400">
               <div className="grid justify-items-center gap-3">
                 <Loader2 className="h-6 w-6 animate-spin text-[#028b57]" />
@@ -276,9 +260,7 @@ export default function ImageGenPage() {
                 <div className="mx-auto rounded-full bg-white/80 p-3 text-[#725d42] shadow-sm dark:bg-slate-800">
                   <Sparkles className="h-6 w-6" />
                 </div>
-                <div className="text-lg font-extrabold text-[#725d42]">
-                  还没有生成图片
-                </div>
+                <div className="text-lg font-extrabold text-[#725d42]">还没有生成图片</div>
                 <p className="text-sm font-bold text-slate-500 dark:text-slate-400">
                   输入 Key 和提示词后点击“开始生图”，这里会显示生成结果。
                 </p>

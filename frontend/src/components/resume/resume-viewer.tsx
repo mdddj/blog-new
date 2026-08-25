@@ -5,10 +5,7 @@ import { FileText, Printer } from "lucide-react";
 import { Button as AIButton, Icon as AIIcon } from "animal-island-ui";
 import { toast } from "sonner";
 
-import {
-  EmptyState,
-  PUBLIC_CONTAINER,
-} from "@/components/blog/public";
+import { EmptyState, PUBLIC_CONTAINER } from "@/components/blog/public";
 import { ResumeFrame } from "@/components/resume/resume-frame";
 import { cn } from "@/lib/utils";
 import type { Resume } from "@/types";

@@ -5,7 +5,14 @@ import Image from "next/image";
 import { Mail } from "lucide-react";
 import { friendLinkApi } from "@/lib/api";
 import type { FriendLink } from "@/types";
-import { EmptyState, LoadingState, PageHero, PublicCard, PUBLIC_CONTAINER, getCardColor } from "@/components/blog/public";
+import {
+  EmptyState,
+  LoadingState,
+  PageHero,
+  PublicCard,
+  PUBLIC_CONTAINER,
+  getCardColor,
+} from "@/components/blog/public";
 import { Button as AIButton, Icon as AIIcon } from "animal-island-ui";
 import { cn } from "@/lib/utils";
 
@@ -51,17 +58,31 @@ export default function FriendsPage() {
       {loading ? (
         <LoadingState label="正在加载友链数据..." />
       ) : links.length === 0 ? (
-        <EmptyState title="暂无友链" description="通过后台添加通过审核的友链后会在这里展示。" icon={<AIIcon name="icon-chat" size={32} />} />
+        <EmptyState
+          title="暂无友链"
+          description="通过后台添加通过审核的友链后会在这里展示。"
+          icon={<AIIcon name="icon-chat" size={32} />}
+        />
       ) : (
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {links.map((link) => {
             const cardColor = getCardColor(link.id);
             return (
-              <PublicCard key={link.id} color={cardColor} className="grid h-full gap-4 p-5 hover:-translate-y-1 transition-transform duration-300 shadow-sm hover:shadow">
+              <PublicCard
+                key={link.id}
+                color={cardColor}
+                className="grid h-full gap-4 p-5 hover:-translate-y-1 transition-transform duration-300 shadow-sm hover:shadow"
+              >
                 <div className="flex items-center gap-3">
                   {link.logo ? (
                     <div className="relative h-12 w-12 overflow-hidden rounded-full bg-white/40 border border-black/10 shrink-0">
-                      <Image src={link.logo} alt={link.name} fill sizes="48px" className="object-cover" />
+                      <Image
+                        src={link.logo}
+                        alt={link.name}
+                        fill
+                        sizes="48px"
+                        className="object-cover"
+                      />
                     </div>
                   ) : (
                     <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/40 border border-black/10 text-[#725d42] shrink-0">
@@ -70,10 +91,16 @@ export default function FriendsPage() {
                   )}
                   <div className="min-w-0">
                     <h2 className="truncate text-base font-extrabold text-inherit">{link.name}</h2>
-                    <p className="truncate text-xs font-bold opacity-75">{safeHostname(link.url)}</p>
+                    <p className="truncate text-xs font-bold opacity-75">
+                      {safeHostname(link.url)}
+                    </p>
                   </div>
                 </div>
-                {link.intro ? <p className="line-clamp-3 text-xs leading-5 opacity-90 font-bold">{link.intro}</p> : null}
+                {link.intro ? (
+                  <p className="line-clamp-3 text-xs leading-5 opacity-90 font-bold">
+                    {link.intro}
+                  </p>
+                ) : null}
                 {link.email ? (
                   <p className="inline-flex items-center gap-2 text-xs font-bold opacity-80">
                     <Mail className="h-3.5 w-3.5" />

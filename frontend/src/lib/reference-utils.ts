@@ -20,10 +20,7 @@ function toStringOrEmpty(value: unknown): string {
   return typeof value === "string" ? value : "";
 }
 
-function sanitizeReferenceEntry(
-  entryKey: string,
-  value: unknown,
-): NormalizedReference | null {
+function sanitizeReferenceEntry(entryKey: string, value: unknown): NormalizedReference | null {
   if (!isRecord(value)) {
     return null;
   }
@@ -68,7 +65,9 @@ export function sanitizeReference<T extends BlogReference | DocumentReference>(
 }
 
 export function getReferencePreview(content: unknown, maxLength = 150): string {
-  const plainText = toStringOrEmpty(content).replace(/[#*`>\-[\]]/g, "").trim();
+  const plainText = toStringOrEmpty(content)
+    .replace(/[#*`>\-[\]]/g, "")
+    .trim();
   if (plainText.length <= maxLength) {
     return plainText;
   }

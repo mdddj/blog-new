@@ -5,11 +5,7 @@ import { PageMotion } from "@/components/page-motion";
 import { siteConfigApi, type PublicSiteConfig } from "@/lib/api";
 import "animal-island-ui/style";
 
-export default async function BlogLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function BlogLayout({ children }: { children: React.ReactNode }) {
   let initialConfig: PublicSiteConfig | undefined;
   try {
     initialConfig = await siteConfigApi.getPublic();

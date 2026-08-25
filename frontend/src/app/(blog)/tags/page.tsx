@@ -59,7 +59,8 @@ export default function TagsPage() {
       title: "标签",
       dataIndex: "name" as const,
       render: (value, record) => {
-        const tagId = typeof record.id === "number" || typeof record.id === "string" ? record.id : "";
+        const tagId =
+          typeof record.id === "number" || typeof record.id === "string" ? record.id : "";
         const tagName = typeof value === "string" ? value : "";
 
         return (
@@ -103,15 +104,25 @@ export default function TagsPage() {
           {loading ? (
             <LoadingState label="正在加载标签数据..." />
           ) : tags.length === 0 ? (
-            <EmptyState title="暂无标签" description="添加标签后会在这里按频率展示。" icon={<AIIcon name="icon-diy" size={32} />} />
+            <EmptyState
+              title="暂无标签"
+              description="添加标签后会在这里按频率展示。"
+              icon={<AIIcon name="icon-diy" size={32} />}
+            />
           ) : (
             <>
               <div className="flex flex-wrap items-end justify-between gap-3 px-1">
                 <div>
-                  <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-400">Overview</p>
-                  <h2 className="mt-1 text-xl font-extrabold tracking-tight text-[#725d42]">标签概览</h2>
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-400">
+                    Overview
+                  </p>
+                  <h2 className="mt-1 text-xl font-extrabold tracking-tight text-[#725d42]">
+                    标签概览
+                  </h2>
                 </div>
-                <span className="text-xs font-bold text-slate-400">共 {tags.length} 个标签 · 累计 {totalBlogRefs} 次关联</span>
+                <span className="text-xs font-bold text-slate-400">
+                  共 {tags.length} 个标签 · 累计 {totalBlogRefs} 次关联
+                </span>
               </div>
 
               {/* Tag Cloud Card */}

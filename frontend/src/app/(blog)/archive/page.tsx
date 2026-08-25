@@ -5,7 +5,14 @@ import { useRouter } from "next/navigation";
 import { archiveApi } from "@/lib/api";
 import type { ArchiveMonth, ArchiveResponse, ArchiveYear } from "@/types";
 import { cn } from "@/lib/utils";
-import { EmptyState, LoadingState, PageHero, PublicCard, PUBLIC_CONTAINER, formatDate } from "@/components/blog/public";
+import {
+  EmptyState,
+  LoadingState,
+  PageHero,
+  PublicCard,
+  PUBLIC_CONTAINER,
+  formatDate,
+} from "@/components/blog/public";
 import { Collapse as AICollapse, Icon as AIIcon } from "animal-island-ui";
 
 function formatDay(input: string) {
@@ -41,7 +48,11 @@ export default function ArchivePage() {
       {loading ? (
         <LoadingState label="正在加载归档数据..." />
       ) : !data || data.years.length === 0 ? (
-        <EmptyState title="暂无归档内容" description="发布文章后会在这里生成时间索引。" icon={<AIIcon name="icon-critterpedia" size={32} />} />
+        <EmptyState
+          title="暂无归档内容"
+          description="发布文章后会在这里生成时间索引。"
+          icon={<AIIcon name="icon-critterpedia" size={32} />}
+        />
       ) : (
         <section className="grid min-w-0 gap-4">
           {data.years.map((yearData, index) => (
@@ -53,7 +64,13 @@ export default function ArchivePage() {
   );
 }
 
-const YearBlock = memo(function YearBlock({ yearData, defaultExpanded }: { yearData: ArchiveYear; defaultExpanded: boolean }) {
+const YearBlock = memo(function YearBlock({
+  yearData,
+  defaultExpanded,
+}: {
+  yearData: ArchiveYear;
+  defaultExpanded: boolean;
+}) {
   const header = (
     <div className="flex w-full items-center justify-between gap-4 font-extrabold text-[#725d42]">
       <span className="inline-flex items-center gap-2 text-base">

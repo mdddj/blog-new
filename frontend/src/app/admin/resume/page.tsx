@@ -2,24 +2,12 @@
 
 import Link from "next/link";
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
-import {
-  Clock3,
-  ExternalLink,
-  FileCode2,
-  Save,
-  Upload,
-} from "lucide-react";
+import { Clock3, ExternalLink, FileCode2, Save, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 import { ResumeFrame } from "@/components/resume/resume-frame";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { resumeApi } from "@/lib/api";
 import type { Resume } from "@/types";
@@ -155,9 +143,7 @@ export default function AdminResumePage() {
                   <FileCode2 className="h-5 w-5" />
                 </span>
                 <div className="min-w-0">
-                  <p className="truncate font-medium">
-                    {fileName || "尚未选择简历文件"}
-                  </p>
+                  <p className="truncate font-medium">{fileName || "尚未选择简历文件"}</p>
                   <p className="flex items-center gap-1 text-xs text-muted-foreground">
                     {updatedAt ? (
                       <>
@@ -180,10 +166,7 @@ export default function AdminResumePage() {
                   <Upload />
                   选择 HTML
                 </Button>
-                <Button
-                  onClick={handleSave}
-                  disabled={!hasUnsavedChanges || isSaving}
-                >
+                <Button onClick={handleSave} disabled={!hasUnsavedChanges || isSaving}>
                   <Save />
                   {isSaving ? "保存中..." : "保存并发布"}
                 </Button>

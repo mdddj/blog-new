@@ -8,7 +8,13 @@ import type { DirectoryTreeNode, DocumentResponse } from "@/types";
 import { DocsTreeNav } from "@/components/docs/docs-tree-nav";
 import { DocsSearch } from "@/components/docs/docs-search";
 import { DocumentContentRenderer } from "@/components/docs/document-content-renderer";
-import { EmptyState, LoadingState, PublicCard, PUBLIC_CONTAINER, formatDate } from "@/components/blog/public";
+import {
+  EmptyState,
+  LoadingState,
+  PublicCard,
+  PUBLIC_CONTAINER,
+  formatDate,
+} from "@/components/blog/public";
 import { Button as AIButton, Icon as AIIcon } from "animal-island-ui";
 import { cn } from "@/lib/utils";
 
@@ -58,7 +64,10 @@ export function DocDetailClient({ docId }: { docId: number }) {
       setLoading(true);
       setError(null);
       try {
-        const [treeData, docData] = await Promise.all([directoryApi.getTree(), documentApi.getById(docId)]);
+        const [treeData, docData] = await Promise.all([
+          directoryApi.getTree(),
+          documentApi.getById(docId),
+        ]);
         setTree(treeData);
         setDoc(docData);
       } catch {
@@ -103,7 +112,11 @@ export function DocDetailClient({ docId }: { docId: number }) {
   if (error || !doc) {
     return (
       <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8 px-4")}>
-        <EmptyState title={error || "无法访问文档"} description="返回文档首页继续浏览。" icon={<AIIcon name="icon-critterpedia" size={32} />} />
+        <EmptyState
+          title={error || "无法访问文档"}
+          description="返回文档首页继续浏览。"
+          icon={<AIIcon name="icon-critterpedia" size={32} />}
+        />
         <div className="flex justify-center">
           <AIButton type="primary" className="font-bold" onClick={() => router.push("/docs")}>
             返回文档首页
@@ -131,7 +144,12 @@ export function DocDetailClient({ docId }: { docId: number }) {
       </div>
       <DocsSearch tree={tree} />
       <div className="max-h-[calc(100vh-21rem)] overflow-y-auto pr-1">
-        <DocsTreeNav tree={tree} currentDocId={docId} onNavigate={() => setSidebarOpen(false)} expandAll={expandAll} />
+        <DocsTreeNav
+          tree={tree}
+          currentDocId={docId}
+          onNavigate={() => setSidebarOpen(false)}
+          expandAll={expandAll}
+        />
       </div>
     </PublicCard>
   );
@@ -139,8 +157,16 @@ export function DocDetailClient({ docId }: { docId: number }) {
   return (
     <main className={cn(PUBLIC_CONTAINER, "grid min-w-0 gap-6 py-8 px-4")}>
       <div className="lg:hidden">
-        <AIButton type="default" className="w-full font-bold flex items-center justify-center gap-1" onClick={() => setSidebarOpen((value) => !value)}>
-          {sidebarOpen ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
+        <AIButton
+          type="default"
+          className="w-full font-bold flex items-center justify-center gap-1"
+          onClick={() => setSidebarOpen((value) => !value)}
+        >
+          {sidebarOpen ? (
+            <PanelLeftClose className="h-4 w-4" />
+          ) : (
+            <PanelLeftOpen className="h-4 w-4" />
+          )}
           {sidebarOpen ? "收起文档目录" : "打开文档目录"}
         </AIButton>
       </div>
@@ -152,8 +178,12 @@ export function DocDetailClient({ docId }: { docId: number }) {
 
         <article className="grid min-w-0 gap-5">
           <header className="grid gap-3">
-            <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-400 select-none">Documentation</div>
-            <h1 className="break-words text-3xl font-extrabold leading-tight tracking-tight text-[#725d42]">{doc.name}</h1>
+            <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-400 select-none">
+              Documentation
+            </div>
+            <h1 className="break-words text-3xl font-extrabold leading-tight tracking-tight text-[#725d42]">
+              {doc.name}
+            </h1>
             <p className="inline-flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-bold text-slate-400">
               <span>{doc.created_at ? formatDate(doc.created_at) : "未知日期"}</span>
               <span className="inline-flex items-center gap-2">
@@ -174,7 +204,10 @@ export function DocDetailClient({ docId }: { docId: number }) {
 
         <aside className="hidden xl:block">
           {tocItems.length > 0 ? (
-            <PublicCard color="default" className="sticky top-28 grid gap-3 p-4 shadow-sm border border-[#725d42]/10 select-none">
+            <PublicCard
+              color="default"
+              className="sticky top-28 grid gap-3 p-4 shadow-sm border border-[#725d42]/10 select-none"
+            >
               <div className="text-sm font-extrabold text-[#725d42] flex items-center gap-1.5 border-b border-[#725d42]/10 pb-2">
                 <AIIcon name="icon-critterpedia" size={16} />
                 目录导航
@@ -191,9 +224,15 @@ export function DocDetailClient({ docId }: { docId: number }) {
                         : "text-[#725d42]/80 hover:bg-[#725d42]/5",
                     )}
                     style={{ paddingLeft: `${Math.max(0, item.level - 2) * 0.5 + 0.25}rem` }}
-                    onClick={() => document.getElementById(item.id)?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                    onClick={() =>
+                      document
+                        .getElementById(item.id)
+                        ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                    }
                   >
-                    {activeHeading === item.id && <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#19c8b9] shrink-0" />}
+                    {activeHeading === item.id && (
+                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#19c8b9] shrink-0" />
+                    )}
                     <span className="truncate">{item.text}</span>
                   </button>
                 ))}

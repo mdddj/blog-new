@@ -6,14 +6,17 @@ import { BookOpen, X } from "lucide-react";
 import type { BlogReference } from "@/types";
 import { sanitizeReference } from "@/lib/reference-utils";
 
-const MDPreview = dynamic(() => import("@uiw/react-md-editor").then((mod) => mod.default.Markdown), {
-  ssr: false,
-  loading: () => (
-    <div className="flex min-h-28 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
-      正在加载引用
-    </div>
-  ),
-});
+const MDPreview = dynamic(
+  () => import("@uiw/react-md-editor").then((mod) => mod.default.Markdown),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex min-h-28 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+        正在加载引用
+      </div>
+    ),
+  },
+);
 
 interface ReferenceCardProps {
   reference: BlogReference;
@@ -35,10 +38,17 @@ export function ReferenceCard({ reference }: ReferenceCardProps) {
       </button>
 
       {open ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/55 p-4" role="dialog" aria-modal="true">
+        <dialog
+          open
+          className="fixed inset-0 z-50 m-0 flex h-full max-h-none w-full max-w-none items-center justify-center border-0 bg-slate-950/55 p-4"
+          aria-modal="true"
+          aria-label={safeReference.title}
+        >
           <div className="grid max-h-[82vh] w-[min(720px,100%)] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-950">
             <header className="flex items-center justify-between gap-4 border-b border-slate-200 px-5 py-4 dark:border-slate-800">
-              <h2 className="min-w-0 truncate text-lg font-semibold text-slate-950 dark:text-white">{safeReference.title}</h2>
+              <h2 className="min-w-0 truncate text-lg font-semibold text-slate-950 dark:text-white">
+                {safeReference.title}
+              </h2>
               <button
                 type="button"
                 className="inline-flex h-9 w-9 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-950 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-white"
@@ -52,7 +62,7 @@ export function ReferenceCard({ reference }: ReferenceCardProps) {
               <MDPreview source={safeReference.content} />
             </div>
           </div>
-        </div>
+        </dialog>
       ) : null}
     </>
   );
@@ -77,7 +87,11 @@ export function parseReferences(
 
     const refId = match[1];
     const reference = references[refId];
-    parts.push(reference ? { type: "reference", content: refId, reference } : { type: "text", content: match[0] });
+    parts.push(
+      reference
+        ? { type: "reference", content: refId, reference }
+        : { type: "text", content: match[0] },
+    );
     lastIndex = match.index + match[0].length;
   }
 

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import Image from "next/image";
 
 const PREVIEW_MAX_W = 360;
 const PREVIEW_MAX_H = 360;
@@ -70,7 +71,7 @@ export function ImagePreview({
       });
       resetState();
     },
-    [resetState]
+    [resetState],
   );
 
   useEffect(() => {
@@ -146,10 +147,12 @@ export function ImagePreview({
                   </a>
                 </div>
               ) : (
-                <img
+                <Image
                   src={preview.url}
                   alt={preview.label}
-                  loading="lazy"
+                  width={PREVIEW_MAX_W}
+                  height={PREVIEW_MAX_H}
+                  unoptimized
                   onLoad={() => setLoaded(true)}
                   onError={() => setFailed(true)}
                   className={loaded ? "image-preview-img is-loaded" : "image-preview-img"}
@@ -157,7 +160,7 @@ export function ImagePreview({
               )}
               {!loaded && !failed && <div className="image-preview-loading">加载中…</div>}
             </div>,
-            document.body
+            document.body,
           )
         : null}
     </>

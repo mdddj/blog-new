@@ -44,7 +44,11 @@ export default function DocsPage() {
       {loading ? (
         <LoadingState label="正在加载文档库" />
       ) : (
-        <EmptyState title="文档库为空" description="当前没有可阅读文档。" icon={<BookOpen className="h-6 w-6" />} />
+        <EmptyState
+          title="文档库为空"
+          description="当前没有可阅读文档。"
+          icon={<BookOpen className="h-6 w-6" />}
+        />
       )}
     </main>
   );

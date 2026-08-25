@@ -36,7 +36,11 @@ export function DocsSearch({ tree }: DocsSearchProps) {
     if (!query.trim()) return [];
     const lowerQuery = query.toLowerCase();
     return allDocuments
-      .filter(({ doc, path }) => doc.name.toLowerCase().includes(lowerQuery) || path.some((item) => item.toLowerCase().includes(lowerQuery)))
+      .filter(
+        ({ doc, path }) =>
+          doc.name.toLowerCase().includes(lowerQuery) ||
+          path.some((item) => item.toLowerCase().includes(lowerQuery)),
+      )
       .slice(0, 10);
   }, [query, allDocuments]);
 
@@ -86,8 +90,12 @@ export function DocsSearch({ tree }: DocsSearchProps) {
               >
                 <FileText className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
                 <span className="min-w-0">
-                  <span className="block truncate text-sm font-medium text-slate-950 dark:text-white">{doc.name}</span>
-                  <span className="block truncate text-xs text-slate-500 dark:text-slate-400">{path.join(" / ")}</span>
+                  <span className="block truncate text-sm font-medium text-slate-950 dark:text-white">
+                    {doc.name}
+                  </span>
+                  <span className="block truncate text-xs text-slate-500 dark:text-slate-400">
+                    {path.join(" / ")}
+                  </span>
                 </span>
               </button>
             ))}

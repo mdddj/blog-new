@@ -67,7 +67,9 @@ export function BlogDetailClient({ slug }: { slug: string }) {
       setLoading(true);
       setError(null);
       try {
-        const detail = Number.isNaN(Number(slug)) ? await blogApi.getBySlug(slug) : await blogApi.getById(Number(slug));
+        const detail = Number.isNaN(Number(slug))
+          ? await blogApi.getBySlug(slug)
+          : await blogApi.getById(Number(slug));
         setBlog(detail);
         try {
           const all = await blogApi.list(1, 20);
@@ -101,15 +103,16 @@ export function BlogDetailClient({ slug }: { slug: string }) {
     if (tocItems.length === 0) return;
     const onScroll = () => {
       const mapped = tocItems
-          .map((item) => ({ id: item.id, el: document.getElementById(item.id) }))
-          .filter((item) => Boolean(item.el)) as { id: string; el: HTMLElement }[];
+        .map((item) => ({ id: item.id, el: document.getElementById(item.id) }))
+        .filter((item) => Boolean(item.el)) as { id: string; el: HTMLElement }[];
       if (mapped.length === 0) return;
       let current = mapped[0].id;
       for (const item of mapped) {
         if (item.el.getBoundingClientRect().top <= 150) current = item.id;
         else break;
       }
-      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 40) current = mapped[mapped.length - 1].id;
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 40)
+        current = mapped[mapped.length - 1].id;
       setActiveHeading(current);
     };
     onScroll();
@@ -128,7 +131,11 @@ export function BlogDetailClient({ slug }: { slug: string }) {
   if (error || !blog) {
     return (
       <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8 px-4")}>
-        <EmptyState title={error || "找不到这篇文章"} description="返回首页继续浏览最新内容。" icon={<AIIcon name="icon-critterpedia" size={32} />} />
+        <EmptyState
+          title={error || "找不到这篇文章"}
+          description="返回首页继续浏览最新内容。"
+          icon={<AIIcon name="icon-critterpedia" size={32} />}
+        />
         <div className="flex justify-center">
           <AIButton type="primary" className="font-bold" onClick={() => router.push("/")}>
             返回首页
@@ -177,7 +184,11 @@ export function BlogDetailClient({ slug }: { slug: string }) {
                 <h1 className="break-words text-3xl font-extrabold leading-tight tracking-tight text-[#725d42] sm:text-4xl">
                   {blog.title}
                 </h1>
-                {blog.summary ? <p className="text-base leading-7 text-[#725d42]/80 font-bold border-l-2 border-[#725d42]/30 pl-4">{blog.summary}</p> : null}
+                {blog.summary ? (
+                  <p className="text-base leading-7 text-[#725d42]/80 font-bold border-l-2 border-[#725d42]/30 pl-4">
+                    {blog.summary}
+                  </p>
+                ) : null}
               </div>
 
               <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-bold text-slate-400">
@@ -263,25 +274,39 @@ export function BlogDetailClient({ slug }: { slug: string }) {
                           : "text-[#725d42]/80 hover:bg-[#725d42]/5",
                       )}
                       style={{ paddingLeft: `${Math.max(0, item.level - 2) * 0.5 + 0.25}rem` }}
-                      onClick={() => document.getElementById(item.id)?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                      onClick={() =>
+                        document
+                          .getElementById(item.id)
+                          ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                      }
                     >
-                      {activeHeading === item.id && <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#19c8b9] shrink-0" />}
+                      {activeHeading === item.id && (
+                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#19c8b9] shrink-0" />
+                      )}
                       <span className="truncate">{item.text}</span>
                     </button>
                   ))}
                 </nav>
               </PublicCard>
             ) : null}
-
           </aside>
         </article>
 
         <section className="mx-auto grid w-full max-w-[760px] min-w-0 gap-4 sm:grid-cols-2">
           {prevBlog ? (
             <PublicCard color={prevCardColor} className="grid gap-2 p-4 shadow-sm hover:shadow">
-              <div className="text-[10px] font-extrabold uppercase tracking-[0.14em] opacity-80">上一篇</div>
-              <div className="line-clamp-2 font-extrabold text-inherit text-base">{prevBlog.title}</div>
-              <AIButton type="default" size="small" className="w-fit font-bold" onClick={() => router.push(blogHref(prevBlog))}>
+              <div className="text-[10px] font-extrabold uppercase tracking-[0.14em] opacity-80">
+                上一篇
+              </div>
+              <div className="line-clamp-2 font-extrabold text-inherit text-base">
+                {prevBlog.title}
+              </div>
+              <AIButton
+                type="default"
+                size="small"
+                className="w-fit font-bold"
+                onClick={() => router.push(blogHref(prevBlog))}
+              >
                 继续阅读
               </AIButton>
             </PublicCard>
@@ -290,10 +315,22 @@ export function BlogDetailClient({ slug }: { slug: string }) {
           )}
 
           {nextBlog ? (
-            <PublicCard color={nextCardColor} className="grid gap-2 p-4 shadow-sm hover:shadow sm:text-right">
-              <div className="text-[10px] font-extrabold uppercase tracking-[0.14em] opacity-80">下一篇</div>
-              <div className="line-clamp-2 font-extrabold text-inherit text-base">{nextBlog.title}</div>
-              <AIButton type="default" size="small" className="w-fit font-bold sm:ml-auto" onClick={() => router.push(blogHref(nextBlog))}>
+            <PublicCard
+              color={nextCardColor}
+              className="grid gap-2 p-4 shadow-sm hover:shadow sm:text-right"
+            >
+              <div className="text-[10px] font-extrabold uppercase tracking-[0.14em] opacity-80">
+                下一篇
+              </div>
+              <div className="line-clamp-2 font-extrabold text-inherit text-base">
+                {nextBlog.title}
+              </div>
+              <AIButton
+                type="default"
+                size="small"
+                className="w-fit font-bold sm:ml-auto"
+                onClick={() => router.push(blogHref(nextBlog))}
+              >
                 继续阅读
               </AIButton>
             </PublicCard>

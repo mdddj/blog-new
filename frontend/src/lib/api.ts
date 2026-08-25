@@ -48,8 +48,7 @@ function normalizeApiBaseUrl(url: string): string {
 
 function getBrowserApiBaseUrl(): string {
   const hostname = window.location.hostname;
-  const isLocalHost =
-    hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
+  const isLocalHost = hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
 
   if (isLocalHost) {
     return normalizeApiBaseUrl(
@@ -57,15 +56,11 @@ function getBrowserApiBaseUrl(): string {
     );
   }
 
-  return normalizeApiBaseUrl(
-    process.env.NEXT_PUBLIC_API_URL || "https://api.itbug.shop/api/v1",
-  );
+  return normalizeApiBaseUrl(process.env.NEXT_PUBLIC_API_URL || "https://api.itbug.shop/api/v1");
 }
 
 const API_BASE_URL = isServer
-  ? normalizeApiBaseUrl(
-      process.env.INTERNAL_API_URL || "http://backend:8080/api/v1",
-    )
+  ? normalizeApiBaseUrl(process.env.INTERNAL_API_URL || "http://backend:8080/api/v1")
   : getBrowserApiBaseUrl();
 const PUBLIC_FALLBACK_API_URL = normalizeApiBaseUrl(
   process.env.NEXT_PUBLIC_FALLBACK_API_URL || "https://api.itbug.shop/api/v1",
@@ -74,9 +69,7 @@ const PUBLIC_FALLBACK_API_URL = normalizeApiBaseUrl(
 function shouldUseFallback(baseUrl: string, method: string, hasToken: boolean) {
   if (hasToken || method !== "GET") return false;
   return (
-    baseUrl.includes("localhost") ||
-    baseUrl.includes("127.0.0.1") ||
-    baseUrl.includes("backend:")
+    baseUrl.includes("localhost") || baseUrl.includes("127.0.0.1") || baseUrl.includes("backend:")
   );
 }
 
@@ -96,10 +89,7 @@ async function getAuthToken(): Promise<string | null> {
   return localStorage.getItem("access_token");
 }
 
-async function request<T>(
-  endpoint: string,
-  options: RequestInit = {},
-): Promise<T> {
+async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const method = (options.method || "GET").toUpperCase();
   const token = await getAuthToken();
   const canFallback = shouldUseFallback(API_BASE_URL, method, Boolean(token));
@@ -139,11 +129,7 @@ async function request<T>(
       data = JSON.parse(responseText) as ApiResponse<T>;
     } catch {
       const details = responseText.slice(0, 300);
-      throw new ApiError(
-        response.status || -1,
-        "API 返回了非 JSON 响应",
-        details,
-      );
+      throw new ApiError(response.status || -1, "API 返回了非 JSON 响应", details);
     }
   }
 
@@ -171,22 +157,18 @@ export interface BatchConvertResult {
 
 export const blogApi = {
   list: (page = 1, pageSize = 10) =>
-    request<PaginatedResponse<Blog>>(
-      `/blogs?page=${page}&page_size=${pageSize}`,
-      { next: { revalidate: 60 } },
-    ),
+    request<PaginatedResponse<Blog>>(`/blogs?page=${page}&page_size=${pageSize}`, {
+      next: { revalidate: 60 },
+    }),
 
-  getById: (id: number) =>
-    request<Blog>(`/blogs/${id}`, { next: { revalidate: 60 } }),
+  getById: (id: number) => request<Blog>(`/blogs/${id}`, { next: { revalidate: 60 } }),
 
-  getBySlug: (slug: string) =>
-    request<Blog>(`/blogs/slug/${slug}`, { next: { revalidate: 60 } }),
+  getBySlug: (slug: string) => request<Blog>(`/blogs/slug/${slug}`, { next: { revalidate: 60 } }),
 
   getPrevNext: (id: number) =>
-    request<{ prev: Blog | null; next: Blog | null }>(
-      `/blogs/${id}/prev-next`,
-      { next: { revalidate: 60 } },
-    ),
+    request<{ prev: Blog | null; next: Blog | null }>(`/blogs/${id}/prev-next`, {
+      next: { revalidate: 60 },
+    }),
 
   create: (data: CreateBlogRequest) =>
     request<Blog>("/admin/blogs", {
@@ -200,8 +182,7 @@ export const blogApi = {
       body: JSON.stringify(data),
     }),
 
-  delete: (id: number) =>
-    request<void>(`/admin/blogs/${id}`, { method: "DELETE" }),
+  delete: (id: number) => request<void>(`/admin/blogs/${id}`, { method: "DELETE" }),
 
   convertMarkdown: () =>
     request<BatchConvertResult>("/admin/blogs/convert-markdown", {
@@ -262,18 +243,13 @@ export const aiApi = {
       body: JSON.stringify({ blog_ids: blogIds, action }),
     }),
 
-  batchConfirm: (
-    items: { blog_id: number; action: string; result: string }[],
-  ) =>
+  batchConfirm: (items: { blog_id: number; action: string; result: string }[]) =>
     request<BatchConfirmResponse>("/admin/ai/batch-confirm", {
       method: "POST",
       body: JSON.stringify({ items }),
     }),
 
-  batchSummarizeAll: (options?: {
-    onlyEmpty?: boolean;
-    concurrency?: number;
-  }) =>
+  batchSummarizeAll: (options?: { onlyEmpty?: boolean; concurrency?: number }) =>
     request<BatchSummarizeAllResponse>("/admin/ai/batch-summarize-all", {
       method: "POST",
       body: JSON.stringify({
@@ -307,10 +283,9 @@ export const categoryApi = {
   list: () => request<Category[]>("/categories", { next: { revalidate: 60 } }),
 
   getBlogs: (id: number, page = 1, pageSize = 10) =>
-    request<PaginatedResponse<Blog>>(
-      `/categories/${id}/blogs?page=${page}&page_size=${pageSize}`,
-      { next: { revalidate: 60 } },
-    ),
+    request<PaginatedResponse<Blog>>(`/categories/${id}/blogs?page=${page}&page_size=${pageSize}`, {
+      next: { revalidate: 60 },
+    }),
 
   create: (data: CreateCategoryRequest) =>
     request<Category>("/admin/categories", {
@@ -324,8 +299,7 @@ export const categoryApi = {
       body: JSON.stringify(data),
     }),
 
-  delete: (id: number) =>
-    request<void>(`/admin/categories/${id}`, { method: "DELETE" }),
+  delete: (id: number) => request<void>(`/admin/categories/${id}`, { method: "DELETE" }),
 };
 
 // Tag API
@@ -333,10 +307,9 @@ export const tagApi = {
   list: () => request<Tag[]>("/tags", { next: { revalidate: 60 } }),
 
   getBlogs: (id: number, page = 1, pageSize = 10) =>
-    request<PaginatedResponse<Blog>>(
-      `/tags/${id}/blogs?page=${page}&page_size=${pageSize}`,
-      { next: { revalidate: 60 } },
-    ),
+    request<PaginatedResponse<Blog>>(`/tags/${id}/blogs?page=${page}&page_size=${pageSize}`, {
+      next: { revalidate: 60 },
+    }),
 
   create: (data: CreateTagRequest) =>
     request<Tag>("/admin/tags", {
@@ -344,14 +317,12 @@ export const tagApi = {
       body: JSON.stringify(data),
     }),
 
-  delete: (id: number) =>
-    request<void>(`/admin/tags/${id}`, { method: "DELETE" }),
+  delete: (id: number) => request<void>(`/admin/tags/${id}`, { method: "DELETE" }),
 };
 
 // Directory API
 export const directoryApi = {
-  getTree: () =>
-    request<DirectoryTreeNode[]>("/directories", { next: { revalidate: 60 } }),
+  getTree: () => request<DirectoryTreeNode[]>("/directories", { next: { revalidate: 60 } }),
 
   create: (data: CreateDirectoryRequest) =>
     request<Directory>("/admin/directories", {
@@ -365,8 +336,7 @@ export const directoryApi = {
       body: JSON.stringify(data),
     }),
 
-  delete: (id: number) =>
-    request<void>(`/admin/directories/${id}`, { method: "DELETE" }),
+  delete: (id: number) => request<void>(`/admin/directories/${id}`, { method: "DELETE" }),
 };
 
 // Document API
@@ -386,8 +356,7 @@ export const documentApi = {
       body: JSON.stringify(data),
     }),
 
-  delete: (id: number) =>
-    request<void>(`/admin/documents/${id}`, { method: "DELETE" }),
+  delete: (id: number) => request<void>(`/admin/documents/${id}`, { method: "DELETE" }),
 };
 
 // File API
@@ -416,8 +385,7 @@ export const fileApi = {
     return data.data;
   },
 
-  delete: (id: number) =>
-    request<void>(`/admin/files/${id}`, { method: "DELETE" }),
+  delete: (id: number) => request<void>(`/admin/files/${id}`, { method: "DELETE" }),
 };
 
 // Friend Link API
@@ -440,8 +408,7 @@ export const friendLinkApi = {
       body: JSON.stringify(data),
     }),
 
-  delete: (id: number) =>
-    request<void>(`/admin/friend-links/${id}`, { method: "DELETE" }),
+  delete: (id: number) => request<void>(`/admin/friend-links/${id}`, { method: "DELETE" }),
 };
 
 // Project API
@@ -460,8 +427,7 @@ export const projectApi = {
       body: JSON.stringify(data),
     }),
 
-  delete: (id: number) =>
-    request<void>(`/admin/projects/${id}`, { method: "DELETE" }),
+  delete: (id: number) => request<void>(`/admin/projects/${id}`, { method: "DELETE" }),
 };
 
 // Resume API
@@ -492,8 +458,7 @@ export const textApi = {
   getPublicByKey: (key: string | number) =>
     request<Text>(`/texts/${encodeURIComponent(String(key))}`, { next: { revalidate: 60 } }),
 
-  getPublicById: (id: number) =>
-    request<Text>(`/texts/${id}`, { next: { revalidate: 60 } }),
+  getPublicById: (id: number) => request<Text>(`/texts/${id}`, { next: { revalidate: 60 } }),
 
   verify: (key: string | number, data: VerifyTextRequest) =>
     request<Text>(`/texts/${encodeURIComponent(String(key))}/verify`, {
@@ -513,8 +478,7 @@ export const textApi = {
       body: JSON.stringify(data),
     }),
 
-  delete: (id: number) =>
-    request<void>(`/admin/texts/${id}`, { method: "DELETE" }),
+  delete: (id: number) => request<void>(`/admin/texts/${id}`, { method: "DELETE" }),
 };
 
 // Auth API

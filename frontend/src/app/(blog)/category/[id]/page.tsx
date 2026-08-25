@@ -36,7 +36,11 @@ function CategoryPageContent() {
   const fetchBlogs = useCallback(async () => {
     setLoading(true);
     try {
-      const data: PaginatedResponse<Blog> = await categoryApi.getBlogs(categoryId, currentPage, pageSize);
+      const data: PaginatedResponse<Blog> = await categoryApi.getBlogs(
+        categoryId,
+        currentPage,
+        pageSize,
+      );
       setBlogs(data.items);
       setPagination({ total: data.total, totalPages: data.total_pages });
     } finally {
@@ -69,7 +73,9 @@ function CategoryPageContent() {
       <PageHero
         eyebrow="Category"
         title={currentCategory?.name || "分类文章"}
-        description={currentCategory?.intro || "这个分类下的文章已经按时间顺序展开，直接进入阅读即可。"}
+        description={
+          currentCategory?.intro || "这个分类下的文章已经按时间顺序展开，直接进入阅读即可。"
+        }
         actions={
           <AIButton type="default" className="font-bold" onClick={() => router.push("/categories")}>
             <AIIcon name="icon-critterpedia" size={16} className="mr-1" />
@@ -78,7 +84,11 @@ function CategoryPageContent() {
         }
         stats={[
           { label: "Posts", value: pagination.total, description: "当前分类文章数" },
-          { label: "Page", value: `${currentPage}/${Math.max(1, pagination.totalPages)}`, description: "分页位置" },
+          {
+            label: "Page",
+            value: `${currentPage}/${Math.max(1, pagination.totalPages)}`,
+            description: "分页位置",
+          },
           { label: "Tags", value: tags.length, description: "可用标签" },
         ]}
       />
@@ -87,16 +97,26 @@ function CategoryPageContent() {
         <div className="grid gap-4">
           <div className="flex flex-wrap items-end justify-between gap-3 px-1">
             <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-400">Posts</p>
-              <h2 className="mt-1 text-xl font-extrabold tracking-tight text-[#725d42]">分类文章</h2>
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-400">
+                Posts
+              </p>
+              <h2 className="mt-1 text-xl font-extrabold tracking-tight text-[#725d42]">
+                分类文章
+              </h2>
             </div>
-            <span className="text-xs font-bold text-slate-400">共 {pagination.total} 篇 · 当前第 {currentPage} 页</span>
+            <span className="text-xs font-bold text-slate-400">
+              共 {pagination.total} 篇 · 当前第 {currentPage} 页
+            </span>
           </div>
 
           {loading ? (
             <LoadingState label="正在加载文章列表..." />
           ) : blogs.length === 0 ? (
-            <EmptyState title="这个分类下还没有文章" description="换一个分类或返回首页看看最新内容。" icon={<AIIcon name="icon-critterpedia" size={32} />} />
+            <EmptyState
+              title="这个分类下还没有文章"
+              description="换一个分类或返回首页看看最新内容。"
+              icon={<AIIcon name="icon-critterpedia" size={32} />}
+            />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
               {blogs.map((blog) => (
@@ -117,7 +137,11 @@ function CategoryPageContent() {
         </div>
 
         <div className="xl:sticky xl:top-24">
-          {sideLoading ? <LoadingState label="正在加载索引" /> : <BlogSidebar categories={categories} tags={tags} title="分类导航" />}
+          {sideLoading ? (
+            <LoadingState label="正在加载索引" />
+          ) : (
+            <BlogSidebar categories={categories} tags={tags} title="分类导航" />
+          )}
         </div>
       </section>
     </main>
