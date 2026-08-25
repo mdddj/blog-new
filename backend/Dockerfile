@@ -1,5 +1,5 @@
 # Build stage - native build on target platform
-FROM rust:1.92-slim-bookworm AS builder
+FROM rust:1.94.1-slim-bookworm AS builder
 
 WORKDIR /app
 
