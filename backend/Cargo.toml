@@ -12,7 +12,7 @@ tower = "0.5"
 tower-http = { version = "0.6", features = ["cors", "trace", "fs"] }
 
 # Async runtime
-tokio = { version = "1", features = ["full"] }
+tokio = { version = "1.53.1", features = ["full"] }
 
 # Database
 sqlx = { version = "0.8", default-features = false, features = [
@@ -24,12 +24,12 @@ sqlx = { version = "0.8", default-features = false, features = [
 ] }
 
 # Redis
-redis = { version = "1", features = ["tokio-comp", "connection-manager"] }
+redis = { version = "1.6.0", features = ["tokio-comp", "connection-manager"] }
 
 # Serialization
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-schemars = { version = "1.1.0", features = ["chrono04"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+schemars = { version = "1.2.2", features = ["chrono04"] }
 base64 = "0.22"
 
 # Authentication
@@ -39,25 +39,25 @@ argon2 = "0.5"
 # Markdown rendering
 pulldown-cmark = "0.13"
 syntect = "5"
-regex = "1"
+regex = "1.13.1"
 
 # S3 storage
-aws-sdk-s3 = "1"
-aws-config = "1"
+aws-sdk-s3 = "1.143.0"
+aws-config = "1.11.0"
 
 # HTTP client
-reqwest = { version = "0.13", features = ["json"] }
-rmcp = { version = "1.7", features = ["server", "macros", "transport-streamable-http-server"] }
+reqwest = { version = "0.13.4", features = ["json"] }
+rmcp = { version = "1.8.0", features = ["server", "macros", "transport-streamable-http-server"] }
 
 # Async trait (required for custom extractors)
-async-trait = "0.1"
-futures = "0.3"
+async-trait = "0.1.92"
+futures = "0.3.34"
 
 # Utilities
-chrono = { version = "0.4", features = ["serde"] }
-uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4.45", features = ["serde"] }
+uuid = { version = "1.25.0", features = ["v4", "serde"] }
 dotenvy = "0.15"
-thiserror = "2"
+thiserror = "2.0.20"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 yls-agi-rust-sdk = "0.1.5"
