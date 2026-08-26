@@ -134,6 +134,7 @@ impl SearchBlogsArgs {
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 struct BlogIdArgs {
+    #[serde(alias = "id")]
     blog_id: i64,
 }
 
@@ -423,9 +424,14 @@ impl BlogMcpServer {
     }
 
     fn json_result<T: Serialize>(value: T) -> Result<McpJson<Value>, String> {
-        serde_json::to_value(value)
-            .map(McpJson)
-            .map_err(|error| error.to_string())
+        let value = serde_json::to_value(value).map_err(|error| error.to_string())?;
+        let structured_content = match value {
+            Value::Object(_) => value,
+            Value::Array(items) => json!({ "items": items }),
+            value => json!({ "value": value }),
+        };
+
+        Ok(McpJson(structured_content))
     }
 
     fn references_to_value(references: Option<McpReferences>) -> Result<Option<Value>, String> {
@@ -2078,12 +2084,12 @@ impl ServerHandler for BlogMcpServer {
 #[cfg(test)]
 mod tests {
     use super::{
-        server_info, streamable_http_config, CreateBlogDraftArgs, CreateDocumentArgs,
-        UpdateBlogArgs, UpdateDocumentArgs, UploadFileArgs, UploadImageArgs,
+        server_info, streamable_http_config, BlogIdArgs, BlogMcpServer, CreateBlogDraftArgs,
+        CreateDocumentArgs, UpdateBlogArgs, UpdateDocumentArgs, UploadFileArgs, UploadImageArgs,
         MCP_MAX_REQUEST_BODY_BYTES,
     };
     use rmcp::model::ProtocolVersion;
-    use serde_json::Value;
+    use serde_json::{json, Value};
 
     #[test]
     fn rmcp_v3_server_info_advertises_tools_on_latest_stable_protocol() {
@@ -2121,6 +2127,29 @@ mod tests {
             references_schema.is_object(),
             "references schema should be an object schema, got: {references_schema:?}"
         );
+    }
+
+    #[test]
+    fn structured_results_always_have_an_object_top_level() {
+        let array_result = BlogMcpServer::json_result(vec![json!({ "id": 1 })])
+            .expect("array result should serialize");
+        assert_eq!(array_result.0, json!({ "items": [{ "id": 1 }] }));
+
+        let object = json!({ "id": 1 });
+        let object_result =
+            BlogMcpServer::json_result(object.clone()).expect("object result should serialize");
+        assert_eq!(object_result.0, object);
+    }
+
+    #[test]
+    fn blog_detail_id_accepts_canonical_and_legacy_names() {
+        let canonical: BlogIdArgs =
+            serde_json::from_value(json!({ "blog_id": 1620 })).expect("blog_id should deserialize");
+        assert_eq!(canonical.blog_id, 1620);
+
+        let legacy: BlogIdArgs =
+            serde_json::from_value(json!({ "id": 1620 })).expect("id alias should deserialize");
+        assert_eq!(legacy.blog_id, 1620);
     }
 
     #[test]

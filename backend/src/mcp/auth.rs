@@ -11,6 +11,8 @@ use axum::{
     Json,
 };
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
+use tokio::sync::Mutex;
 use uuid::Uuid;
 
 use crate::error::ApiResponse;
@@ -32,6 +34,55 @@ impl McpRuntimeConfig {
             .as_deref()
             .map(|value| !value.is_empty())
             .unwrap_or(false)
+    }
+}
+
+#[derive(Debug)]
+struct VerifiedMcpToken {
+    token_hash: String,
+    token_digest: [u8; 32],
+}
+
+#[derive(Debug, Default)]
+pub struct McpAuthCache {
+    verified: Mutex<Option<VerifiedMcpToken>>,
+}
+
+impl McpAuthCache {
+    pub async fn verify(
+        &self,
+        token: &str,
+        token_hash: &str,
+    ) -> Result<bool, crate::error::ApiError> {
+        let token_digest: [u8; 32] = Sha256::digest(token.as_bytes()).into();
+        let mut cached = self.verified.lock().await;
+
+        if let Some(verified) = cached.as_ref() {
+            if verified.token_hash == token_hash {
+                return Ok(verified.token_digest == token_digest);
+            }
+        }
+
+        let owned_token = token.to_string();
+        let owned_hash = token_hash.to_string();
+        let is_valid =
+            tokio::task::spawn_blocking(move || verify_secret(&owned_token, &owned_hash))
+                .await
+                .map_err(|error| {
+                    tracing::error!("MCP token verification task failed: {}", error);
+                    crate::error::ApiError::InternalError(
+                        "MCP token verification task failed".to_string(),
+                    )
+                })??;
+
+        if is_valid {
+            *cached = Some(VerifiedMcpToken {
+                token_hash: token_hash.to_string(),
+                token_digest,
+            });
+        }
+
+        Ok(is_valid)
     }
 }
 
@@ -168,7 +219,7 @@ pub async fn mcp_auth_middleware(
             .into_response();
     };
 
-    match verify_secret(token, token_hash) {
+    match state.mcp_auth_cache.verify(token, token_hash).await {
         Ok(true) => next.run(request).await,
         Ok(false) => (
             StatusCode::UNAUTHORIZED,
@@ -191,7 +242,7 @@ pub async fn mcp_auth_middleware(
 
 #[cfg(test)]
 mod tests {
-    use super::{hash_secret, mask_token, verify_secret, McpRuntimeConfig};
+    use super::{hash_secret, mask_token, verify_secret, McpAuthCache, McpRuntimeConfig};
 
     #[test]
     fn token_mask_uses_last_four_digits() {
@@ -204,6 +255,48 @@ mod tests {
         let hash = hash_secret(token).expect("token should hash");
         assert!(verify_secret(token, &hash).expect("token should verify"));
         assert!(!verify_secret("wrong-token", &hash).expect("wrong token should fail"));
+    }
+
+    #[tokio::test]
+    async fn auth_cache_accepts_the_verified_token_and_rejects_others() {
+        let token = "ddb_mcp_cached_secret";
+        let hash = hash_secret(token).expect("token should hash");
+        let cache = McpAuthCache::default();
+
+        assert!(cache
+            .verify(token, &hash)
+            .await
+            .expect("token should verify"));
+        assert!(cache
+            .verify(token, &hash)
+            .await
+            .expect("cached token should verify"));
+        assert!(!cache
+            .verify("wrong-token", &hash)
+            .await
+            .expect("wrong token should be rejected"));
+    }
+
+    #[tokio::test]
+    async fn auth_cache_tracks_token_rotation_by_hash() {
+        let first_token = "ddb_mcp_first_secret";
+        let first_hash = hash_secret(first_token).expect("first token should hash");
+        let second_token = "ddb_mcp_second_secret";
+        let second_hash = hash_secret(second_token).expect("second token should hash");
+        let cache = McpAuthCache::default();
+
+        assert!(cache
+            .verify(first_token, &first_hash)
+            .await
+            .expect("first token should verify"));
+        assert!(cache
+            .verify(second_token, &second_hash)
+            .await
+            .expect("rotated token should verify"));
+        assert!(!cache
+            .verify(first_token, &second_hash)
+            .await
+            .expect("old token should be rejected after rotation"));
     }
 
     #[test]

@@ -22,6 +22,7 @@ use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 use crate::config::Config;
+use crate::mcp::auth::McpAuthCache;
 use crate::services::cache_service::CacheService;
 
 /// Application state shared across handlers
@@ -30,6 +31,7 @@ pub struct AppState {
     pub db: sqlx::PgPool,
     pub cache: Arc<CacheService>,
     pub config: Arc<Config>,
+    pub mcp_auth_cache: Arc<McpAuthCache>,
 }
 
 #[tokio::main]
@@ -84,6 +86,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         db,
         cache,
         config: config.clone(),
+        mcp_auth_cache: Arc::new(McpAuthCache::default()),
     };
 
     // Build CORS layer
