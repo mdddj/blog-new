@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowUp, CalendarDays, Clock3, Edit3, Eye } from "lucide-react";
 import { blogApi } from "@/lib/api";
 import { isAuthenticated } from "@/lib/auth";
 import type { Blog } from "@/types";
@@ -18,24 +17,36 @@ import {
   readingMinutes,
   getCardColor,
 } from "@/components/blog/public";
-import { Button as AIButton, Icon as AIIcon } from "animal-island-ui";
+import {
+  BackTop as AIBackTop,
+  Button as AIButton,
+  Icon as AIIcon,
+  Tag as AITag,
+  Title as AITitle,
+} from "animal-island-ui";
 import { cn } from "@/lib/utils";
 
 function extractHeadings(html: string): { id: string; text: string; level: number }[] {
   if (typeof window === "undefined") return [];
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, "text/html");
-  return Array.from(doc.querySelectorAll("h1, h2, h3, h4, h5, h6")).map((node, idx) => ({
-    id: `heading-${idx}`,
+  return Array.from(doc.querySelectorAll("h1, h2, h3, h4, h5, h6")).map((node) => ({
+    id: node.id,
     text: node.textContent || "",
     level: Number(node.tagName.slice(1)),
   }));
 }
 
-function addHeadingIds(html: string): string {
+function prepareArticleHtml(html: string, title: string): string {
   if (typeof window === "undefined") return html;
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, "text/html");
+  const firstHeading = doc.querySelector("h1");
+
+  if (firstHeading?.textContent?.trim() === title.trim()) {
+    firstHeading.remove();
+  }
+
   doc.querySelectorAll("h1, h2, h3, h4, h5, h6").forEach((node, idx) => {
     node.id = `heading-${idx}`;
   });
@@ -50,7 +61,6 @@ export function BlogDetailClient({ slug }: { slug: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeHeading, setActiveHeading] = useState("");
-  const [showTop, setShowTop] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
@@ -89,15 +99,11 @@ export function BlogDetailClient({ slug }: { slug: string }) {
     fetchData();
   }, [slug]);
 
-  useEffect(() => {
-    const onScroll = () => setShowTop(window.scrollY > 380);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  const tocItems = useMemo(() => (blog?.html ? extractHeadings(blog.html) : []), [blog?.html]);
-  const html = useMemo(() => (blog?.html ? addHeadingIds(blog.html) : ""), [blog?.html]);
+  const html = useMemo(
+    () => (blog?.html ? prepareArticleHtml(blog.html, blog.title) : ""),
+    [blog?.html, blog?.title],
+  );
+  const tocItems = useMemo(() => (html ? extractHeadings(html) : []), [html]);
 
   useEffect(() => {
     if (tocItems.length === 0) return;
@@ -153,139 +159,154 @@ export function BlogDetailClient({ slug }: { slug: string }) {
   return (
     <>
       <main className={cn(PUBLIC_CONTAINER, "grid min-w-0 gap-8 py-8 px-4")}>
-        <article className="grid min-w-0 gap-8 xl:grid-cols-[minmax(0,760px)_280px] xl:justify-center">
+        <article className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_280px]">
           <div className="grid min-w-0 gap-6">
-            <header className="grid gap-5">
-              <div className="flex flex-wrap items-center gap-2">
-                <AIButton
-                  type="default"
-                  className="font-bold flex items-center"
-                  onClick={() => {
-                    if (window.history.length > 1) router.back();
-                    else router.push("/");
-                  }}
-                >
-                  <ArrowLeft className="h-4 w-4 mr-1 inline" />
-                  返回
-                </AIButton>
-                {blog.category ? (
-                  <AIButton
-                    type="text"
-                    icon={<AIIcon name="icon-design" size={16} bounce />}
-                    className="font-bold"
-                    onClick={() => router.push(`/category/${blog.category!.id}`)}
-                  >
-                    {blog.category.name}
-                  </AIButton>
-                ) : null}
-              </div>
-
-              <div className="grid gap-4">
-                <h1 className="wrap-break-word text-3xl font-extrabold leading-tight tracking-tight text-[#725d42] sm:text-4xl">
-                  {blog.title}
-                </h1>
-                {blog.summary ? (
-                  <p className="text-base leading-7 text-[#725d42]/80 font-bold border-l-2 border-[#725d42]/30 pl-4">
-                    {blog.summary}
-                  </p>
-                ) : null}
-              </div>
-
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-bold text-slate-400">
-                <span className="inline-flex items-center gap-2">
-                  <CalendarDays className="h-3.5 w-3.5" />
-                  {formatDate(blog.created_at)}
-                </span>
-                <span className="inline-flex items-center gap-2">
-                  <Eye className="h-3.5 w-3.5" />
-                  {blog.view_count || 0} 次阅读
-                </span>
-                <span className="inline-flex items-center gap-2">
-                  <Clock3 className="h-3.5 w-3.5" />
-                  {readTime} 分钟
-                </span>
-                {isLoggedIn ? (
-                  <button
-                    type="button"
-                    className="inline-flex items-center gap-2 font-bold hover:underline"
-                    onClick={() => router.push(`/admin/blogs/${blog.id}`)}
-                  >
-                    <Edit3 className="h-3.5 w-3.5" />
-                    编辑文章
-                  </button>
-                ) : null}
-              </div>
-
-              {blog.tags?.length ? (
-                <div className="flex flex-wrap gap-2">
-                  {blog.tags.map((tag) => (
-                    <button
-                      key={tag.id}
-                      type="button"
-                      className="rounded-full bg-slate-100 hover:bg-[#725d42]/10 text-[#725d42] border border-[#725d42]/10 px-3 py-1 text-xs font-bold transition"
-                      onClick={() => router.push(`/tag/${tag.id}`)}
+            <PublicCard color="app-yellow" className="grid gap-5 p-5 sm:p-7">
+              <header className="grid min-w-0 gap-5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <AIButton
+                      type="default"
+                      icon={<AIIcon name="icon-map" size={18} />}
+                      onClick={() => {
+                        if (window.history.length > 1) router.back();
+                        else router.push("/");
+                      }}
                     >
-                      #{tag.name}
-                    </button>
-                  ))}
+                      返回
+                    </AIButton>
+                    {blog.category ? (
+                      <AITag
+                        color="default"
+                        onClick={() => router.push(`/category/${blog.category!.id}`)}
+                      >
+                        {blog.category.name}
+                      </AITag>
+                    ) : null}
+                  </div>
+                  <AITitle size="small" color="brown">
+                    文章阅读
+                  </AITitle>
                 </div>
-              ) : null}
 
-              {hasThumbnail ? (
-                <div className="relative aspect-video overflow-hidden rounded-2xl bg-white/40 border border-[#725d42]/10">
-                  <Image
-                    src={blog.thumbnail!}
-                    alt={blog.title}
-                    fill
-                    sizes="(max-width: 1280px) 100vw, 760px"
-                    className="object-cover"
-                    priority
-                  />
+                <div className="grid min-w-0 gap-4">
+                  <h1 className="wrap-break-word text-3xl font-black leading-tight tracking-tight text-[var(--animal-text-color)] sm:text-4xl">
+                    {blog.title}
+                  </h1>
+                  {blog.summary ? (
+                    <p className="max-w-3xl border-l-2 border-[var(--animal-border-color-hover)] pl-4 text-base font-medium leading-7 text-[var(--animal-text-color-secondary)]">
+                      {blog.summary}
+                    </p>
+                  ) : null}
                 </div>
-              ) : null}
-            </header>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <AITag color="default" size="small">
+                    {formatDate(blog.created_at)}
+                  </AITag>
+                  <AITag color="app-teal" size="small">
+                    {blog.view_count || 0} 次阅读
+                  </AITag>
+                  <AITag color="app-blue" size="small">
+                    {readTime} 分钟
+                  </AITag>
+                  {isLoggedIn ? (
+                    <AIButton
+                      type="text"
+                      size="small"
+                      icon={<AIIcon name="icon-design" size={16} />}
+                      onClick={() => router.push(`/admin/blogs/${blog.id}`)}
+                    >
+                      编辑文章
+                    </AIButton>
+                  ) : null}
+                </div>
+
+                {blog.tags?.length ? (
+                  <div className="flex flex-wrap gap-2">
+                    {blog.tags.map((tag) => (
+                      <AITag
+                        key={tag.id}
+                        color={getCardColor(tag.id)}
+                        size="small"
+                        onClick={() => router.push(`/tag/${tag.id}`)}
+                      >
+                        #{tag.name}
+                      </AITag>
+                    ))}
+                  </div>
+                ) : null}
+
+                {hasThumbnail ? (
+                  <div className="relative aspect-video overflow-hidden rounded-[var(--animal-border-radius-lg)] bg-[var(--animal-bg-color-secondary)]">
+                    <Image
+                      src={blog.thumbnail!}
+                      alt={blog.title}
+                      fill
+                      sizes="(max-width: 1280px) 100vw, 760px"
+                      className="object-cover"
+                      priority
+                    />
+                  </div>
+                ) : null}
+              </header>
+            </PublicCard>
 
             {/* Cozy Parchment Card */}
             <PublicCard color="default" className="min-w-0 overflow-hidden p-5 sm:p-8">
               <BlogContentRenderer
                 html={html}
                 references={blog.references}
-                className="prose min-w-0 max-w-none overflow-x-auto wrap-break-word prose-slate dark:prose-invert prose-headings:scroll-mt-28 prose-headings:font-extrabold prose-headings:text-[#725d42] prose-p:leading-8 prose-p:font-bold prose-p:text-[#725d42]/90 prose-a:no-underline hover:prose-a:underline prose-code:wrap-break-word prose-code:before:content-none prose-code:after:content-none prose-code:text-[#c45a1f] prose-code:bg-[#725d42]/5 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-lg prose-code:font-bold prose-pre:overflow-x-auto prose-pre:rounded-2xl prose-pre:bg-[#f4efe4] prose-pre:text-[#725d42] prose-pre:border-2 prose-pre:border-[#725d42]/15 [&_pre_code]:bg-transparent [&_pre_code]:bg-none [&_pre_code]:p-0 [&_pre_code]:border-none prose-blockquote:not-italic prose-blockquote:border-l-4 prose-blockquote:border-[#725d42]/30 prose-blockquote:bg-black/5 prose-blockquote:px-4 prose-blockquote:py-1 prose-blockquote:rounded-r-xl"
+                className="prose min-w-0 max-w-none overflow-x-auto wrap-break-word prose-headings:scroll-mt-28 prose-headings:font-extrabold prose-headings:text-[var(--animal-text-color)] prose-p:font-medium prose-p:leading-8 prose-p:text-[var(--animal-text-color-secondary)] prose-a:text-[var(--animal-primary-color-active)] prose-a:no-underline hover:prose-a:underline prose-code:wrap-break-word prose-code:before:content-none prose-code:after:content-none prose-code:text-[var(--animal-warning-color-active)] prose-code:bg-[var(--animal-bg-color-secondary)] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-lg prose-code:font-bold prose-pre:overflow-x-auto prose-pre:rounded-2xl prose-pre:bg-[var(--animal-bg-color-secondary)] prose-pre:text-[var(--animal-text-color)] prose-pre:border-2 prose-pre:border-[var(--animal-border-color)] [&_pre_code]:bg-transparent [&_pre_code]:bg-none [&_pre_code]:p-0 [&_pre_code]:border-none prose-blockquote:text-[var(--animal-text-color-secondary)] prose-strong:text-[var(--animal-text-color)] prose-li:text-[var(--animal-text-color-secondary)] prose-li:font-medium prose-th:text-[var(--animal-text-color)] prose-td:text-[var(--animal-text-color-secondary)] prose-hr:border-[var(--animal-border-color)]"
               />
             </PublicCard>
           </div>
 
-          <aside className="hidden xl:flex xl:flex-col xl:gap-6 min-w-0">
+          <aside className="hidden min-w-0 xl:block">
             {tocItems.length > 0 ? (
-              <PublicCard color="default" className="sticky top-28 grid gap-3 p-4 shadow-sm">
-                <div className="text-sm font-extrabold text-[#725d42] flex items-center gap-1.5 border-b border-[#725d42]/10 pb-2 select-none">
-                  <AIIcon name="icon-critterpedia" size={16} />
-                  文章目录
+              <PublicCard
+                color="default"
+                className="sticky top-24 flex max-h-[calc(100dvh-7rem)] min-h-0 flex-col gap-3 overflow-hidden p-4"
+              >
+                <div className="border-b border-[var(--animal-border-color-light)] pb-3">
+                  <AITitle size="small" color="app-teal">
+                    文章目录
+                  </AITitle>
                 </div>
-                <nav className="grid gap-1">
-                  {tocItems.map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      className={cn(
-                        "truncate rounded-lg px-2 py-1.5 text-left text-xs font-bold transition flex items-center gap-1",
-                        activeHeading === item.id
-                          ? "bg-[#725d42] text-white"
-                          : "text-[#725d42]/80 hover:bg-[#725d42]/5",
-                      )}
-                      style={{ paddingLeft: `${Math.max(0, item.level - 2) * 0.5 + 0.25}rem` }}
-                      onClick={() =>
-                        document
-                          .getElementById(item.id)
-                          ?.scrollIntoView({ behavior: "smooth", block: "start" })
-                      }
-                    >
-                      {activeHeading === item.id && (
-                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#19c8b9] shrink-0" />
-                      )}
-                      <span className="truncate">{item.text}</span>
-                    </button>
-                  ))}
+                <nav
+                  className="min-h-0 flex-1 overflow-y-auto overscroll-contain pr-2 [scrollbar-gutter:stable]"
+                  aria-label="文章目录"
+                >
+                  <div className="grid gap-1">
+                    {tocItems.map((item) => {
+                      const isActive = activeHeading === item.id;
+                      return (
+                        <a
+                          key={item.id}
+                          href={`#${item.id}`}
+                          aria-current={isActive ? "location" : undefined}
+                          className={cn(
+                            "block rounded-[var(--animal-border-radius-base)] border-l-4 py-2 pr-3 text-left text-xs font-bold leading-5 transition-colors focus-visible:outline-2 focus-visible:outline-[var(--animal-focus-yellow)]",
+                            isActive
+                              ? "border-[var(--animal-primary-color)] bg-[var(--animal-primary-color-bg)] text-[var(--animal-text-color)]"
+                              : "border-transparent text-[var(--animal-text-color-secondary)] hover:bg-[var(--animal-bg-color-secondary)] hover:text-[var(--animal-text-color)]",
+                          )}
+                          style={{
+                            paddingLeft: `${Math.max(0, item.level - 2) * 0.65 + 0.75}rem`,
+                          }}
+                          onClick={(event) => {
+                            event.preventDefault();
+                            document
+                              .getElementById(item.id)
+                              ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                            window.history.replaceState(null, "", `#${item.id}`);
+                          }}
+                        >
+                          {item.text}
+                        </a>
+                      );
+                    })}
+                  </div>
                 </nav>
               </PublicCard>
             ) : null}
@@ -294,7 +315,7 @@ export function BlogDetailClient({ slug }: { slug: string }) {
 
         <section className="mx-auto grid w-full max-w-190 min-w-0 gap-4 sm:grid-cols-2">
           {prevBlog ? (
-            <PublicCard color={prevCardColor} className="grid gap-2 p-4 shadow-sm hover:shadow">
+            <PublicCard color={prevCardColor} hoverable className="grid gap-2 p-4">
               <div className="text-[10px] font-extrabold uppercase tracking-[0.14em] opacity-80">
                 上一篇
               </div>
@@ -315,10 +336,7 @@ export function BlogDetailClient({ slug }: { slug: string }) {
           )}
 
           {nextBlog ? (
-            <PublicCard
-              color={nextCardColor}
-              className="grid gap-2 p-4 shadow-sm hover:shadow sm:text-right"
-            >
+            <PublicCard color={nextCardColor} hoverable className="grid gap-2 p-4 sm:text-right">
               <div className="text-[10px] font-extrabold uppercase tracking-[0.14em] opacity-80">
                 下一篇
               </div>
@@ -338,16 +356,7 @@ export function BlogDetailClient({ slug }: { slug: string }) {
         </section>
       </main>
 
-      {showTop ? (
-        <button
-          type="button"
-          className="fixed bottom-6 right-6 z-30 inline-flex h-11 w-11 items-center justify-center rounded-full bg-[#19c8b9] text-white shadow-lg hover:bg-[#16b5a8] focus-visible:outline-none"
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          aria-label="回到顶部"
-        >
-          <ArrowUp className="h-5 w-5" />
-        </button>
-      ) : null}
+      <AIBackTop visibilityHeight={380} />
     </>
   );
 }

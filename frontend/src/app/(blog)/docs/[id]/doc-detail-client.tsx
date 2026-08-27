@@ -214,27 +214,19 @@ export function DocDetailClient({ docId }: { docId: number }) {
               </div>
               <nav className="grid gap-1">
                 {tocItems.map((item) => (
-                  <button
+                  <AIButton
                     key={item.id}
-                    type="button"
-                    className={cn(
-                      "truncate rounded-lg px-2 py-1.5 text-left text-xs font-bold transition flex items-center gap-1",
-                      activeHeading === item.id
-                        ? "bg-[#725d42] text-white"
-                        : "text-[#725d42]/80 hover:bg-[#725d42]/5",
-                    )}
-                    style={{ paddingLeft: `${Math.max(0, item.level - 2) * 0.5 + 0.25}rem` }}
+                    type={activeHeading === item.id ? "primary" : "text"}
+                    size="small"
+                    block
                     onClick={() =>
                       document
                         .getElementById(item.id)
                         ?.scrollIntoView({ behavior: "smooth", block: "start" })
                     }
                   >
-                    {activeHeading === item.id && (
-                      <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#19c8b9] shrink-0" />
-                    )}
-                    <span className="truncate">{item.text}</span>
-                  </button>
+                    {item.text}
+                  </AIButton>
                 ))}
               </nav>
             </PublicCard>

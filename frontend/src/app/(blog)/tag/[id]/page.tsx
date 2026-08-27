@@ -113,8 +113,8 @@ function TagPageContent() {
             />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
-              {blogs.map((blog) => (
-                <PostCard key={blog.id} blog={blog} />
+              {blogs.map((blog, index) => (
+                <PostCard key={blog.id} blog={blog} eager={index === 0} />
               ))}
             </div>
           )}

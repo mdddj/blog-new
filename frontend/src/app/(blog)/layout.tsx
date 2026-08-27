@@ -17,10 +17,10 @@ export default async function BlogLayout({ children }: { children: React.ReactNo
     <SiteConfigProvider initialConfig={initialConfig}>
       <AnalyticsScript />
       <BlogCursor>
-        <div className="min-h-dvh bg-slate-50 text-slate-950 dark:bg-slate-950 dark:text-slate-50">
+        <div className="min-h-dvh bg-[var(--animal-bg-color)] font-[var(--animal-font-family)] text-[var(--animal-text-color)]">
           <a
             href="#public-main-content"
-            className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-white focus:px-4 focus:py-2 focus:text-slate-950 focus:outline-2 focus:outline-slate-400 dark:focus:bg-slate-900 dark:focus:text-white"
+            className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-[var(--animal-bg-color-secondary)] focus:px-4 focus:py-2 focus:text-[var(--animal-text-color)] focus:outline-2 focus:outline-[var(--animal-focus-yellow)]"
           >
             跳到主内容
           </a>

@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { AlertTriangle, Download, Loader2, Shield, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  Button as AIButton,
+  Icon as AIIcon,
+  Input as AIInput,
+  Tag as AITag,
+  Title as AITitle,
+} from "animal-island-ui";
 import { Textarea } from "@/components/ui/textarea";
 import { PageHero, PublicCard, PUBLIC_CONTAINER } from "@/components/blog/public";
 import { ylsImageApi, type YlsImageGenerateResponse } from "@/lib/api";
@@ -91,12 +93,10 @@ export default function ImageGenPage() {
 
       <PublicCard color="app-yellow" className="grid gap-3 p-5 sm:p-6">
         <div className="flex items-start gap-3">
-          <div className="mt-0.5 rounded-full bg-white/70 p-2 text-[#725d42]">
-            <Shield className="h-4 w-4" />
-          </div>
-          <div className="grid gap-2 text-sm font-bold text-[#725d42]">
+          <AIIcon name="icon-miles" size={28} bounce />
+          <div className="grid gap-2 text-sm font-bold text-[var(--animal-text-color)]">
             <div className="flex items-center gap-2 text-base font-extrabold">
-              <AlertTriangle className="h-4 w-4" />
+              <AIIcon name="icon-chat" size={18} />
               安全提示
             </div>
             <p>这个页面只提供 YLS 生图服务接入，不会保存你的任何信息。</p>
@@ -109,40 +109,48 @@ export default function ImageGenPage() {
 
       <section className="grid gap-6 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]">
         <PublicCard color="default" className="grid gap-5 p-5 sm:p-6">
-          <div className="grid gap-1">
-            <div className="flex items-center gap-2 text-xl font-extrabold text-[#725d42]">
-              <Sparkles className="h-5 w-5" />
+          <div className="grid gap-2">
+            <AITitle size="small" color="app-teal">
               生成参数
-            </div>
-            <p className="text-sm font-bold text-slate-500 dark:text-slate-400">
+            </AITitle>
+            <p className="text-sm font-bold text-[var(--animal-text-color-secondary)]">
               当前接入的是 `chatgpt_image_2.rs` 对应的 YLS Codex 生图能力。
             </p>
           </div>
 
           <form onSubmit={handleGenerate} className="grid gap-5">
             <div className="grid gap-2">
-              <Label htmlFor="codex-key" className="text-sm font-extrabold text-[#725d42]">
+              <label
+                htmlFor="codex-key"
+                className="text-sm font-extrabold text-[var(--animal-text-color)]"
+              >
                 YLS Codex Key
-              </Label>
-              <Input
+              </label>
+              <AIInput
                 id="codex-key"
                 type="password"
+                size="large"
+                shadow
+                allowClear
                 autoComplete="off"
                 spellCheck={false}
                 value={codexKey}
                 onChange={(event) => setCodexKey(event.target.value)}
+                onClear={() => setCodexKey("")}
                 placeholder="输入你的 yls codex key"
-                className="h-12 rounded-2xl border-[#725d42]/15 bg-white/80 px-4 text-sm font-semibold shadow-sm focus-visible:ring-[#028b57]/30 dark:border-slate-700 dark:bg-slate-900/70"
               />
-              <p className="text-xs font-bold text-slate-400">
+              <p className="text-xs font-bold text-[var(--animal-text-color-muted)]">
                 仅用于当前这次请求，不会写入数据库或本地存储。
               </p>
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="prompt" className="text-sm font-extrabold text-[#725d42]">
+              <label
+                htmlFor="prompt"
+                className="text-sm font-extrabold text-[var(--animal-text-color)]"
+              >
                 提示词
-              </Label>
+              </label>
               <Textarea
                 id="prompt"
                 value={prompt}
@@ -150,41 +158,34 @@ export default function ImageGenPage() {
                 placeholder="例如：雨夜中的赛博朋克拉面店，霓虹灯反射在湿漉漉的街道上，电影感构图，超细节插画"
                 className="min-h-40 rounded-[24px] border-[#725d42]/15 bg-white/80 px-4 py-3 text-sm font-semibold leading-6 shadow-sm focus-visible:ring-[#028b57]/30 dark:border-slate-700 dark:bg-slate-900/70"
               />
-              <div className="flex items-center justify-between gap-3 text-xs font-bold text-slate-400">
+              <div className="flex items-center justify-between gap-3 text-xs font-bold text-[var(--animal-text-color-muted)]">
                 <span>建议写清楚风格、主体、构图、光线和材质。</span>
                 <span>{prompt.trim().length} 字</span>
               </div>
             </div>
 
             <div className="flex flex-wrap gap-3">
-              <Button
-                type="submit"
+              <AIButton
+                type="primary"
+                htmlType="submit"
+                size="large"
+                loading={loading}
                 disabled={loading}
-                className="h-11 rounded-full bg-[#028b57] px-6 font-extrabold text-white hover:bg-[#017447]"
+                icon={<AIIcon name="icon-camera" size={18} bounce />}
               >
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4" />
-                    正在生成...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    开始生图
-                  </>
-                )}
-              </Button>
+                {loading ? "正在生成..." : "开始生图"}
+              </AIButton>
 
-              <Button
-                type="button"
-                variant="outline"
+              <AIButton
+                type="default"
+                htmlType="button"
+                size="large"
                 onClick={handleClearResult}
                 disabled={loading}
-                className="h-11 rounded-full border-[#725d42]/15 bg-white/70 px-6 font-extrabold text-[#725d42] hover:bg-white"
+                icon={<AIIcon name="icon-variant" size={18} />}
               >
-                <Trash2 className="mr-2 h-4 w-4" />
                 清空结果
-              </Button>
+              </AIButton>
             </div>
           </form>
         </PublicCard>
@@ -200,26 +201,29 @@ export default function ImageGenPage() {
 
             {result ? (
               <div className="flex flex-wrap gap-2">
-                <Badge variant="secondary" className="rounded-full px-3 py-1 font-bold">
+                <AITag color="app-teal" variant="soft">
                   {result.mime_type}
-                </Badge>
-                <Badge variant="secondary" className="rounded-full px-3 py-1 font-bold">
+                </AITag>
+                <AITag color="app-green" variant="soft">
                   {formatBytes(result.size_bytes)}
-                </Badge>
+                </AITag>
               </div>
             ) : null}
           </div>
 
           {error ? (
-            <div className="rounded-[24px] border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-600 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-300">
+            <PublicCard color="app-red" type="dashed" className="px-4 py-3 text-sm font-bold">
               {error}
-            </div>
+            </PublicCard>
           ) : null}
 
           {loading ? (
-            <div className="grid min-h-112 place-items-center rounded-[28px] border border-dashed border-[#725d42]/15 bg-white/60 px-6 text-center text-sm font-bold text-slate-500 dark:bg-slate-900/40 dark:text-slate-400">
-              <div className="grid justify-items-center gap-3">
-                <Loader2 className="h-6 w-6 text-[#028b57]" />
+            <div className="grid min-h-112 place-items-center text-center text-sm font-bold text-[var(--animal-text-color-secondary)]">
+              <div className="grid justify-items-center gap-4">
+                <div
+                  className="h-12 w-12 animate-spin rounded-full border-4 border-[var(--animal-border-color)] border-t-[var(--animal-primary-color)]"
+                  aria-hidden="true"
+                />
                 <p>正在向 YLS 请求图片，可能需要 1-4 分钟，请保持页面打开。</p>
               </div>
             </div>
@@ -236,36 +240,40 @@ export default function ImageGenPage() {
                 />
               </div>
 
-              <div className="grid gap-3 rounded-[24px] border border-[#725d42]/10 bg-white/65 p-4 text-sm font-bold text-[#725d42] dark:bg-slate-900/50">
+              <div className="grid gap-3 rounded-[var(--animal-border-radius-lg)] bg-[var(--animal-bg-color-secondary)] p-4 text-sm font-bold text-[var(--animal-text-color)]">
                 <div className="flex flex-wrap gap-2">
-                  <Badge variant="outline" className="rounded-full font-bold">
+                  <AITag color="default" variant="outlined">
                     文件名: {result.file_name}
-                  </Badge>
+                  </AITag>
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  <Button
-                    type="button"
+                  <AIButton
+                    type="primary"
+                    size="large"
                     onClick={handleDownload}
-                    className="h-11 rounded-full bg-[#725d42] px-6 font-extrabold text-white hover:bg-[#5d4c35]"
+                    icon={<AIIcon name="icon-camera" size={18} />}
                   >
-                    <Download className="mr-2 h-4 w-4" />
                     下载图片
-                  </Button>
+                  </AIButton>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="grid min-h-112 place-items-center rounded-[28px] border border-dashed border-[#725d42]/15 bg-white/60 px-6 text-center dark:bg-slate-900/35">
-              <div className="grid max-w-sm gap-3 text-center">
-                <div className="mx-auto rounded-full bg-white/80 p-3 text-[#725d42] shadow-sm dark:bg-slate-800">
-                  <Sparkles className="h-6 w-6" />
+            <PublicCard
+              type="dashed"
+              color="default"
+              className="grid min-h-112 place-items-center px-6 text-center"
+            >
+              <div className="grid max-w-sm justify-items-center gap-3 text-center">
+                <AIIcon name="icon-camera" size={48} bounce />
+                <div className="text-lg font-extrabold text-[var(--animal-text-color)]">
+                  还没有生成图片
                 </div>
-                <div className="text-lg font-extrabold text-[#725d42]">还没有生成图片</div>
-                <p className="text-sm font-bold text-slate-500 dark:text-slate-400">
+                <p className="text-sm font-bold text-[var(--animal-text-color-secondary)]">
                   输入 Key 和提示词后点击“开始生图”，这里会显示生成结果。
                 </p>
               </div>
-            </div>
+            </PublicCard>
           )}
         </PublicCard>
       </section>

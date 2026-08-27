@@ -23,7 +23,7 @@ import { toast } from "sonner";
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), {
   ssr: false,
-  loading: () => <Skeleton className="h-[200px] w-full" />,
+  loading: () => <Skeleton className="h-50 w-full" />,
 });
 
 interface ReferenceManagerProps {
@@ -205,9 +205,9 @@ export function ReferenceManager({
               </div>
             </div>
           ) : (
-            <ScrollArea className="h-[400px] pr-4">
+            <ScrollArea className="h-100 pr-4">
               {refList.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-[300px] text-muted-foreground">
+                <div className="flex flex-col items-center justify-center h-75 text-muted-foreground">
                   <Quote className="h-12 w-12 mb-4 opacity-50" />
                   <p>暂无引用</p>
                   <p className="text-sm">点击下方按钮添加第一个引用</p>

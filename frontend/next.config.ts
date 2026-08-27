@@ -5,7 +5,6 @@ const nextConfig: NextConfig = {
   compress: true,
   experimental: {
     useTypeScriptCli: true,
-    optimizePackageImports: ["lucide-react", "framer-motion"],
   },
   output: "standalone",
   images: {

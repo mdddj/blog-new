@@ -28,6 +28,7 @@ export function ThumbnailUpload({
               src={thumbnail}
               alt="缩略图"
               fill
+              sizes="(max-width: 1024px) 100vw, 320px"
               className="rounded-lg object-cover"
               unoptimized
             />

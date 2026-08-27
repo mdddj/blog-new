@@ -12,7 +12,7 @@ import {
   PublicCard,
   PUBLIC_CONTAINER,
 } from "@/components/blog/public";
-import { Icon as AIIcon, Table as AITable, type TableColumn } from "animal-island-ui";
+import { Icon as AIIcon, Table as AITable, Tag as AITag, type TableColumn } from "animal-island-ui";
 import { cn } from "@/lib/utils";
 
 export default function TagsPage() {
@@ -64,13 +64,9 @@ export default function TagsPage() {
         const tagName = typeof value === "string" ? value : "";
 
         return (
-          <button
-            type="button"
-            className="font-extrabold text-[#725d42] hover:underline"
-            onClick={() => router.push(`/tag/${tagId}`)}
-          >
+          <AITag color="app-teal" size="small" onClick={() => router.push(`/tag/${tagId}`)}>
             #{tagName}
-          </button>
+          </AITag>
         );
       },
     },
@@ -79,9 +75,9 @@ export default function TagsPage() {
       dataIndex: "blog_count" as const,
       align: "right" as const,
       render: (value) => (
-        <span className="font-extrabold text-[#725d42]/70 bg-[#725d42]/5 px-2.5 py-0.5 rounded-full text-xs">
+        <AITag color="default" size="small">
           {typeof value === "number" ? value : 0} 篇
-        </span>
+        </AITag>
       ),
     },
   ];
@@ -128,14 +124,13 @@ export default function TagsPage() {
               {/* Tag Cloud Card */}
               <PublicCard color="default" className="flex flex-wrap gap-2 p-5">
                 {sortedTags.map((tag) => (
-                  <button
+                  <AITag
                     key={tag.id}
-                    type="button"
-                    className="rounded-full bg-white/80 hover:bg-[#725d42]/10 text-[#725d42] border border-[#725d42]/15 px-3.5 py-1.5 text-xs font-extrabold transition"
+                    color="app-yellow"
                     onClick={() => router.push(`/tag/${tag.id}`)}
                   >
-                    #{tag.name} <span className="opacity-60">({tag.blog_count || 0})</span>
-                  </button>
+                    #{tag.name} ({tag.blog_count || 0})
+                  </AITag>
                 ))}
               </PublicCard>
 

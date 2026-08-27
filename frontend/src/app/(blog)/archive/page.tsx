@@ -13,7 +13,12 @@ import {
   PUBLIC_CONTAINER,
   formatDate,
 } from "@/components/blog/public";
-import { Collapse as AICollapse, Icon as AIIcon } from "animal-island-ui";
+import {
+  Button as AIButton,
+  Collapse as AICollapse,
+  Icon as AIIcon,
+  Tag as AITag,
+} from "animal-island-ui";
 
 function formatDay(input: string) {
   return formatDate(input, { month: "2-digit", day: "2-digit" }).replace(/\//g, "-");
@@ -111,21 +116,20 @@ const MonthBlock = memo(function MonthBlock({ monthData }: { monthData: ArchiveM
           <AIIcon name="icon-design" size={16} />
           {monthData.month} 月
         </div>
-        <span className="text-[10px] font-bold bg-white/60 px-2 py-0.5 rounded-full text-[#725d42]/85">
+        <AITag color="default" size="small">
           {monthData.count} 篇
-        </span>
+        </AITag>
       </div>
       <div className="grid gap-1">
         {monthData.blogs.map((blog) => (
-          <button
+          <AIButton
             key={blog.id}
-            type="button"
-            className="flex min-w-0 items-center justify-between gap-4 rounded-xl px-3 py-2 text-left text-xs font-bold text-[#725d42]/85 transition hover:bg-[#725d42]/5"
+            type="text"
+            block
             onClick={() => router.push(blog.slug ? `/blog/${blog.slug}` : `/blog/${blog.id}`)}
           >
-            <span className="min-w-0 truncate hover:underline">{blog.title}</span>
-            <span className="shrink-0 text-[10px] opacity-60">{formatDay(blog.created_at)}</span>
-          </button>
+            {blog.title} · {formatDay(blog.created_at)}
+          </AIButton>
         ))}
       </div>
     </PublicCard>

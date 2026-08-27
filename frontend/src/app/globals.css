@@ -311,11 +311,10 @@
   color: #22d3ee;
 }
 
-/* Disable motion globally to keep interactions responsive. */
-*,
-*::before,
-*::after {
-  animation: none !important;
-  transition: none !important;
-  scroll-behavior: auto !important;
+/* animal-island-ui 1.7 omits Cursor CSS from its root stylesheet. */
+.animal-cursor--force,
+.animal-cursor--force * {
+  cursor:
+    url("/animal-island-cursor.png") 4 0,
+    default !important;
 }

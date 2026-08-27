@@ -1,0 +1,1 @@
+frontend 博客前台使用了animal-island-ui第三方UI包，请查看对应的.agents/skills/animal-island-ui-style skill 规范来编写代码。

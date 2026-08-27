@@ -2,6 +2,7 @@
 
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { searchApi } from "@/lib/api";
 import type { PaginatedResponse, SearchResult } from "@/types";
 import { Pagination } from "@/components/blog/pagination";
@@ -176,15 +177,12 @@ function SearchContent() {
                     className="grid gap-3 p-5 shadow-sm hover:shadow"
                   >
                     <h2 className="text-xl font-extrabold leading-snug text-inherit">
-                      <button
-                        type="button"
-                        className="text-left hover:underline text-inherit"
-                        onClick={() =>
-                          router.push(item.slug ? `/blog/${item.slug}` : `/blog/${item.id}`)
-                        }
+                      <Link
+                        href={item.slug ? `/blog/${item.slug}` : `/blog/${item.id}`}
+                        className="text-inherit hover:underline"
                       >
                         <HighlightText text={item.title} keyword={queryParam} />
-                      </button>
+                      </Link>
                     </h2>
                     <p className="line-clamp-3 text-xs leading-6 opacity-90 font-bold text-inherit">
                       <HighlightText text={item.content_snippet || ""} keyword={queryParam} />
