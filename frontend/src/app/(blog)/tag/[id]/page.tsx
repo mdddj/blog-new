@@ -2,6 +2,13 @@
 
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
+import {
+  DEFAULT_PAGE_SIZE,
+  DEFAULT_PAGE_SIZE_OPTIONS,
+  createPaginationHref,
+  parsePageParam,
+  parsePageSizeParam,
+} from "@/lib/pagination";
 import { categoryApi, tagApi } from "@/lib/api";
 import type { Blog, Category, PaginatedResponse, Tag } from "@/types";
 import { Pagination } from "@/components/blog/pagination";
@@ -11,7 +18,6 @@ import {
   LoadingState,
   PageHero,
   PostCard,
-  PublicCard,
   PUBLIC_CONTAINER,
 } from "@/components/blog/public";
 import { Button as AIButton, Icon as AIIcon } from "animal-island-ui";
@@ -22,8 +28,12 @@ function TagPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tagId = Number(params.id);
-  const currentPage = Number(searchParams.get("page")) || 1;
-  const pageSize = 10;
+  const currentPage = parsePageParam(searchParams.get("page"));
+  const pageSize = parsePageSizeParam(
+    searchParams.get("pageSize"),
+    DEFAULT_PAGE_SIZE_OPTIONS,
+    DEFAULT_PAGE_SIZE,
+  );
 
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -42,7 +52,7 @@ function TagPageContent() {
     } finally {
       setLoading(false);
     }
-  }, [tagId, currentPage]);
+  }, [tagId, currentPage, pageSize]);
 
   const fetchSidebar = useCallback(async () => {
     setSideLoading(true);
@@ -119,14 +129,25 @@ function TagPageContent() {
             </div>
           )}
 
-          {pagination.totalPages > 1 ? (
-            <PublicCard color="default" className="p-4">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={pagination.totalPages}
-                onPageChange={(page) => router.push(`/tag/${tagId}?page=${page}`)}
-              />
-            </PublicCard>
+          {pagination.total > 0 ? (
+            <Pagination
+              total={pagination.total}
+              currentPage={currentPage}
+              pageSize={pageSize}
+              pageSizeOptions={[...DEFAULT_PAGE_SIZE_OPTIONS]}
+              disabled={loading}
+              onChange={(page, nextPageSize) =>
+                router.push(
+                  createPaginationHref(
+                    `/tag/${tagId}`,
+                    searchParams.toString(),
+                    page,
+                    nextPageSize,
+                    DEFAULT_PAGE_SIZE,
+                  ),
+                )
+              }
+            />
           ) : null}
         </div>
 

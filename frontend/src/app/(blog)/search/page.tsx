@@ -3,6 +3,13 @@
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import {
+  DEFAULT_PAGE_SIZE,
+  DEFAULT_PAGE_SIZE_OPTIONS,
+  createPaginationHref,
+  parsePageParam,
+  parsePageSizeParam,
+} from "@/lib/pagination";
 import { searchApi } from "@/lib/api";
 import type { PaginatedResponse, SearchResult } from "@/types";
 import { Pagination } from "@/components/blog/pagination";
@@ -48,8 +55,12 @@ function SearchContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const queryParam = searchParams.get("q") || "";
-  const currentPage = Number(searchParams.get("page")) || 1;
-  const pageSize = 10;
+  const currentPage = parsePageParam(searchParams.get("page"));
+  const pageSize = parsePageSizeParam(
+    searchParams.get("pageSize"),
+    DEFAULT_PAGE_SIZE_OPTIONS,
+    DEFAULT_PAGE_SIZE,
+  );
 
   const [input, setInput] = useState(queryParam);
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -57,7 +68,7 @@ function SearchContent() {
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
 
-  const doSearch = useCallback(async (query: string, page: number) => {
+  const doSearch = useCallback(async (query: string, page: number, size: number) => {
     if (!query.trim()) {
       setResults([]);
       setPagination({ total: 0, totalPages: 0 });
@@ -68,7 +79,7 @@ function SearchContent() {
     setLoading(true);
     setSearched(true);
     try {
-      const data: PaginatedResponse<SearchResult> = await searchApi.search(query, page, pageSize);
+      const data: PaginatedResponse<SearchResult> = await searchApi.search(query, page, size);
       setResults(data.items);
       setPagination({ total: data.total, totalPages: data.total_pages });
     } finally {
@@ -79,13 +90,13 @@ function SearchContent() {
   useEffect(() => {
     setInput(queryParam);
     if (queryParam) {
-      doSearch(queryParam, currentPage);
+      doSearch(queryParam, currentPage, pageSize);
     } else {
       setResults([]);
       setPagination({ total: 0, totalPages: 0 });
       setSearched(false);
     }
-  }, [queryParam, currentPage, doSearch]);
+  }, [queryParam, currentPage, pageSize, doSearch]);
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -206,16 +217,25 @@ function SearchContent() {
               })}
             </div>
 
-            {pagination.totalPages > 1 ? (
-              <PublicCard color="default" className="p-4">
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={pagination.totalPages}
-                  onPageChange={(page) =>
-                    router.push(`/search?q=${encodeURIComponent(queryParam)}&page=${page}`)
-                  }
-                />
-              </PublicCard>
+            {pagination.total > 0 ? (
+              <Pagination
+                total={pagination.total}
+                currentPage={currentPage}
+                pageSize={pageSize}
+                pageSizeOptions={[...DEFAULT_PAGE_SIZE_OPTIONS]}
+                disabled={loading}
+                onChange={(page, nextPageSize) =>
+                  router.push(
+                    createPaginationHref(
+                      "/search",
+                      searchParams.toString(),
+                      page,
+                      nextPageSize,
+                      DEFAULT_PAGE_SIZE,
+                    ),
+                  )
+                }
+              />
             ) : null}
           </section>
         ) : (

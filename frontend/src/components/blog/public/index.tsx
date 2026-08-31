@@ -16,6 +16,13 @@ import {
   Search,
 } from "lucide-react";
 import { sanitizeHtml } from "@/lib/sanitize";
+import {
+  HOME_PAGE_SIZE,
+  HOME_PAGE_SIZE_OPTIONS,
+  createPaginationHref,
+  parsePageParam,
+  parsePageSizeParam,
+} from "@/lib/pagination";
 import { cn } from "@/lib/utils";
 import { useSiteConfig } from "@/contexts/site-config-context";
 import { blogApi, categoryApi, tagApi } from "@/lib/api";
@@ -764,8 +771,12 @@ function LoadingCards({ count = 6 }: { count?: number }) {
 export function PublicHome({ initialData }: { initialData?: PublicHomeInitialData }) {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const currentPage = Number(searchParams.get("page")) || 1;
-  const pageSize = 9;
+  const currentPage = parsePageParam(searchParams.get("page"));
+  const pageSize = parsePageSizeParam(
+    searchParams.get("pageSize"),
+    HOME_PAGE_SIZE_OPTIONS,
+    HOME_PAGE_SIZE,
+  );
 
   const [blogs, setBlogs] = useState<Blog[]>(initialData?.blogs || []);
   const [categories, setCategories] = useState<Category[]>(initialData?.categories || []);
@@ -785,7 +796,7 @@ export function PublicHome({ initialData }: { initialData?: PublicHomeInitialDat
     } finally {
       setLoadingPosts(false);
     }
-  }, [currentPage]);
+  }, [currentPage, pageSize]);
 
   const fetchSidebar = useCallback(async () => {
     setLoadingSide(true);
@@ -853,14 +864,25 @@ export function PublicHome({ initialData }: { initialData?: PublicHomeInitialDat
             </div>
           )}
 
-          {pagination.totalPages > 1 ? (
-            <AICard color="default" className="border-2 border-[#725d42]/10 p-4 shadow-sm">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={pagination.totalPages}
-                onPageChange={(page) => router.push(page === 1 ? "/" : `/?page=${page}`)}
-              />
-            </AICard>
+          {pagination.total > 0 ? (
+            <Pagination
+              total={pagination.total}
+              currentPage={currentPage}
+              pageSize={pageSize}
+              pageSizeOptions={[...HOME_PAGE_SIZE_OPTIONS]}
+              disabled={loadingPosts}
+              onChange={(page, nextPageSize) =>
+                router.push(
+                  createPaginationHref(
+                    "/",
+                    searchParams.toString(),
+                    page,
+                    nextPageSize,
+                    HOME_PAGE_SIZE,
+                  ),
+                )
+              }
+            />
           ) : null}
         </div>
 

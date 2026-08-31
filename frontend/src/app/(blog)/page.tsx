@@ -1,6 +1,12 @@
 import { Suspense } from "react";
 import { LoadingState, PublicHome, PUBLIC_CONTAINER } from "@/components/blog/public";
 import { blogApi, categoryApi, tagApi } from "@/lib/api";
+import {
+  HOME_PAGE_SIZE,
+  HOME_PAGE_SIZE_OPTIONS,
+  parsePageParam,
+  parsePageSizeParam,
+} from "@/lib/pagination";
 import { cn } from "@/lib/utils";
 
 function LoadingSkeleton() {
@@ -15,8 +21,12 @@ export default async function HomePage(props: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const searchParams = await props.searchParams;
-  const page = Number(searchParams?.page) || 1;
-  const pageSize = 9;
+  const page = parsePageParam(searchParams?.page);
+  const pageSize = parsePageSizeParam(
+    searchParams?.pageSize,
+    HOME_PAGE_SIZE_OPTIONS,
+    HOME_PAGE_SIZE,
+  );
 
   let initialData = undefined;
   try {
