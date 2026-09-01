@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { ThemeProvider } from "@/components/theme-provider";
-import { Toaster } from "@/components/ui/sonner";
 import { siteConfigApi } from "@/lib/api";
 import {
   absoluteUrl,
@@ -44,8 +43,8 @@ export async function generateMetadata(): Promise<Metadata> {
         images: [absoluteUrl("/og-default.svg")],
       },
       icons: {
-        icon: "/favicon.ico",
-        shortcut: "/favicon.ico",
+        icon: "/favicon.svg",
+        shortcut: "/favicon.svg",
       },
     };
   } catch (error) {
@@ -73,8 +72,8 @@ export async function generateMetadata(): Promise<Metadata> {
         images: [DEFAULT_OG_IMAGE],
       },
       icons: {
-        icon: "/favicon.ico",
-        shortcut: "/favicon.ico",
+        icon: "/favicon.svg",
+        shortcut: "/favicon.svg",
       },
     };
   }
@@ -118,7 +117,6 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
-          <Toaster />
         </ThemeProvider>
       </body>
     </html>

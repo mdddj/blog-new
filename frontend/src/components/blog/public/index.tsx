@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { memo, useCallback, useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import {
   BookOpen,
   ChevronLeft,
@@ -30,10 +29,8 @@ import { blogApi, categoryApi, tagApi } from "@/lib/api";
 import type { Blog, Category, PaginatedResponse, Tag } from "@/types";
 import { Pagination } from "@/components/blog/pagination";
 import {
-  Cursor,
   Card as AICard,
   Button as AIButton,
-  Footer as AIFooter,
   Divider as AIDivider,
   Icon as AIIcon,
   Skeleton as AISkeleton,
@@ -71,13 +68,6 @@ export function getCardColor(seed: number | string): CardColor {
   return CARD_COLORS[index];
 }
 
-export function BlogCursor({ children }: { children: ReactNode }) {
-  return (
-    <Cursor forceAll className="min-h-dvh">
-      {children}
-    </Cursor>
-  );
-}
 
 export const PUBLIC_CONTAINER = "mx-auto w-[min(1120px,calc(100vw-2rem))]";
 
@@ -191,7 +181,7 @@ export function PublicHeader() {
       <div
         className={cn(PUBLIC_CONTAINER, "flex min-h-16 items-center justify-between gap-4 py-3")}
       >
-        <Link href="/" className="flex min-w-0 items-center gap-3" aria-label="返回首页">
+        <Link href="/" prefetch={false} className="flex min-w-0 items-center gap-3">
           {config.owner_avatar ? (
             <Image
               src={config.owner_avatar}
@@ -216,27 +206,31 @@ export function PublicHeader() {
 
         <nav className="hidden items-center gap-2 lg:flex" aria-label="主导航">
           {NAV_LINKS.map((item) => (
-            <Link key={item.href} href={item.href}>
-              <AIButton
-                type={isActive(item.href) ? "primary" : "text"}
-                icon={<AIIcon name={item.icon} bounce size={20} />}
-                className="flex items-center gap-1.5 font-bold"
-              >
-                {item.label}
-              </AIButton>
+            <Link
+              key={item.href}
+              href={item.href}
+              prefetch={false}
+              className={cn(
+                "inline-flex min-h-10 items-center gap-1.5 rounded-full px-3 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-[var(--animal-focus-yellow)]",
+                isActive(item.href)
+                  ? "bg-[var(--animal-primary-color)] text-[#1f170f]"
+                  : "text-[var(--animal-text-color)] hover:bg-[var(--animal-bg-color-secondary)]",
+              )}
+            >
+              <AIIcon name={item.icon} bounce size={20} />
+              {item.label}
             </Link>
           ))}
         </nav>
 
         <div className="flex items-center gap-2">
-          <Link href="/search">
-            <AIButton
-              type="default"
-              icon={<AIIcon name="icon-miles" bounce size={18} />}
-              className="font-bold"
-            >
-              搜索
-            </AIButton>
+          <Link
+            href="/search"
+            prefetch={false}
+            className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-[var(--animal-border-color)] px-3 text-sm font-bold text-[var(--animal-text-color)] transition-colors hover:bg-[var(--animal-bg-color-secondary)] focus-visible:outline-2 focus-visible:outline-[var(--animal-focus-yellow)]"
+          >
+            <AIIcon name="icon-miles" bounce size={18} />
+            搜索
           </Link>
         </div>
       </div>
@@ -246,15 +240,19 @@ export function PublicHeader() {
         aria-label="移动端主导航"
       >
         {NAV_LINKS.map((item) => (
-          <Link key={item.href} href={item.href}>
-            <AIButton
-              type={isActive(item.href) ? "primary" : "text"}
-              size="small"
-              icon={<AIIcon name={item.icon} bounce size={16} />}
-              className="shrink-0 font-bold"
-            >
-              {item.label}
-            </AIButton>
+          <Link
+            key={item.href}
+            href={item.href}
+            prefetch={false}
+            className={cn(
+              "inline-flex min-h-9 shrink-0 items-center gap-1 rounded-full px-3 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-[var(--animal-focus-yellow)]",
+              isActive(item.href)
+                ? "bg-[var(--animal-primary-color)] text-[#1f170f]"
+                : "text-[var(--animal-text-color)] hover:bg-[var(--animal-bg-color-secondary)]",
+            )}
+          >
+            <AIIcon name={item.icon} bounce size={16} />
+            {item.label}
           </Link>
         ))}
       </nav>
@@ -313,7 +311,7 @@ export function PublicFooter() {
       <div
         className={cn(
           PUBLIC_CONTAINER,
-          "grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end z-10 relative px-4",
+          "relative z-10 grid gap-6 px-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end",
         )}
       >
         <div className="grid gap-3">
@@ -322,7 +320,7 @@ export function PublicFooter() {
             {config.site_title || "典典博客"}
           </div>
           <div
-            className="max-w-3xl text-sm font-bold leading-7 text-[var(--animal-text-color-secondary)] [&_a]:text-[var(--animal-primary-color)] [&_a]:underline hover:[&_a]:text-[var(--animal-primary-color-hover)]"
+            className="max-w-3xl text-sm font-bold leading-7 text-[var(--animal-text-color-secondary)] [&_a]:text-[var(--animal-text-color)] [&_a]:underline hover:[&_a]:text-[var(--animal-primary-color-active)]"
             dangerouslySetInnerHTML={{
               __html: sanitizeHtml(
                 config.footer_text ||
@@ -373,9 +371,7 @@ export function PublicFooter() {
           ))}
         </div>
       </div>
-      <div className="mt-8 select-none pointer-events-none">
-        <AIFooter type="tree" />
-      </div>
+      <div className="public-footer-art" aria-hidden="true" />
     </footer>
   );
 }
@@ -396,12 +392,7 @@ export const PageHero = memo(function PageHero({
   children?: ReactNode;
 }) {
   return (
-    <motion.section
-      className="relative grid min-w-0 gap-2"
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.28, delay: 0.04, ease: [0.4, 0, 0.2, 1] }}
-    >
+    <section className="relative grid min-w-0 gap-2">
       <AICard color="app-yellow" className="grid gap-4 p-5 sm:p-6">
         <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
           <div className="grid min-w-0 gap-2.5">
@@ -445,11 +436,11 @@ export const PageHero = memo(function PageHero({
         </div>
       </AICard>
       <AIDivider type="wave-yellow" className="w-full" />
-    </motion.section>
+    </section>
   );
 });
 
-export function LoadingState({ label = "正在加载" }: { label?: string }) {
+export function LoadingState({ label = "正在加载…" }: { label?: string }) {
   return (
     <AICard type="dashed" color="default" className="grid min-h-60 place-items-center gap-3 p-6">
       <div
@@ -525,23 +516,15 @@ export const PostCard = memo(function PostCard({
   const cardColor = getCardColor(blog.id);
 
   return (
-    <motion.div
-      data-post-card-motion
-      className="h-full transform-gpu"
-      initial={{ opacity: 0, y: 14 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -3, scale: 1.006 }}
-      whileTap={{ y: -1, scale: 0.998 }}
-      viewport={{ once: true, amount: 0.15 }}
-      transition={{ duration: 0.26, ease: [0.4, 0, 0.2, 1] }}
-    >
+    <div data-post-card-motion className="h-full">
       <AICard color={cardColor} className="group flex h-full flex-col justify-between p-4">
         <div>
           {blog.thumbnail ? (
             <Link
               href={blogHref(blog)}
+              prefetch={false}
               className="relative mb-3 block aspect-[16/9] w-full overflow-hidden rounded-[var(--animal-border-radius-lg)] bg-[var(--animal-bg-color-secondary)]"
-              aria-label={`阅读 ${blog.title}`}
+              aria-label={blog.title}
             >
               <Image
                 src={blog.thumbnail}
@@ -564,7 +547,7 @@ export const PostCard = memo(function PostCard({
           </div>
 
           <h3 className="mb-2 line-clamp-2 text-lg font-extrabold leading-snug tracking-tight text-inherit">
-            <Link href={blogHref(blog)} className="font-extrabold text-inherit hover:underline">
+            <Link href={blogHref(blog)} prefetch={false} className="font-extrabold text-inherit hover:underline">
               {blog.title}
             </Link>
           </h3>
@@ -579,7 +562,7 @@ export const PostCard = memo(function PostCard({
           <span>{readTime} 分钟</span>
         </div>
       </AICard>
-    </motion.div>
+    </div>
   );
 });
 
@@ -667,14 +650,14 @@ export function BlogSidebar({
       <AICard color="brown" className="grid gap-4 p-5">
         <div className="flex items-center gap-4">
           {config.owner_avatar ? (
-            <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full">
+            <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full">
               <Image
                 src={config.owner_avatar}
                 alt={config.owner_name || "作者头像"}
-                fill
-                sizes="56px"
+                width={56}
+                height={56}
                 loading="eager"
-                className="object-cover"
+                className="h-14 w-14 object-cover"
               />
             </div>
           ) : (
@@ -700,6 +683,7 @@ export function BlogSidebar({
             <Link
               key={category.id}
               href={`/category/${category.id}`}
+              prefetch={false}
               className="block rounded-full px-3 py-2 hover:bg-[var(--animal-bg-color-secondary)]"
             >
               <span className="flex w-full min-w-0 items-center justify-between gap-3 text-left">
@@ -724,7 +708,7 @@ export function BlogSidebar({
         </div>
         <div className="flex flex-wrap gap-1.5">
           {tags.slice(0, 20).map((tag) => (
-            <Link key={tag.id} href={`/tag/${tag.id}`} className="inline-flex rounded-full">
+            <Link key={tag.id} href={`/tag/${tag.id}`} prefetch={false} className="inline-flex rounded-full">
               <AITag color={getCardColor(tag.id)} size="small">
                 #{tag.name}
               </AITag>
@@ -761,9 +745,9 @@ function LoadingCards({ count = 6 }: { count?: number }) {
 }
 
 export function PublicHome({ initialData }: { initialData?: PublicHomeInitialData }) {
-  const { config } = useSiteConfig();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { config } = useSiteConfig();
   const currentPage = parsePageParam(searchParams.get("page"));
   const pageSize = parsePageSizeParam(
     searchParams.get("pageSize"),
@@ -804,7 +788,6 @@ export function PublicHome({ initialData }: { initialData?: PublicHomeInitialDat
 
   useEffect(() => {
     if (!initialData) return;
-
     setBlogs(initialData.blogs);
     setPagination(initialData.pagination);
     setCategories(initialData.categories);
@@ -814,15 +797,11 @@ export function PublicHome({ initialData }: { initialData?: PublicHomeInitialDat
   }, [initialData]);
 
   useEffect(() => {
-    if (!initialData) {
-      fetchPosts();
-    }
+    if (!initialData) fetchPosts();
   }, [fetchPosts, initialData]);
 
   useEffect(() => {
-    if (!initialData) {
-      fetchSidebar();
-    }
+    if (!initialData) fetchSidebar();
   }, [fetchSidebar, initialData]);
 
   const feedBlogs = blogs;

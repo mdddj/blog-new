@@ -13,34 +13,25 @@ export function AnalyticsScript() {
       return;
     }
 
-    analyticsInjected = true;
-
     const injectScript = () => {
+      if (analyticsInjected) return;
+      analyticsInjected = true;
       const container = document.createElement("div");
       container.innerHTML = config.analytics_code;
 
-      const scripts = container.querySelectorAll("script");
-      scripts.forEach((script) => {
+      for (const script of container.querySelectorAll("script")) {
         const newScript = document.createElement("script");
         newScript.defer = true;
-
-        Array.from(script.attributes).forEach((attr) => {
+        for (const attr of Array.from(script.attributes)) {
           newScript.setAttribute(attr.name, attr.value);
-        });
-
-        if (script.textContent) {
-          newScript.textContent = script.textContent;
         }
-
+        if (script.textContent) newScript.textContent = script.textContent;
         document.head.appendChild(newScript);
-      });
+      }
     };
 
-    if ("requestIdleCallback" in window) {
-      requestIdleCallback(injectScript);
-    } else {
-      setTimeout(injectScript, 200);
-    }
+    const timer = window.setTimeout(injectScript, 10000);
+    return () => window.clearTimeout(timer);
   }, [config.analytics_code, isLoading]);
 
   return null;

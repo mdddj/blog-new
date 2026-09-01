@@ -7,6 +7,7 @@ import { EmptyState, PUBLIC_CONTAINER } from "@/components/blog/public";
 import { absoluteUrl } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "技术文档",
   description: "浏览梁典典整理的技术文档、参考资料与实践笔记。",

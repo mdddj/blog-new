@@ -7,7 +7,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans:
-    "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue",
+    Nunito, system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
     sans-serif;
   --font-mono:
     "JetBrains Mono", "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
@@ -125,6 +125,173 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+:root {
+  --animal-text-color-secondary: #795f45;
+  --animal-text-color-muted: #795f45;
+}
+
+.public-shell {
+  font-family: Nunito, system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --animal-font-family: Nunito, system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif !important;
+  --animal-text-color-secondary: #795f45 !important;
+  --animal-text-color-muted: #795f45 !important;
+}
+.public-shell .animal-cursor,
+.public-shell [class*="animal-btn"],
+.public-shell [class*="animal-card-app-pink"],
+.public-shell [class*="animal-card-purple"],
+.public-shell [class*="animal-card-app-blue"],
+.public-shell [class*="animal-card-app-yellow"],
+.public-shell [class*="animal-card-app-orange"],
+.public-shell [class*="animal-card-app-teal"],
+.public-shell [class*="animal-card-app-green"],
+.public-shell [class*="animal-card-app-red"],
+.public-shell [class*="animal-card-lime-green"],
+.public-shell [class*="animal-card-yellow-green"],
+.public-shell [class*="animal-card-brown"],
+.public-shell [class*="animal-card-warm-peach-pink"],
+.public-shell [class*="animal-icon"],
+.public-shell [class*="animal-tag"],
+.public-shell [class*="animal-title"],
+.public-shell [class*="animal-pagination"] {
+  font-family: inherit !important;
+}
+
+.public-shell [class*="animal-card-app-pink"],
+.public-shell [class*="animal-card-purple"],
+.public-shell [class*="animal-card-app-blue"],
+.public-shell [class*="animal-card-app-yellow"],
+.public-shell [class*="animal-card-app-orange"],
+.public-shell [class*="animal-card-app-teal"],
+.public-shell [class*="animal-card-app-green"],
+.public-shell [class*="animal-card-app-red"],
+.public-shell [class*="animal-card-lime-green"],
+.public-shell [class*="animal-card-yellow-green"],
+.public-shell [class*="animal-card-brown"],
+.public-shell [class*="animal-card-warm-peach-pink"] {
+  color: #1f170f !important;
+}
+
+.public-shell [class*="animal-tag"] {
+  color: #1f170f !important;
+}
+
+.public-shell [class*="animal-card"] .opacity-80,
+.public-shell [class*="animal-card"] .opacity-90 {
+  opacity: 1 !important;
+}
+.public-shell .text-slate-400 {
+  color: var(--animal-text-color-secondary) !important;
+}
+.public-shell aside a,
+.public-shell footer .max-w-3xl a {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.public-shell aside a.inline-flex {
+  min-height: 32px;
+}
+
+.public-shell .text-xs,
+.public-shell .text-\[10px\] {
+  font-weight: 700;
+}
+.public-shell [class*="animal-total"],
+.public-shell [class*="animal-jumper"],
+.public-shell [class*="animal-ellipsis"] {
+  color: #4a321e !important;
+}
+
+.public-shell [class*="animal-ribbonText"] {
+  color: #4a321e !important;
+  text-shadow: none !important;
+}
+
+.public-footer-art {
+  min-height: 80px;
+  margin-top: 2rem;
+  background:
+    radial-gradient(circle at 18% 100%, var(--animal-primary-color-bg) 0 16%, transparent 17%),
+    radial-gradient(circle at 38% 100%, var(--animal-primary-color) 0 22%, transparent 23%),
+    radial-gradient(circle at 62% 100%, var(--animal-warning-color) 0 18%, transparent 19%),
+    linear-gradient(180deg, transparent, var(--animal-bg-color-secondary));
+  opacity: 0.8;
+}
+
+@keyframes public-page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.995);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.public-shell [data-post-card-motion] {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 270px;
+}
+@keyframes public-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.public-shell [data-page-motion] {
+  animation: public-page-enter 0.24s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.public-shell [data-post-card-motion] {
+  animation: public-card-enter 0.26s cubic-bezier(0.4, 0, 0.2, 1) both;
+  transition: transform 0.26s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.public-shell [data-post-card-motion]:hover {
+  transform: translateY(-3px) scale(1.006);
+}
+
+.public-shell [data-post-card-motion]:active {
+  transform: translateY(-1px) scale(0.998);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .public-shell [data-page-motion],
+
+  .public-shell [data-post-card-motion] {
+    animation: none;
+    transition: none;
+  }
+
+  .public-shell [data-post-card-motion]:hover,
+  .public-shell [data-post-card-motion]:active {
+    transform: none;
+  }
+}
+
+@font-face {
+  font-family: "Noto Sans SC";
+  font-style: normal;
+  font-weight: 400;
+  font-display: optional;
+  src: local("PingFang SC"), local("Hiragino Sans GB"), local("Microsoft YaHei");
+}
+
+@font-face {
+  font-family: "Noto Sans SC";
+  font-style: normal;
+  font-weight: 500 700;
+  font-display: optional;
+  src: local("PingFang SC"), local("Hiragino Sans GB"), local("Microsoft YaHei");
 }
 
 /* Custom Alert/Admonition Styles */
@@ -311,9 +478,9 @@
   color: #22d3ee;
 }
 
-/* animal-island-ui 1.7 omits Cursor CSS from its root stylesheet. */
-.animal-cursor--force,
-.animal-cursor--force * {
+/* Keep the Animal Island cursor without mounting a client-side cursor wrapper. */
+.public-shell,
+.public-shell * {
   cursor:
     url("/animal-island-cursor.png") 4 0,
     default !important;

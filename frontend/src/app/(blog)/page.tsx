@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { LoadingState, PublicHome, PUBLIC_CONTAINER } from "@/components/blog/public";
+import { PublicHome, PUBLIC_CONTAINER, LoadingState } from "@/components/blog/public";
 import { blogApi, categoryApi, tagApi } from "@/lib/api";
 import {
   HOME_PAGE_SIZE,
@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 function LoadingSkeleton() {
   return (
     <main className={cn(PUBLIC_CONTAINER, "grid gap-4 py-8")}>
-      <LoadingState label="正在加载首页内容" />
+      <LoadingState label="正在加载首页内容…" />
     </main>
   );
 }
@@ -30,7 +30,7 @@ export async function generateMetadata({
   const canonicalPath = createPaginationHref("/", "", page, pageSize, HOME_PAGE_SIZE);
 
   return {
-    title: page === 1 ? undefined : `第 ${page} 页文章`,
+    title: page === 1 ? "AI 工具链、Rust、UE5 与 SwiftUI 实战记录" : `第 ${page} 页文章`,
     description: "记录 AI 工具链、Rust、UE5、Flutter 与 SwiftUI 的实战经验。",
     alternates: { canonical: absoluteUrl(canonicalPath) },
   };
