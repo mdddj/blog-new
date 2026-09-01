@@ -1,16 +1,12 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Clock3, PanelLeftClose, PanelLeftOpen } from "lucide-react";
-import { directoryApi, documentApi } from "@/lib/api";
 import type { DirectoryTreeNode, DocumentResponse } from "@/types";
 import { DocsTreeNav } from "@/components/docs/docs-tree-nav";
 import { DocsSearch } from "@/components/docs/docs-search";
 import { DocumentContentRenderer } from "@/components/docs/document-content-renderer";
 import {
-  EmptyState,
-  LoadingState,
   PublicCard,
   PUBLIC_CONTAINER,
   formatDate,
@@ -19,66 +15,42 @@ import { Button as AIButton, Icon as AIIcon } from "animal-island-ui";
 import { cn } from "@/lib/utils";
 
 function extractHeadings(html: string): { id: string; text: string; level: number }[] {
-  if (typeof window === "undefined") return [];
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, "text/html");
-  return Array.from(doc.querySelectorAll("h1, h2, h3, h4, h5, h6")).map((node, idx) => ({
-    id: `heading-${idx}`,
-    text: node.textContent || "",
-    level: Number(node.tagName.slice(1)),
+  const headingPattern = /<h([1-6])\b[^>]*\bid=["']([^"']+)["'][^>]*>([\s\S]*?)<\/h\1>/gi;
+  return Array.from(html.matchAll(headingPattern)).map(([, level, id, content]) => ({
+    id,
+    text: content.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim(),
+    level: Number(level),
   }));
 }
 
 function addHeadingIds(html: string): string {
-  if (typeof window === "undefined") return html;
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, "text/html");
-  doc.querySelectorAll("h1, h2, h3, h4, h5, h6").forEach((node, idx) => {
-    node.id = `heading-${idx}`;
+  let headingIndex = 0;
+  return html.replace(/<h([1-6])\b([^>]*)>/gi, (_match, level, attrs) => {
+    const id = `heading-${headingIndex}`;
+    headingIndex += 1;
+    const withoutId = attrs.replace(/\s+id=(?:"[^"]*"|'[^']*'|[^\s>]+)/i, "");
+    return `<h${level}${withoutId} id="${id}">`;
   });
-  return doc.body.innerHTML;
 }
 
-export function DocDetailClient({ docId }: { docId: number }) {
-  const router = useRouter();
-  const [tree, setTree] = useState<DirectoryTreeNode[]>([]);
-  const [doc, setDoc] = useState<DocumentResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export function DocDetailClient({
+  docId,
+  initialDoc,
+  initialTree,
+}: {
+  docId: number;
+  initialDoc: DocumentResponse;
+  initialTree: DirectoryTreeNode[];
+}) {
+  const tree = initialTree;
+  const doc = initialDoc;
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeHeading, setActiveHeading] = useState("");
   const [expandAll, setExpandAll] = useState<boolean | undefined>(undefined);
 
-  const tocItems = useMemo(() => (doc?.html ? extractHeadings(doc.html) : []), [doc?.html]);
-  const processedHtml = useMemo(() => (doc?.html ? addHeadingIds(doc.html) : ""), [doc?.html]);
+  const processedHtml = useMemo(() => (doc.html ? addHeadingIds(doc.html) : ""), [doc.html]);
+  const tocItems = useMemo(() => (processedHtml ? extractHeadings(processedHtml) : []), [processedHtml]);
 
-  useEffect(() => {
-    async function fetchData() {
-      if (!Number.isFinite(docId) || docId <= 0) {
-        setDoc(null);
-        setError("文档不存在或已删除");
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      setError(null);
-      try {
-        const [treeData, docData] = await Promise.all([
-          directoryApi.getTree(),
-          documentApi.getById(docId),
-        ]);
-        setTree(treeData);
-        setDoc(docData);
-      } catch {
-        setError("文档不存在或已删除");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchData();
-  }, [docId]);
 
   useEffect(() => {
     if (tocItems.length === 0) return;
@@ -101,30 +73,6 @@ export function DocDetailClient({ docId }: { docId: number }) {
 
   const readingTime = doc ? Math.max(1, Math.ceil(doc.content.length / 700)) : 0;
 
-  if (loading) {
-    return (
-      <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8 px-4")}>
-        <LoadingState label="正在加载文档树与文章..." />
-      </main>
-    );
-  }
-
-  if (error || !doc) {
-    return (
-      <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8 px-4")}>
-        <EmptyState
-          title={error || "无法访问文档"}
-          description="返回文档首页继续浏览。"
-          icon={<AIIcon name="icon-critterpedia" size={32} />}
-        />
-        <div className="flex justify-center">
-          <AIButton type="primary" className="font-bold" onClick={() => router.push("/docs")}>
-            返回文档首页
-          </AIButton>
-        </div>
-      </main>
-    );
-  }
 
   const treePanel = (
     <PublicCard color="default" className="grid gap-4 p-4 shadow-sm border border-[#725d42]/10">

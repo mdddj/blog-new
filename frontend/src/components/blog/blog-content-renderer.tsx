@@ -76,7 +76,7 @@ export function BlogContentRenderer({
           );
         }
         return (
-          <span
+          <div
             key={`html-${index}`}
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(part.content) }}
           />

@@ -40,7 +40,7 @@ const ALLOWED_TAGS = [
   "small",
   "source",
   "span",
-  "stro",
+  "strong",
   "sub",
   "sup",
   "table",
@@ -87,7 +87,15 @@ const config = {
   ADD_ATTR: ["target"],
 };
 
+function sanitizeServerHtml(html: string): string {
+  return html
+    .replace(/<\s*(script|style|iframe|object|embed|form|base|meta|link)\b[^>]*>[\s\S]*?<\/\s*\1\s*>/gi, "")
+    .replace(/<\s*(script|style|iframe|object|embed|form|base|meta|link)\b[^>]*\/?>/gi, "")
+    .replace(/\s+on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, "")
+    .replace(/\s+(?:href|src|srcset)\s*=\s*(?:"\s*javascript:[^"]*"|'\s*javascript:[^']*'|\s*javascript:[^\s>]+)/gi, "");
+}
+
 export function sanitizeHtml(html: string): string {
-  if (typeof window === "undefined") return html;
+  if (typeof window === "undefined") return sanitizeServerHtml(html);
   return DOMPurify.sanitize(html, config);
 }

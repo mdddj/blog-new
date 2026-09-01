@@ -1,7 +1,7 @@
-"use client";
-
-import { Suspense, useCallback, useEffect, useState } from "react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { cache } from "react";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { categoryApi, tagApi } from "@/lib/api";
 import {
   DEFAULT_PAGE_SIZE,
   DEFAULT_PAGE_SIZE_OPTIONS,
@@ -9,178 +9,67 @@ import {
   parsePageParam,
   parsePageSizeParam,
 } from "@/lib/pagination";
-import { categoryApi, tagApi } from "@/lib/api";
-import type { Blog, Category, PaginatedResponse, Tag } from "@/types";
-import { Pagination } from "@/components/blog/pagination";
-import {
-  BlogSidebar,
-  EmptyState,
-  LoadingState,
-  PageHero,
-  PostCard,
-  PUBLIC_CONTAINER,
-} from "@/components/blog/public";
-import { Button as AIButton, Icon as AIIcon } from "animal-island-ui";
-import { cn } from "@/lib/utils";
+import type { Category } from "@/types";
+import { absoluteUrl, categoryMetadata } from "@/lib/seo";
+import { CategoryPageClient, type CategoryPageInitialData } from "./category-page-client";
 
-function CategoryPageContent() {
-  const params = useParams();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const categoryId = Number(params.id);
-  const currentPage = parsePageParam(searchParams.get("page"));
-  const pageSize = parsePageSizeParam(
-    searchParams.get("pageSize"),
-    DEFAULT_PAGE_SIZE_OPTIONS,
-    DEFAULT_PAGE_SIZE,
-  );
+const getCategory = cache(async (categoryId: number): Promise<Category | null> => {
+  const categories = await categoryApi.list();
+  return categories.find((category) => category.id === categoryId) || null;
+});
 
-  const [blogs, setBlogs] = useState<Blog[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [tags, setTags] = useState<Tag[]>([]);
-  const [currentCategory, setCurrentCategory] = useState<Category | null>(null);
-  const [pagination, setPagination] = useState({ total: 0, totalPages: 0 });
-  const [loading, setLoading] = useState(true);
-  const [sideLoading, setSideLoading] = useState(true);
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}): Promise<Metadata> {
+  const category = await getCategory(Number((await params).id));
+  if (!category) notFound();
 
-  const fetchBlogs = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data: PaginatedResponse<Blog> = await categoryApi.getBlogs(
-        categoryId,
-        currentPage,
-        pageSize,
-      );
-      setBlogs(data.items);
-      setPagination({ total: data.total, totalPages: data.total_pages });
-    } finally {
-      setLoading(false);
-    }
-  }, [categoryId, currentPage, pageSize]);
-
-  const fetchSidebar = useCallback(async () => {
-    setSideLoading(true);
-    try {
-      const [categoriesData, tagsData] = await Promise.all([categoryApi.list(), tagApi.list()]);
-      setCategories(categoriesData);
-      setTags(tagsData);
-      setCurrentCategory(categoriesData.find((item) => item.id === categoryId) || null);
-    } finally {
-      setSideLoading(false);
-    }
-  }, [categoryId]);
-
-  useEffect(() => {
-    fetchBlogs();
-  }, [fetchBlogs]);
-
-  useEffect(() => {
-    fetchSidebar();
-  }, [fetchSidebar]);
-
-  return (
-    <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8 px-4")}>
-      <PageHero
-        eyebrow="Category"
-        title={currentCategory?.name || "分类文章"}
-        description={
-          currentCategory?.intro || "这个分类下的文章已经按时间顺序展开，直接进入阅读即可。"
-        }
-        actions={
-          <AIButton type="default" className="font-bold" onClick={() => router.push("/categories")}>
-            <AIIcon name="icon-critterpedia" size={16} className="mr-1" />
-            返回分类索引
-          </AIButton>
-        }
-        stats={[
-          { label: "Posts", value: pagination.total, description: "当前分类文章数" },
-          {
-            label: "Page",
-            value: `${currentPage}/${Math.max(1, pagination.totalPages)}`,
-            description: "分页位置",
-          },
-          { label: "Tags", value: tags.length, description: "可用标签" },
-        ]}
-      />
-
-      <section className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_280px]">
-        <div className="grid gap-4">
-          <div className="flex flex-wrap items-end justify-between gap-3 px-1">
-            <div>
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-400">
-                Posts
-              </p>
-              <h2 className="mt-1 text-xl font-extrabold tracking-tight text-[#725d42]">
-                分类文章
-              </h2>
-            </div>
-            <span className="text-xs font-bold text-slate-400">
-              共 {pagination.total} 篇 · 当前第 {currentPage} 页
-            </span>
-          </div>
-
-          {loading ? (
-            <LoadingState label="正在加载文章列表..." />
-          ) : blogs.length === 0 ? (
-            <EmptyState
-              title="这个分类下还没有文章"
-              description="换一个分类或返回首页看看最新内容。"
-              icon={<AIIcon name="icon-critterpedia" size={32} />}
-            />
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2">
-              {blogs.map((blog, index) => (
-                <PostCard key={blog.id} blog={blog} eager={index === 0} />
-              ))}
-            </div>
-          )}
-
-          {pagination.total > 0 ? (
-            <Pagination
-              total={pagination.total}
-              currentPage={currentPage}
-              pageSize={pageSize}
-              pageSizeOptions={[...DEFAULT_PAGE_SIZE_OPTIONS]}
-              disabled={loading}
-              onChange={(page, nextPageSize) =>
-                router.push(
-                  createPaginationHref(
-                    `/category/${categoryId}`,
-                    searchParams.toString(),
-                    page,
-                    nextPageSize,
-                    DEFAULT_PAGE_SIZE,
-                  ),
-                )
-              }
-            />
-          ) : null}
-        </div>
-
-        <div className="xl:sticky xl:top-24">
-          {sideLoading ? (
-            <LoadingState label="正在加载索引" />
-          ) : (
-            <BlogSidebar categories={categories} tags={tags} title="分类导航" />
-          )}
-        </div>
-      </section>
-    </main>
-  );
+  const query = await searchParams;
+  const page = parsePageParam(query.page);
+  const pageSize = parsePageSizeParam(query.pageSize, DEFAULT_PAGE_SIZE_OPTIONS, DEFAULT_PAGE_SIZE);
+  const baseMetadata = categoryMetadata(category);
+  return {
+    ...baseMetadata,
+    title: page === 1 ? baseMetadata.title : `${category.name} 技术文章 - 第 ${page} 页`,
+    alternates: {
+      canonical: absoluteUrl(
+        createPaginationHref(`/category/${category.id}`, "", page, pageSize, DEFAULT_PAGE_SIZE),
+      ),
+    },
+  };
 }
 
-function LoadingFallback() {
-  return (
-    <main className={cn(PUBLIC_CONTAINER, "grid gap-4 py-8 px-4")}>
-      <LoadingState label="正在加载分类文章..." />
-    </main>
-  );
-}
+export default async function CategoryDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const categoryId = Number((await params).id);
+  const category = await getCategory(categoryId);
+  if (!category) notFound();
 
-export default function CategoryDetailPage() {
-  return (
-    <Suspense fallback={<LoadingFallback />}>
-      <CategoryPageContent />
-    </Suspense>
-  );
+  const query = await searchParams;
+  const page = parsePageParam(query.page);
+  const pageSize = parsePageSizeParam(query.pageSize, DEFAULT_PAGE_SIZE_OPTIONS, DEFAULT_PAGE_SIZE);
+  const [blogs, categories, tags] = await Promise.all([
+    categoryApi.getBlogs(categoryId, page, pageSize),
+    categoryApi.list(),
+    tagApi.list(),
+  ]);
+
+  const initialData: CategoryPageInitialData = {
+    blogs: blogs.items,
+    categories,
+    tags,
+    currentCategory: category,
+    pagination: { total: blogs.total, totalPages: blogs.total_pages },
+  };
+
+  return <CategoryPageClient initialData={initialData} />;
 }

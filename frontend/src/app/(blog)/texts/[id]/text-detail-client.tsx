@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import {
   Button as AIButton,
@@ -10,57 +10,24 @@ import {
   Tag as AITag,
   Title as AITitle,
 } from "animal-island-ui";
-import {
-  EmptyState,
-  LoadingState,
-  PublicCard,
-  PUBLIC_CONTAINER,
-  formatDate,
-} from "@/components/blog/public";
+import { PublicCard, PUBLIC_CONTAINER, formatDate } from "@/components/blog/public";
 import { textApi } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { Text } from "@/types";
 
-export function TextDetailClient({ textKey }: { textKey: string }) {
+export function TextDetailClient({ textKey, initialText }: { textKey: string; initialText: Text }) {
   const router = useRouter();
-  const [text, setText] = useState<Text | null>(null);
+  const [text, setText] = useState<Text>(initialText);
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(true);
   const [unlocking, setUnlocking] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchText() {
-      if (!textKey.trim()) {
-        setText(null);
-        setError("字典文本不存在或已删除");
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      setError(null);
-      setPasswordError(null);
-      try {
-        const data = await textApi.getPublicByKey(textKey);
-        setText(data);
-      } catch {
-        setError("字典文本不存在或已删除");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchText();
-  }, [textKey]);
-
-  const hasContent = Boolean(text?.content);
-  const isLocked = Boolean(text?.is_encrypted && !hasContent);
+  const hasContent = Boolean(text.content);
+  const isLocked = Boolean(text.is_encrypted && !hasContent);
   const lineCount = useMemo(() => {
-    if (!text?.content) return 0;
+    if (!text.content) return 0;
     return text.content.split(/\r\n|\r|\n/).length;
-  }, [text?.content]);
+  }, [text.content]);
 
   async function handleUnlock(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -80,31 +47,6 @@ export function TextDetailClient({ textKey }: { textKey: string }) {
     } finally {
       setUnlocking(false);
     }
-  }
-
-  if (loading) {
-    return (
-      <main className={cn(PUBLIC_CONTAINER, "grid gap-6 px-4 py-8")}>
-        <LoadingState label="正在加载字典文本..." />
-      </main>
-    );
-  }
-
-  if (error || !text) {
-    return (
-      <main className={cn(PUBLIC_CONTAINER, "grid gap-6 px-4 py-8")}>
-        <EmptyState
-          title={error || "无法访问字典文本"}
-          description="返回首页继续浏览内容。"
-          icon={<AIIcon name="icon-critterpedia" size={32} />}
-        />
-        <div className="flex justify-center">
-          <AIButton type="primary" className="font-bold" onClick={() => router.push("/")}>
-            返回首页
-          </AIButton>
-        </div>
-      </main>
-    );
   }
 
   return (

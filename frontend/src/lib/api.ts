@@ -662,7 +662,7 @@ export const siteConfigApi = {
   // 获取公开配置（前端使用）
   getPublic: () =>
     request<PublicSiteConfig>("/config", {
-      cache: "no-store",
+      next: { revalidate: 300 },
     }),
 
   // 获取所有配置（管理后台使用）

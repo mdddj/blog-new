@@ -38,9 +38,10 @@ USER nextjs
 # Expose port
 EXPOSE 3000
 
-# Environment variables
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
+ENV NEXT_PUBLIC_SITE_URL="https://itbug.shop"
+ENV NEXT_PUBLIC_SITE_NAME="梁典典的博客"
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \

@@ -1,22 +1,22 @@
+import { cache } from "react";
 import type { Metadata } from "next";
-import { documentApi } from "@/lib/api";
+import { notFound } from "next/navigation";
+import { documentApi, directoryApi } from "@/lib/api";
 import type { DocumentResponse } from "@/types";
+import { absoluteUrl } from "@/lib/seo";
 import { DocDetailClient } from "./doc-detail-client";
 
-async function getDocument(docId: number): Promise<DocumentResponse | null> {
-  if (!Number.isFinite(docId) || docId <= 0) {
-    return null;
-  }
-
+const getDocument = cache(async (docId: number): Promise<DocumentResponse | null> => {
+  if (!Number.isFinite(docId) || docId <= 0) return null;
   try {
     return await documentApi.getById(docId);
   } catch (error) {
-    console.error("Failed to fetch document for metadata:", error);
+    console.error("Failed to fetch document:", error);
     return null;
   }
-}
+});
 
-function buildDocumentTitle(doc: DocumentResponse): string {
+function buildDocumentTitle(doc: DocumentResponse) {
   const suffix = doc.filename?.trim() || "文档";
   return `${doc.name} | ${suffix}`;
 }
@@ -26,22 +26,23 @@ export async function generateMetadata({
 }: {
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
-  const { id } = await params;
-  const doc = await getDocument(Number(id));
+  const id = Number((await params).id);
+  const doc = await getDocument(id);
+  if (!doc) notFound();
 
-  if (!doc) {
-    return {
-      title: "文档未找到",
-    };
-  }
-
+  const title = buildDocumentTitle(doc);
   return {
-    title: buildDocumentTitle(doc),
+    title,
     description: doc.name,
+    alternates: { canonical: absoluteUrl(`/docs/${id}`) },
   };
 }
 
 export default async function DocDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  return <DocDetailClient docId={Number(id)} />;
+  const docId = Number((await params).id);
+  const doc = await getDocument(docId);
+  if (!doc) notFound();
+
+  const tree = await directoryApi.getTree();
+  return <DocDetailClient docId={docId} initialDoc={doc} initialTree={tree} />;
 }

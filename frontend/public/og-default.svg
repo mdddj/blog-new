@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">梁典典的博客</title>
+  <desc id="desc">AI 工具链、Rust、UE5、Flutter 与 SwiftUI 实战记录</desc>
+  <rect width="1200" height="630" rx="48" fill="#f4efe4"/>
+  <circle cx="1020" cy="110" r="180" fill="#f6c453" opacity=".55"/>
+  <circle cx="1080" cy="540" r="230" fill="#66c9b6" opacity=".5"/>
+  <path d="M0 520c180-84 290-84 470 0s290 84 470 0 180-84 260 0v110H0z" fill="#d9b990" opacity=".55"/>
+  <rect x="94" y="100" width="116" height="18" rx="9" fill="#4eaa9b"/>
+  <text x="94" y="280" fill="#725d42" font-family="Nunito, Noto Sans SC, sans-serif" font-size="72" font-weight="800">梁典典的博客</text>
+  <text x="98" y="355" fill="#725d42" font-family="Nunito, Noto Sans SC, sans-serif" font-size="30" font-weight="600">AI 工具链 · Rust · UE5 · Flutter · SwiftUI</text>
+  <text x="98" y="430" fill="#8f785b" font-family="Nunito, Noto Sans SC, sans-serif" font-size="24" font-weight="500">记录真正跑通过的方案、踩坑与工程实践</text>
+  <g transform="translate(930 250)">
+    <circle cx="0" cy="0" r="72" fill="#f6c453"/>
+    <circle cx="-25" cy="-8" r="10" fill="#725d42"/>
+    <circle cx="25" cy="-8" r="10" fill="#725d42"/>
+    <path d="M-27 30c18 16 36 16 54 0" fill="none" stroke="#725d42" stroke-width="8" stroke-linecap="round"/>
+  </g>
+</svg>

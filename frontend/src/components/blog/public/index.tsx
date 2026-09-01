@@ -24,6 +24,7 @@ import {
   parsePageSizeParam,
 } from "@/lib/pagination";
 import { cn } from "@/lib/utils";
+import { cleanText } from "@/lib/seo";
 import { useSiteConfig } from "@/contexts/site-config-context";
 import { blogApi, categoryApi, tagApi } from "@/lib/api";
 import type { Blog, Category, PaginatedResponse, Tag } from "@/types";
@@ -500,19 +501,16 @@ export function readingMinutes(
 }
 
 export function buildExcerpt(blog: Blog, length = 140) {
-  return (blog.excerpt || blog.summary || blog.html || blog.content || "")
+  const source = (blog.excerpt || blog.summary || blog.html || blog.content || "")
     .replace(/<pre[^>]*>[\s\S]*?<\/pre>/gi, "")
     .replace(/<code[^>]*>[\s\S]*?<\/code>/gi, "")
-    .replace(/<[^>]*>/g, "")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, length);
+    .replace(/<[^>]*>/g, "");
+  return cleanText(source, length);
 }
 
 export function blogHref(blog: Pick<Blog, "id" | "slug">) {
-  return blog.slug ? `/blog/${blog.slug}` : `/blog/${blog.id}`;
+  return blog.slug ? `/blog/${encodeURIComponent(blog.slug)}` : `/blog/${blog.id}`;
 }
-
 export const PostCard = memo(function PostCard({
   blog,
   compact = false,
@@ -662,7 +660,6 @@ export function BlogSidebar({
   tags: Tag[];
   title?: string;
 }) {
-  const router = useRouter();
   const { config } = useSiteConfig();
 
   return (
@@ -700,12 +697,10 @@ export function BlogSidebar({
         </div>
         <div className="grid content-start gap-1">
           {categories.slice(0, 10).map((category) => (
-            <AIButton
+            <Link
               key={category.id}
-              type="text"
-              size="small"
-              block
-              onClick={() => router.push(`/category/${category.id}`)}
+              href={`/category/${category.id}`}
+              className="block rounded-full px-3 py-2 hover:bg-[var(--animal-bg-color-secondary)]"
             >
               <span className="flex w-full min-w-0 items-center justify-between gap-3 text-left">
                 <span className="truncate">{category.name}</span>
@@ -713,7 +708,7 @@ export function BlogSidebar({
                   {category.blog_count || 0}
                 </AITag>
               </span>
-            </AIButton>
+            </Link>
           ))}
           {categories.length === 0 ? (
             <p className="text-xs font-bold text-[var(--animal-text-color-muted)]">暂无分类</p>
@@ -729,14 +724,11 @@ export function BlogSidebar({
         </div>
         <div className="flex flex-wrap gap-1.5">
           {tags.slice(0, 20).map((tag) => (
-            <AITag
-              key={tag.id}
-              color={getCardColor(tag.id)}
-              size="small"
-              onClick={() => router.push(`/tag/${tag.id}`)}
-            >
-              #{tag.name}
-            </AITag>
+            <Link key={tag.id} href={`/tag/${tag.id}`} className="inline-flex rounded-full">
+              <AITag color={getCardColor(tag.id)} size="small">
+                #{tag.name}
+              </AITag>
+            </Link>
           ))}
           {tags.length === 0 ? (
             <p className="text-xs font-bold text-[var(--animal-text-color-muted)]">暂无标签</p>
@@ -769,6 +761,7 @@ function LoadingCards({ count = 6 }: { count?: number }) {
 }
 
 export function PublicHome({ initialData }: { initialData?: PublicHomeInitialData }) {
+  const { config } = useSiteConfig();
   const searchParams = useSearchParams();
   const router = useRouter();
   const currentPage = parsePageParam(searchParams.get("page"));
@@ -837,6 +830,16 @@ export function PublicHome({ initialData }: { initialData?: PublicHomeInitialDat
 
   return (
     <main className={cn(PUBLIC_CONTAINER, "grid gap-8 py-8 px-4")}>
+      <header className="grid gap-2 px-1">
+        <h1 className="text-2xl font-black tracking-tight text-[var(--animal-text-color)] sm:text-3xl">
+          AI 工具链、Rust、UE5 与 SwiftUI 实战记录
+        </h1>
+        <p className="max-w-3xl text-sm font-medium leading-6 text-[var(--animal-text-color-secondary)]">
+          {config.blog_global_summary ||
+            config.site_description ||
+            "记录真正跑通过的方案、踩坑过程与可复用的工程经验。"}
+        </p>
+      </header>
       <section className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="grid gap-4">
           <div className="flex flex-wrap items-end justify-between gap-3 px-1">

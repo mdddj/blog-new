@@ -200,17 +200,13 @@ function SearchContent() {
                     </p>
                     <div className="flex flex-wrap items-center justify-between gap-3 border-t border-black/10 pt-3 text-xs font-bold opacity-80">
                       <span>{formatDate(item.created_at)}</span>
-                      <AIButton
-                        type="text"
-                        size="small"
-                        className="font-bold flex items-center"
-                        onClick={() =>
-                          router.push(item.slug ? `/blog/${item.slug}` : `/blog/${item.id}`)
-                        }
+                      <Link
+                        href={item.slug ? `/blog/${encodeURIComponent(item.slug)}` : `/blog/${item.id}`}
+                        className="inline-flex min-h-9 items-center rounded-full px-3 py-2 font-bold hover:bg-[var(--animal-bg-color-secondary)] hover:underline"
                       >
                         阅读结果
                         <AIIcon name="icon-critterpedia" size={14} className="ml-1" />
-                      </AIButton>
+                      </Link>
                     </div>
                   </PublicCard>
                 );

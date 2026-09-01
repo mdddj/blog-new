@@ -2,14 +2,12 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { blogApi } from "@/lib/api";
 import { isAuthenticated } from "@/lib/auth";
 import type { Blog } from "@/types";
 import { BlogContentRenderer } from "@/components/blog";
 import {
-  EmptyState,
-  LoadingState,
   PublicCard,
   PUBLIC_CONTAINER,
   blogHref,
@@ -26,40 +24,48 @@ import {
 } from "animal-island-ui";
 import { cn } from "@/lib/utils";
 
-function extractHeadings(html: string): { id: string; text: string; level: number }[] {
-  if (typeof window === "undefined") return [];
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, "text/html");
-  return Array.from(doc.querySelectorAll("h1, h2, h3, h4, h5, h6")).map((node) => ({
-    id: node.id,
-    text: node.textContent || "",
-    level: Number(node.tagName.slice(1)),
-  }));
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function prepareArticleHtml(html: string, title: string): string {
-  if (typeof window === "undefined") return html;
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, "text/html");
-  const firstHeading = doc.querySelector("h1");
-
-  if (firstHeading?.textContent?.trim() === title.trim()) {
-    firstHeading.remove();
-  }
-
-  doc.querySelectorAll("h1, h2, h3, h4, h5, h6").forEach((node, idx) => {
-    node.id = `heading-${idx}`;
+  const titlePattern = escapeRegExp(title.trim());
+  const withoutDuplicateTitle = titlePattern
+    ? html.replace(new RegExp(`<h1\\b[^>]*>\\s*${titlePattern}\\s*</h1>`, "i"), "")
+    : html;
+  let headingIndex = 0;
+  return withoutDuplicateTitle.replace(/<h([1-6])\\b([^>]*)>/gi, (_match, level, attrs) => {
+    const id = `heading-${headingIndex}`;
+    headingIndex += 1;
+    const withoutId = attrs.replace(/\\s+id=(?:"[^"]*"|'[^']*'|[^\\s>]+)/i, "");
+    return `<h${level}${withoutId} id="${id}">`;
   });
-  return doc.body.innerHTML;
 }
 
-export function BlogDetailClient({ slug }: { slug: string }) {
+function extractHeadings(html: string): { id: string; text: string; level: number }[] {
+  const headingPattern = /<h([1-6])\b[^>]*\bid=["']([^"']+)["'][^>]*>([\s\S]*?)<\/h\1>/gi;
+  return Array.from(html.matchAll(headingPattern)).map(([, level, id, content]) => ({
+    id,
+    text: content.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim(),
+    level: Number(level),
+  }));
+}
+
+export function BlogDetailClient({
+  slug,
+  initialBlog,
+  previousBlog: previousBlogData,
+  nextBlog: nextBlogData,
+}: {
+  slug: string;
+  initialBlog: Blog;
+  previousBlog: Blog | null;
+  nextBlog: Blog | null;
+}) {
   const router = useRouter();
-  const [blog, setBlog] = useState<Blog | null>(null);
-  const [prevBlog, setPrevBlog] = useState<Blog | null>(null);
-  const [nextBlog, setNextBlog] = useState<Blog | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const blog = initialBlog;
+  const prevBlog = previousBlogData;
+  const nextBlog = nextBlogData;
   const [activeHeading, setActiveHeading] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -72,36 +78,9 @@ export function BlogDetailClient({ slug }: { slug: string }) {
     return () => cancelAnimationFrame(raf);
   }, [slug]);
 
-  useEffect(() => {
-    async function fetchData() {
-      setLoading(true);
-      setError(null);
-      try {
-        const detail = Number.isNaN(Number(slug))
-          ? await blogApi.getBySlug(slug)
-          : await blogApi.getById(Number(slug));
-        setBlog(detail);
-        try {
-          const all = await blogApi.list(1, 20);
-          const idx = all.items.findIndex((item) => item.id === detail.id);
-          if (idx > 0) setNextBlog(all.items[idx - 1]);
-          if (idx < all.items.length - 1) setPrevBlog(all.items[idx + 1]);
-        } catch {
-          // Previous and next links are optional.
-        }
-      } catch {
-        setError("文章不存在或已被删除");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchData();
-  }, [slug]);
-
   const html = useMemo(
-    () => (blog?.html ? prepareArticleHtml(blog.html, blog.title) : ""),
-    [blog?.html, blog?.title],
+    () => prepareArticleHtml(blog.html || "", blog.title),
+    [blog.html, blog.title],
   );
   const tocItems = useMemo(() => (html ? extractHeadings(html) : []), [html]);
 
@@ -117,39 +96,15 @@ export function BlogDetailClient({ slug }: { slug: string }) {
         if (item.el.getBoundingClientRect().top <= 150) current = item.id;
         else break;
       }
-      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 40)
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 40) {
         current = mapped[mapped.length - 1].id;
+      }
       setActiveHeading(current);
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, [tocItems]);
-
-  if (loading) {
-    return (
-      <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8 px-4")}>
-        <LoadingState label="正在加载文章内容..." />
-      </main>
-    );
-  }
-
-  if (error || !blog) {
-    return (
-      <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8 px-4")}>
-        <EmptyState
-          title={error || "找不到这篇文章"}
-          description="返回首页继续浏览最新内容。"
-          icon={<AIIcon name="icon-critterpedia" size={32} />}
-        />
-        <div className="flex justify-center">
-          <AIButton type="primary" className="font-bold" onClick={() => router.push("/")}>
-            返回首页
-          </AIButton>
-        </div>
-      </main>
-    );
-  }
 
   const readTime = readingMinutes(blog);
   const hasThumbnail = Boolean(blog.thumbnail);
@@ -176,18 +131,36 @@ export function BlogDetailClient({ slug }: { slug: string }) {
                       返回
                     </AIButton>
                     {blog.category ? (
-                      <AITag
-                        color="default"
-                        onClick={() => router.push(`/category/${blog.category!.id}`)}
+                      <Link
+                        href={`/category/${blog.category.id}`}
+                        className="inline-flex min-h-8 items-center rounded-full border border-[var(--animal-border-color)] px-1"
                       >
-                        {blog.category.name}
-                      </AITag>
+                        <AITag color="default">{blog.category.name}</AITag>
+                      </Link>
                     ) : null}
                   </div>
                   <AITitle size="small" color="brown">
                     文章阅读
                   </AITitle>
                 </div>
+
+                <nav aria-label="面包屑" className="flex flex-wrap items-center gap-2 text-xs font-bold text-[var(--animal-text-color-secondary)]">
+                  <Link href="/" className="hover:underline">
+                    首页
+                  </Link>
+                  <span aria-hidden="true">/</span>
+                  {blog.category ? (
+                    <>
+                      <Link href={`/category/${blog.category.id}`} className="hover:underline">
+                        {blog.category.name}
+                      </Link>
+                      <span aria-hidden="true">/</span>
+                    </>
+                  ) : null}
+                  <span aria-current="page" className="truncate">
+                    {blog.title}
+                  </span>
+                </nav>
 
                 <div className="grid min-w-0 gap-4">
                   <h1 className="wrap-break-word text-3xl font-black leading-tight tracking-tight text-[var(--animal-text-color)] sm:text-4xl">
@@ -225,14 +198,15 @@ export function BlogDetailClient({ slug }: { slug: string }) {
                 {blog.tags?.length ? (
                   <div className="flex flex-wrap gap-2">
                     {blog.tags.map((tag) => (
-                      <AITag
+                      <Link
                         key={tag.id}
-                        color={getCardColor(tag.id)}
-                        size="small"
-                        onClick={() => router.push(`/tag/${tag.id}`)}
+                        href={`/tag/${tag.id}`}
+                        className="inline-flex min-h-7 items-center rounded-full"
                       >
-                        #{tag.name}
-                      </AITag>
+                        <AITag color={getCardColor(tag.id)} size="small">
+                          #{tag.name}
+                        </AITag>
+                      </Link>
                     ))}
                   </div>
                 ) : null}
@@ -252,7 +226,6 @@ export function BlogDetailClient({ slug }: { slug: string }) {
               </header>
             </PublicCard>
 
-            {/* Cozy Parchment Card */}
             <PublicCard color="default" className="min-w-0 overflow-hidden p-5 sm:p-8">
               <BlogContentRenderer
                 html={html}
@@ -319,17 +292,16 @@ export function BlogDetailClient({ slug }: { slug: string }) {
               <div className="text-[10px] font-extrabold uppercase tracking-[0.14em] opacity-80">
                 上一篇
               </div>
-              <div className="line-clamp-2 font-extrabold text-inherit text-base">
+              <Link href={blogHref(prevBlog)} className="line-clamp-2 font-extrabold text-inherit text-base hover:underline">
                 {prevBlog.title}
-              </div>
-              <AIButton
-                type="default"
-                size="small"
-                className="w-fit font-bold"
-                onClick={() => router.push(blogHref(prevBlog))}
+              </Link>
+              <Link
+                href={blogHref(prevBlog)}
+                className="inline-flex w-fit items-center rounded-full border border-[var(--animal-border-color)] px-3 py-2 text-sm font-bold hover:bg-[var(--animal-bg-color-secondary)]"
               >
                 继续阅读
-              </AIButton>
+                <AIIcon name="icon-critterpedia" size={14} className="ml-1" />
+              </Link>
             </PublicCard>
           ) : (
             <div />
@@ -340,17 +312,16 @@ export function BlogDetailClient({ slug }: { slug: string }) {
               <div className="text-[10px] font-extrabold uppercase tracking-[0.14em] opacity-80">
                 下一篇
               </div>
-              <div className="line-clamp-2 font-extrabold text-inherit text-base">
+              <Link href={blogHref(nextBlog)} className="line-clamp-2 font-extrabold text-inherit text-base hover:underline">
                 {nextBlog.title}
-              </div>
-              <AIButton
-                type="default"
-                size="small"
-                className="w-fit font-bold sm:ml-auto"
-                onClick={() => router.push(blogHref(nextBlog))}
+              </Link>
+              <Link
+                href={blogHref(nextBlog)}
+                className="inline-flex w-fit items-center rounded-full border border-[var(--animal-border-color)] px-3 py-2 text-sm font-bold hover:bg-[var(--animal-bg-color-secondary)] sm:ml-auto"
               >
                 继续阅读
-              </AIButton>
+                <AIIcon name="icon-critterpedia" size={14} className="ml-1" />
+              </Link>
             </PublicCard>
           ) : null}
         </section>

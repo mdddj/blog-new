@@ -1,137 +1,20 @@
-"use client";
-
-import { memo, useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import type { Metadata } from "next";
 import { archiveApi } from "@/lib/api";
-import type { ArchiveMonth, ArchiveResponse, ArchiveYear } from "@/types";
-import { cn } from "@/lib/utils";
-import {
-  EmptyState,
-  LoadingState,
-  PageHero,
-  PublicCard,
-  PUBLIC_CONTAINER,
-  formatDate,
-} from "@/components/blog/public";
-import {
-  Button as AIButton,
-  Collapse as AICollapse,
-  Icon as AIIcon,
-  Tag as AITag,
-} from "animal-island-ui";
+import { absoluteUrl } from "@/lib/seo";
+import { ArchiveClient } from "./archive-client";
+export const metadata: Metadata = {
+  title: "文章归档",
+  description: "按年份和月份浏览梁典典博客中的全部公开文章。",
+  alternates: { canonical: absoluteUrl("/archive") },
+};
 
-function formatDay(input: string) {
-  return formatDate(input, { month: "2-digit", day: "2-digit" }).replace(/\//g, "-");
+export default async function ArchivePage() {
+  let data = null;
+  try {
+    data = await archiveApi.list();
+  } catch (error) {
+    console.error("Failed to fetch archive data:", error);
+  }
+
+  return <ArchiveClient data={data} />;
 }
-
-export default function ArchivePage() {
-  const [data, setData] = useState<ArchiveResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
-      setData(await archiveApi.list());
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  return (
-    <main className={cn(PUBLIC_CONTAINER, "grid gap-6 py-8 px-4")}>
-      <PageHero
-        eyebrow="Archive"
-        title="按时间回看全部内容"
-        description="所有公开文章按年份与月份整理，适合快速定位曾经发布过的内容。"
-        stats={[{ label: "Posts", value: data?.total || 0, description: "归档文章" }]}
-      />
-
-      {loading ? (
-        <LoadingState label="正在加载归档数据..." />
-      ) : !data || data.years.length === 0 ? (
-        <EmptyState
-          title="暂无归档内容"
-          description="发布文章后会在这里生成时间索引。"
-          icon={<AIIcon name="icon-critterpedia" size={32} />}
-        />
-      ) : (
-        <section className="grid min-w-0 gap-4">
-          {data.years.map((yearData, index) => (
-            <YearBlock key={yearData.year} yearData={yearData} defaultExpanded={index === 0} />
-          ))}
-        </section>
-      )}
-    </main>
-  );
-}
-
-const YearBlock = memo(function YearBlock({
-  yearData,
-  defaultExpanded,
-}: {
-  yearData: ArchiveYear;
-  defaultExpanded: boolean;
-}) {
-  const header = (
-    <div className="flex w-full items-center justify-between gap-4 font-extrabold text-[#725d42]">
-      <span className="inline-flex items-center gap-2 text-base">
-        <AIIcon name="icon-critterpedia" size={20} bounce />
-        {yearData.year} 年
-      </span>
-      <span className="bg-[#725d42]/10 text-[#725d42] px-2.5 py-0.5 rounded-full text-xs font-bold">
-        {yearData.count} 篇
-      </span>
-    </div>
-  );
-
-  const body = (
-    <div className="grid min-w-0 gap-3 pt-3">
-      {yearData.months.map((monthData) => (
-        <MonthBlock key={monthData.month} monthData={monthData} />
-      ))}
-    </div>
-  );
-
-  return (
-    <AICollapse
-      question={header}
-      answer={body}
-      defaultExpanded={defaultExpanded}
-      className="border-2 border-[#725d42]/10 rounded-2xl overflow-hidden shadow-sm"
-    />
-  );
-});
-
-const MonthBlock = memo(function MonthBlock({ monthData }: { monthData: ArchiveMonth }) {
-  const router = useRouter();
-
-  return (
-    <PublicCard color="default" className="grid min-w-0 gap-3 p-4">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#725d42]/10 pb-2">
-        <div className="font-extrabold text-[#725d42] flex items-center gap-1.5 text-sm">
-          <AIIcon name="icon-design" size={16} />
-          {monthData.month} 月
-        </div>
-        <AITag color="default" size="small">
-          {monthData.count} 篇
-        </AITag>
-      </div>
-      <div className="grid gap-1">
-        {monthData.blogs.map((blog) => (
-          <AIButton
-            key={blog.id}
-            type="text"
-            block
-            onClick={() => router.push(blog.slug ? `/blog/${blog.slug}` : `/blog/${blog.id}`)}
-          >
-            {blog.title} · {formatDay(blog.created_at)}
-          </AIButton>
-        ))}
-      </div>
-    </PublicCard>
-  );
-});

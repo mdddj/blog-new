@@ -76,7 +76,7 @@ export function DocumentContentRenderer({
           );
         }
         return (
-          <span
+          <div
             key={`html-${index}`}
             dangerouslySetInnerHTML={{ __html: sanitizeHtml(part.content) }}
           />
