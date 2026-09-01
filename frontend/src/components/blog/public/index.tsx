@@ -810,10 +810,21 @@ export function PublicHome({ initialData }: { initialData?: PublicHomeInitialDat
   }, []);
 
   useEffect(() => {
-    if (!initialData || currentPage > 1) {
+    if (!initialData) return;
+
+    setBlogs(initialData.blogs);
+    setPagination(initialData.pagination);
+    setCategories(initialData.categories);
+    setTags(initialData.tags);
+    setLoadingPosts(false);
+    setLoadingSide(false);
+  }, [initialData]);
+
+  useEffect(() => {
+    if (!initialData) {
       fetchPosts();
     }
-  }, [fetchPosts, initialData, currentPage]);
+  }, [fetchPosts, initialData]);
 
   useEffect(() => {
     if (!initialData) {
