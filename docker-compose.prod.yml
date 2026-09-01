@@ -138,6 +138,8 @@ services:
       - "${FRONTEND_PORT:-3000}:3000"
     environment:
       NODE_ENV: production
+      # Limit V8 heap so native image processing retains headroom within the container limit.
+      NODE_OPTIONS: ${FRONTEND_NODE_OPTIONS:---max-old-space-size=512}
       # 服务端内部 API 地址（Docker 网络，用于 SSR）
       INTERNAL_API_URL: http://backend:8088/api/v1
       # 客户端 API 地址（浏览器访问，需要配置为你的服务器地址）
@@ -156,9 +158,9 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256M
+          memory: ${FRONTEND_MEMORY_LIMIT:-768M}
         reservations:
-          memory: 128M
+          memory: ${FRONTEND_MEMORY_RESERVATION:-256M}
 
 networks:
   blog-network:
