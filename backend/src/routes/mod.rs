@@ -5,6 +5,7 @@ use axum::{middleware, Router};
 use crate::middleware::auth::auth_middleware;
 use crate::AppState;
 
+pub mod ad;
 pub mod ai;
 pub mod archive;
 pub mod auth;
@@ -46,6 +47,8 @@ pub fn create_routes() -> Router<AppState> {
         .merge(document::routes())
         // Friend link routes (public)
         .merge(friend_link::routes())
+        // Ad routes (public)
+        .merge(ad::routes())
         // Project routes (public)
         .merge(project::routes())
         // Resume route (public)
@@ -78,6 +81,8 @@ pub fn create_admin_routes(state: AppState) -> Router<AppState> {
         .merge(file::admin_routes())
         // Friend link admin routes
         .merge(friend_link::admin_routes())
+        // Ad admin routes
+        .merge(ad::admin_routes())
         // Project admin routes
         .merge(project::admin_routes())
         // Resume admin routes

@@ -1,5 +1,6 @@
 //! Request handlers for API endpoints
 
+pub mod ad;
 pub mod ai;
 pub mod archive;
 pub mod auth;

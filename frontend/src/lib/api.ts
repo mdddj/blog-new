@@ -20,6 +20,9 @@ import type {
   FriendLink,
   CreateFriendLinkRequest,
   UpdateFriendLinkRequest,
+  Ad,
+  CreateAdRequest,
+  UpdateAdRequest,
   Project,
   CreateProjectRequest,
   UpdateProjectRequest,
@@ -409,6 +412,28 @@ export const friendLinkApi = {
     }),
 
   delete: (id: number) => request<void>(`/admin/friend-links/${id}`, { method: "DELETE" }),
+};
+
+// Ad API
+export const adApi = {
+  list: (slot: string) =>
+    request<Ad[]>(`/ads?slot=${encodeURIComponent(slot)}`, { next: { revalidate: 300 } }),
+
+  listAll: () => request<Ad[]>("/admin/ads"),
+
+  create: (data: CreateAdRequest) =>
+    request<Ad>("/admin/ads", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  update: (id: number, data: UpdateAdRequest) =>
+    request<Ad>(`/admin/ads/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+
+  delete: (id: number) => request<void>(`/admin/ads/${id}`, { method: "DELETE" }),
 };
 
 // Project API

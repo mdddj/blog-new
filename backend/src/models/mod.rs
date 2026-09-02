@@ -1,5 +1,6 @@
 //! Data models and DTOs
 
+pub mod ad;
 pub mod archive;
 pub mod blog;
 pub mod category;

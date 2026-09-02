@@ -169,6 +169,11 @@ pub mod cache_keys {
         "project:list".to_string()
     }
 
+    /// Ad list cache key, partitioned by slot
+    pub fn ad_list(slot: &str) -> String {
+        format!("ads:list:{}", slot)
+    }
+
     /// View count rate limit key
     pub fn view_rate_limit(blog_id: i64, ip: &str) -> String {
         format!("view:rate:{}:{}", blog_id, ip)

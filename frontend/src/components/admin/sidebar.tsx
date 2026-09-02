@@ -9,6 +9,7 @@ import {
   Tags,
   Image,
   Link2,
+  Megaphone,
   Briefcase,
   FileUser,
   FileCode,
@@ -73,6 +74,11 @@ const navItems: {
     title: "友链管理",
     href: "/admin/friend-links",
     icon: Link2,
+  },
+  {
+    title: "广告管理",
+    href: "/admin/ads",
+    icon: Megaphone,
   },
   {
     title: "项目管理",

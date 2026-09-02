@@ -1,5 +1,6 @@
 //! Data access layer - Repository pattern implementations
 
+pub mod ad_repo;
 pub mod archive_repo;
 pub mod blog_repo;
 pub mod category_repo;

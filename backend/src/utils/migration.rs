@@ -42,6 +42,7 @@ const MIGRATIONS: &[(&str, &str)] = &[
         "009_resume",
         include_str!("../../migrations/009_resume.sql"),
     ),
+    ("010_ads", include_str!("../../migrations/010_ads.sql")),
 ];
 
 /// Run all pending migrations

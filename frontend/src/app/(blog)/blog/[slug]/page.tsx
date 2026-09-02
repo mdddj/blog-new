@@ -1,8 +1,9 @@
 import { cache } from "react";
 import { permanentRedirect, notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { blogApi } from "@/lib/api";
-import type { Blog } from "@/types";
+import { adApi, blogApi } from "@/lib/api";
+import { ARTICLE_END_SLOT } from "@/lib/ads";
+import type { Ad, Blog } from "@/types";
 import { BlogDetailClient } from "./blog-detail-client";
 import {
   blogMetadata,
@@ -49,6 +50,13 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
     console.error("Failed to fetch adjacent blogs:", error);
   }
 
+  let ads: Ad[] = [];
+  try {
+    ads = await adApi.list(ARTICLE_END_SLOT);
+  } catch (error) {
+    console.error("Failed to fetch ads:", error);
+  }
+
   const breadcrumb = breadcrumbJsonLd([
     { name: "首页", path: "/" },
     ...(blog.category
@@ -69,6 +77,7 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
         initialBlog={blog}
         previousBlog={previous}
         nextBlog={next}
+        ads={ads}
       />
     </>
   );

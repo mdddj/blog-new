@@ -5,8 +5,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { isAuthenticated } from "@/lib/auth";
-import type { Blog } from "@/types";
+import type { Ad, Blog } from "@/types";
+import { pickAdByWeight } from "@/lib/ads";
 import { BlogContentRenderer } from "@/components/blog";
+import { ArticleEndAd } from "@/components/blog/article-end-ad";
 import {
   PublicCard,
   PUBLIC_CONTAINER,
@@ -56,11 +58,13 @@ export function BlogDetailClient({
   initialBlog,
   previousBlog: previousBlogData,
   nextBlog: nextBlogData,
+  ads = [],
 }: {
   slug: string;
   initialBlog: Blog;
   previousBlog: Blog | null;
   nextBlog: Blog | null;
+  ads?: Ad[];
 }) {
   const router = useRouter();
   const blog = initialBlog;
@@ -68,6 +72,7 @@ export function BlogDetailClient({
   const nextBlog = nextBlogData;
   const [activeHeading, setActiveHeading] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [ad] = useState(() => pickAdByWeight(ads));
 
   useEffect(() => {
     setIsLoggedIn(isAuthenticated());
@@ -285,6 +290,8 @@ export function BlogDetailClient({
             ) : null}
           </aside>
         </article>
+
+        {ad ? <ArticleEndAd ad={ad} /> : null}
 
         <section className="mx-auto grid w-full max-w-190 min-w-0 gap-4 sm:grid-cols-2">
           {prevBlog ? (

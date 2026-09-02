@@ -240,6 +240,38 @@ export interface CreateFriendLinkRequest {
 
 export type UpdateFriendLinkRequest = Partial<CreateFriendLinkRequest>;
 
+// Ad Types
+export type AdSlot = "article_end";
+
+export interface Ad {
+  id: number;
+  title: string;
+  intro?: string;
+  image_url: string;
+  target_url: string;
+  cta_text: string;
+  slot: AdSlot;
+  weight: number;
+  enabled: boolean;
+  sort_order: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CreateAdRequest {
+  title: string;
+  intro?: string;
+  image_url: string;
+  target_url: string;
+  cta_text?: string;
+  slot?: AdSlot;
+  weight?: number;
+  enabled?: boolean;
+  sort_order?: number;
+}
+
+export type UpdateAdRequest = Partial<CreateAdRequest>;
+
 // Project Types
 export interface Project {
   id: number;
