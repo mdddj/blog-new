@@ -62,9 +62,19 @@ function getBrowserApiBaseUrl(): string {
   return normalizeApiBaseUrl(process.env.NEXT_PUBLIC_API_URL || "https://api.itbug.shop/api/v1");
 }
 
-const API_BASE_URL = isServer
-  ? normalizeApiBaseUrl(process.env.INTERNAL_API_URL || "http://backend:8080/api/v1")
-  : getBrowserApiBaseUrl();
+function getServerApiBaseUrl(): string {
+  if (process.env.INTERNAL_API_URL) {
+    return normalizeApiBaseUrl(process.env.INTERNAL_API_URL);
+  }
+  if (process.env.NODE_ENV !== "production") {
+    return normalizeApiBaseUrl(
+      process.env.NEXT_PUBLIC_LOCAL_API_URL || "http://127.0.0.1:8080/api/v1",
+    );
+  }
+  return normalizeApiBaseUrl("http://backend:8080/api/v1");
+}
+
+const API_BASE_URL = isServer ? getServerApiBaseUrl() : getBrowserApiBaseUrl();
 const PUBLIC_FALLBACK_API_URL = normalizeApiBaseUrl(
   process.env.NEXT_PUBLIC_FALLBACK_API_URL || "https://api.itbug.shop/api/v1",
 );
@@ -74,6 +84,10 @@ function shouldUseFallback(baseUrl: string, method: string, hasToken: boolean) {
   return (
     baseUrl.includes("localhost") || baseUrl.includes("127.0.0.1") || baseUrl.includes("backend:")
   );
+}
+
+function shouldRetryFallback(status: number) {
+  return status >= 500;
 }
 
 class ApiError extends Error {
@@ -102,7 +116,7 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     ...options.headers,
   };
 
-  if (token) {
+  if (token && endpoint.startsWith("/admin")) {
     (headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;
   }
 
@@ -120,7 +134,12 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     response = await fetchWith(PUBLIC_FALLBACK_API_URL);
   }
 
-  if (!response.ok && canFallback && API_BASE_URL !== PUBLIC_FALLBACK_API_URL) {
+  if (
+    !response.ok &&
+    canFallback &&
+    shouldRetryFallback(response.status) &&
+    API_BASE_URL !== PUBLIC_FALLBACK_API_URL
+  ) {
     response = await fetchWith(PUBLIC_FALLBACK_API_URL);
   }
 
@@ -144,7 +163,16 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   }
 
   if (!response.ok || data.code !== 0) {
-    throw new ApiError(data.code, data.message);
+    const status = Number(data.code || response.status);
+    const isPublicGet = method === "GET" && !endpoint.startsWith("/admin");
+    if (isPublicGet && (status === 401 || status === 404)) {
+      return undefined as T;
+    }
+    throw new ApiError(
+      status,
+      data.message,
+      `${method} ${API_BASE_URL}${endpoint}`,
+    );
   }
 
   return data.data;
@@ -168,10 +196,23 @@ export const blogApi = {
 
   getBySlug: (slug: string) => request<Blog>(`/blogs/slug/${slug}`, { next: { revalidate: 60 } }),
 
-  getPrevNext: (id: number) =>
-    request<{ prev: Blog | null; next: Blog | null }>(`/blogs/${id}/prev-next`, {
-      next: { revalidate: 60 },
-    }),
+  getPrevNext: async (id: number) => {
+    try {
+      const page = await request<PaginatedResponse<Blog>>("/blogs?page=1&page_size=100", {
+        next: { revalidate: 60 },
+      });
+      const items = page?.items ?? [];
+      const index = items.findIndex((blog) => blog.id === id);
+      if (index < 0) return { prev: null, next: null };
+      // Public list is newest-first, so "next" is newer (index - 1) and "prev" is older (index + 1).
+      return {
+        next: items[index - 1] ?? null,
+        prev: items[index + 1] ?? null,
+      };
+    } catch {
+      return { prev: null, next: null };
+    }
+  },
 
   create: (data: CreateBlogRequest) =>
     request<Blog>("/admin/blogs", {
@@ -416,8 +457,17 @@ export const friendLinkApi = {
 
 // Ad API
 export const adApi = {
-  list: (slot: string) =>
-    request<Ad[]>(`/ads?slot=${encodeURIComponent(slot)}`, { next: { revalidate: 300 } }),
+  list: async (slot: string) => {
+    try {
+      return (
+        (await request<Ad[]>(`/ads?slot=${encodeURIComponent(slot)}`, {
+          next: { revalidate: 300 },
+        })) ?? []
+      );
+    } catch {
+      return [];
+    }
+  },
 
   listAll: () => request<Ad[]>("/admin/ads"),
 

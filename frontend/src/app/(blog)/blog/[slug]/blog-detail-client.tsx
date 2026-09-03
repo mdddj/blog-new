@@ -5,8 +5,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { isAuthenticated } from "@/lib/auth";
+import { adApi, blogApi } from "@/lib/api";
 import type { Ad, Blog } from "@/types";
-import { pickAdByWeight } from "@/lib/ads";
+import { ARTICLE_END_SLOT, pickAdByWeight } from "@/lib/ads";
 import { BlogContentRenderer } from "@/components/blog";
 import { ArticleEndAd } from "@/components/blog/article-end-ad";
 import {
@@ -18,7 +19,6 @@ import {
   getCardColor,
 } from "@/components/blog/public";
 import {
-  BackTop as AIBackTop,
   Button as AIButton,
   Icon as AIIcon,
   Tag as AITag,
@@ -36,47 +36,64 @@ function prepareArticleHtml(html: string, title: string): string {
     ? html.replace(new RegExp(`<h1\\b[^>]*>\\s*${titlePattern}\\s*</h1>`, "i"), "")
     : html;
   let headingIndex = 0;
-  return withoutDuplicateTitle.replace(/<h([1-6])\\b([^>]*)>/gi, (_match, level, attrs) => {
+  return withoutDuplicateTitle.replace(/<h([1-6])\b([^>]*)>/gi, (_match, level, attrs) => {
     const id = `heading-${headingIndex}`;
     headingIndex += 1;
-    const withoutId = attrs.replace(/\\s+id=(?:"[^"]*"|'[^']*'|[^\\s>]+)/i, "");
+    const withoutId = attrs.replace(/\s+id=(?:"[^"]*"|'[^']*'|[^\s>]+)/i, "");
     return `<h${level}${withoutId} id="${id}">`;
   });
 }
 
 function extractHeadings(html: string): { id: string; text: string; level: number }[] {
   const headingPattern = /<h([1-6])\b[^>]*\bid=["']([^"']+)["'][^>]*>([\s\S]*?)<\/h\1>/gi;
-  return Array.from(html.matchAll(headingPattern)).map(([, level, id, content]) => ({
-    id,
-    text: content.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim(),
-    level: Number(level),
-  }));
+  return Array.from(html.matchAll(headingPattern))
+    .map(([, level, id, content]) => ({
+      id,
+      text: content.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim(),
+      level: Number(level),
+    }))
+    .filter((item) => item.id && item.text);
 }
 
 export function BlogDetailClient({
   slug,
   initialBlog,
-  previousBlog: previousBlogData,
-  nextBlog: nextBlogData,
-  ads = [],
 }: {
   slug: string;
   initialBlog: Blog;
-  previousBlog: Blog | null;
-  nextBlog: Blog | null;
-  ads?: Ad[];
 }) {
   const router = useRouter();
   const blog = initialBlog;
-  const prevBlog = previousBlogData;
-  const nextBlog = nextBlogData;
+  const [prevBlog, setPrevBlog] = useState<Blog | null>(null);
+  const [nextBlog, setNextBlog] = useState<Blog | null>(null);
+  const [ad, setAd] = useState<Ad | null>(null);
   const [activeHeading, setActiveHeading] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [ad] = useState(() => pickAdByWeight(ads));
 
   useEffect(() => {
     setIsLoggedIn(isAuthenticated());
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    blogApi
+      .getPrevNext(blog.id)
+      .then((adjacent) => {
+        if (cancelled) return;
+        setPrevBlog(adjacent.prev);
+        setNextBlog(adjacent.next);
+      })
+      .catch(() => {});
+    adApi
+      .list(ARTICLE_END_SLOT)
+      .then((ads) => {
+        if (!cancelled) setAd(pickAdByWeight(ads));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [blog.id]);
 
   useEffect(() => {
     const raf = requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: "auto" }));
@@ -119,7 +136,7 @@ export function BlogDetailClient({
   return (
     <>
       <main className={cn(PUBLIC_CONTAINER, "grid min-w-0 gap-8 py-8 px-4")}>
-        <article className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_280px]">
+        <article className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
           <div className="grid min-w-0 gap-6">
             <PublicCard color="app-yellow" className="grid gap-5 p-5 sm:p-7">
               <header className="grid min-w-0 gap-5">
@@ -228,16 +245,16 @@ export function BlogDetailClient({
               </header>
             </PublicCard>
 
-            <PublicCard color="default" className="min-w-0 overflow-hidden p-5 sm:p-8">
+            <PublicCard color="default" className="min-w-0 overflow-x-clip p-5 sm:p-8">
               <BlogContentRenderer
                 html={html}
                 references={blog.references}
-                className="prose min-w-0 max-w-none overflow-x-auto wrap-break-word prose-headings:scroll-mt-28 prose-headings:font-extrabold prose-headings:text-[var(--animal-text-color)] prose-p:font-medium prose-p:leading-8 prose-p:text-[var(--animal-text-color-secondary)] prose-a:text-[var(--animal-primary-color-active)] prose-a:no-underline hover:prose-a:underline prose-code:wrap-break-word prose-code:before:content-none prose-code:after:content-none prose-code:text-[var(--animal-warning-color-active)] prose-code:bg-[var(--animal-bg-color-secondary)] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-lg prose-code:font-bold prose-pre:overflow-x-auto prose-pre:rounded-2xl prose-pre:bg-[var(--animal-bg-color-secondary)] prose-pre:text-[var(--animal-text-color)] prose-pre:border-2 prose-pre:border-[var(--animal-border-color)] [&_pre_code]:bg-transparent [&_pre_code]:bg-none [&_pre_code]:p-0 [&_pre_code]:border-none prose-blockquote:text-[var(--animal-text-color-secondary)] prose-strong:text-[var(--animal-text-color)] prose-li:text-[var(--animal-text-color-secondary)] prose-li:font-medium prose-th:text-[var(--animal-text-color)] prose-td:text-[var(--animal-text-color-secondary)] prose-hr:border-[var(--animal-border-color)]"
+                className="prose min-w-0 max-w-none wrap-break-word prose-headings:scroll-mt-28 prose-headings:font-extrabold prose-headings:text-[var(--animal-text-color)] prose-p:font-medium prose-p:leading-8 prose-p:text-[var(--animal-text-color-secondary)] prose-a:text-[var(--animal-primary-color-active)] prose-a:no-underline hover:prose-a:underline prose-code:wrap-break-word prose-code:before:content-none prose-code:after:content-none prose-code:text-[var(--animal-warning-color-active)] prose-code:bg-[var(--animal-bg-color-secondary)] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-lg prose-code:font-bold prose-pre:overflow-x-auto prose-pre:rounded-2xl prose-pre:bg-[var(--animal-bg-color-secondary)] prose-pre:text-[var(--animal-text-color)] prose-pre:border-2 prose-pre:border-[var(--animal-border-color)] [&_pre_code]:bg-transparent [&_pre_code]:bg-none [&_pre_code]:p-0 [&_pre_code]:border-none prose-blockquote:text-[var(--animal-text-color-secondary)] prose-strong:text-[var(--animal-text-color)] prose-li:text-[var(--animal-text-color-secondary)] prose-li:font-medium prose-th:text-[var(--animal-text-color)] prose-td:text-[var(--animal-text-color-secondary)] prose-hr:border-[var(--animal-border-color)]"
               />
             </PublicCard>
           </div>
 
-          <aside className="hidden min-w-0 xl:block">
+          <aside className="hidden min-w-0 lg:block">
             {tocItems.length > 0 ? (
               <PublicCard
                 color="default"
@@ -331,7 +348,6 @@ export function BlogDetailClient({
         </section>
       </main>
 
-      <AIBackTop visibilityHeight={380} />
     </>
   );
 }

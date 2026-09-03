@@ -1,9 +1,8 @@
 import { cache } from "react";
 import { permanentRedirect, notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { adApi, blogApi } from "@/lib/api";
-import { ARTICLE_END_SLOT } from "@/lib/ads";
-import type { Ad, Blog } from "@/types";
+import { blogApi } from "@/lib/api";
+import type { Blog } from "@/types";
 import { BlogDetailClient } from "./blog-detail-client";
 import {
   blogMetadata,
@@ -18,7 +17,7 @@ const getBlog = cache(async (slug: string): Promise<Blog | null> => {
       ? await blogApi.getBySlug(slug)
       : await blogApi.getById(Number(slug));
   } catch (error) {
-    console.error("Failed to fetch blog:", error);
+    console.warn("Failed to fetch blog:", error instanceof Error ? error.message : error);
     return null;
   }
 });
@@ -40,23 +39,6 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
   if (!blog) notFound();
   if (!Number.isNaN(Number(slug)) && blog.slug) permanentRedirect(`/blog/${encodeURIComponent(blog.slug)}`);
 
-  let previous: Blog | null = null;
-  let next: Blog | null = null;
-  try {
-    const adjacent = await blogApi.getPrevNext(blog.id);
-    previous = adjacent.prev;
-    next = adjacent.next;
-  } catch (error) {
-    console.error("Failed to fetch adjacent blogs:", error);
-  }
-
-  let ads: Ad[] = [];
-  try {
-    ads = await adApi.list(ARTICLE_END_SLOT);
-  } catch (error) {
-    console.error("Failed to fetch ads:", error);
-  }
-
   const breadcrumb = breadcrumbJsonLd([
     { name: "首页", path: "/" },
     ...(blog.category
@@ -72,13 +54,7 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ slu
         dangerouslySetInnerHTML={jsonLdScript(blogPostingJsonLd(blog))}
       />
       <script type="application/ld+json" dangerouslySetInnerHTML={jsonLdScript(breadcrumb)} />
-      <BlogDetailClient
-        slug={slug}
-        initialBlog={blog}
-        previousBlog={previous}
-        nextBlog={next}
-        ads={ads}
-      />
+      <BlogDetailClient slug={slug} initialBlog={blog} />
     </>
   );
 }
