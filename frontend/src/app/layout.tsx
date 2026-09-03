@@ -43,8 +43,12 @@ export async function generateMetadata(): Promise<Metadata> {
         images: [absoluteUrl("/og-default.svg")],
       },
       icons: {
-        icon: "/favicon.svg",
-        shortcut: "/favicon.svg",
+        icon: [
+          { url: "/favicon.ico", sizes: "48x48" },
+          { url: "/favicon.png", type: "image/png", sizes: "192x192" },
+        ],
+        shortcut: "/favicon.ico",
+        apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
       },
     };
   } catch (error) {
@@ -72,8 +76,12 @@ export async function generateMetadata(): Promise<Metadata> {
         images: [DEFAULT_OG_IMAGE],
       },
       icons: {
-        icon: "/favicon.svg",
-        shortcut: "/favicon.svg",
+        icon: [
+          { url: "/favicon.ico", sizes: "48x48" },
+          { url: "/favicon.png", type: "image/png", sizes: "192x192" },
+        ],
+        shortcut: "/favicon.ico",
+        apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
       },
     };
   }
