@@ -136,10 +136,7 @@ export function BlogDetailClient({
                       返回
                     </AIButton>
                     {blog.category ? (
-                      <Link
-                        href={`/category/${blog.category.id}`}
-                        className="inline-flex min-h-8 items-center rounded-full border border-[var(--animal-border-color)] px-1"
-                      >
+                      <Link href={`/category/${blog.category.id}`} className="inline-flex">
                         <AITag color="default">{blog.category.name}</AITag>
                       </Link>
                     ) : null}
