@@ -198,17 +198,11 @@ export const blogApi = {
 
   getPrevNext: async (id: number) => {
     try {
-      const page = await request<PaginatedResponse<Blog>>("/blogs?page=1&page_size=100", {
-        next: { revalidate: 60 },
-      });
-      const items = page?.items ?? [];
-      const index = items.findIndex((blog) => blog.id === id);
-      if (index < 0) return { prev: null, next: null };
-      // Public list is newest-first, so "next" is newer (index - 1) and "prev" is older (index + 1).
-      return {
-        next: items[index - 1] ?? null,
-        prev: items[index + 1] ?? null,
-      };
+      return (
+        (await request<{ prev: Blog | null; next: Blog | null }>(`/blogs/${id}/prev-next`, {
+          next: { revalidate: 60 },
+        })) ?? { prev: null, next: null }
+      );
     } catch {
       return { prev: null, next: null };
     }
