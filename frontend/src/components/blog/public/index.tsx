@@ -30,8 +30,10 @@ import type { Blog, Category, PaginatedResponse, Tag } from "@/types";
 import { Pagination } from "@/components/blog/pagination";
 import {
   Card as AICard,
+  BackTop as AIBackTop,
   Button as AIButton,
   Divider as AIDivider,
+  Footer as AIFooter,
   Icon as AIIcon,
   Skeleton as AISkeleton,
   Tag as AITag,
@@ -260,6 +262,10 @@ export function PublicHeader() {
   );
 }
 
+export function PublicBackTop() {
+  return <AIBackTop visibilityHeight={380} />;
+}
+
 export function PublicFooter() {
   const { config } = useSiteConfig();
   const currentYear = new Date().getFullYear();
@@ -307,7 +313,7 @@ export function PublicFooter() {
   ];
 
   return (
-    <footer className="relative mt-16 overflow-hidden border-t border-[var(--animal-border-color-light)] bg-[var(--animal-bg-color-secondary)] pb-0 pt-8">
+    <footer className="relative mt-16 border-t border-[var(--animal-border-color-light)] bg-[var(--animal-bg-color-secondary)] pb-0 pt-8">
       <div
         className={cn(
           PUBLIC_CONTAINER,
@@ -320,7 +326,7 @@ export function PublicFooter() {
             {config.site_title || "典典博客"}
           </div>
           <div
-            className="max-w-3xl text-sm font-bold leading-7 text-[var(--animal-text-color-secondary)] [&_a]:text-[var(--animal-text-color)] [&_a]:underline hover:[&_a]:text-[var(--animal-primary-color-active)]"
+            className="max-w-3xl text-sm font-bold leading-7 text-[var(--animal-text-color-secondary)] [&_a]:text-[var(--animal-text-color)] [&_a]:underline [&_a]:hover:text-[var(--animal-primary-color-active)]"
             dangerouslySetInnerHTML={{
               __html: sanitizeHtml(
                 config.footer_text ||
@@ -371,7 +377,7 @@ export function PublicFooter() {
           ))}
         </div>
       </div>
-      <div className="public-footer-art" aria-hidden="true" />
+      <AIFooter type="sea" className="mt-8" />
     </footer>
   );
 }

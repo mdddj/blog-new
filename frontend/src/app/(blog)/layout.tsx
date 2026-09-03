@@ -1,4 +1,4 @@
-import { PublicFooter, PublicHeader } from "@/components/blog/public";
+import { PublicBackTop, PublicFooter, PublicHeader } from "@/components/blog/public";
 import { Toaster } from "@/components/ui/sonner";
 import { AnalyticsScript } from "@/components/analytics-script";
 import { SiteConfigProvider } from "@/contexts/site-config-context";
@@ -29,6 +29,7 @@ export default async function BlogLayout({ children }: { children: React.ReactNo
           <PageMotion>{children}</PageMotion>
         </div>
         <PublicFooter />
+        <PublicBackTop />
         <Toaster />
       </div>
     </SiteConfigProvider>

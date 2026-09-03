@@ -210,25 +210,12 @@
   text-shadow: none !important;
 }
 
-.public-footer-art {
-  min-height: 80px;
-  margin-top: 2rem;
-  background:
-    radial-gradient(circle at 18% 100%, var(--animal-primary-color-bg) 0 16%, transparent 17%),
-    radial-gradient(circle at 38% 100%, var(--animal-primary-color) 0 22%, transparent 23%),
-    radial-gradient(circle at 62% 100%, var(--animal-warning-color) 0 18%, transparent 19%),
-    linear-gradient(180deg, transparent, var(--animal-bg-color-secondary));
-  opacity: 0.8;
-}
-
 @keyframes public-page-enter {
   from {
     opacity: 0;
-    transform: translateY(10px) scale(0.995);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
   }
 }
 
@@ -399,6 +386,21 @@
 }
 .dark .alert-success {
   background: rgba(34, 197, 94, 0.15);
+}
+
+/* Article / docs body images should shrink to the column, never stretch. */
+.public-shell .prose img,
+.public-shell .prose video {
+  display: block;
+  max-width: 100%;
+  width: auto;
+  height: auto;
+  border-radius: var(--animal-border-radius-lg);
+}
+
+.public-shell .prose figure,
+.public-shell .prose p:has(> img) {
+  max-width: 100%;
 }
 
 /* Image Preview Trigger Styles */
