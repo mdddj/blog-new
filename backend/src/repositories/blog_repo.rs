@@ -398,6 +398,115 @@ impl BlogRepository {
         Ok(())
     }
 
+    /// Previous (older) and next (newer) published blogs around `id`.
+    pub async fn find_adjacent_published(
+        pool: &PgPool,
+        id: i64,
+    ) -> Result<(Option<BlogListItem>, Option<BlogListItem>), ApiError> {
+        let current = sqlx::query_as::<_, (i64, Option<DateTime<Utc>>)>(
+            r#"
+            SELECT id, created_at
+            FROM blogs
+            WHERE id = $1 AND is_published = true
+            "#,
+        )
+        .bind(id)
+        .fetch_optional(pool)
+        .await?;
+
+        let Some((current_id, created_at)) = current else {
+            return Ok((None, None));
+        };
+
+        let prev = Self::find_neighbor(pool, current_id, created_at, true).await?;
+        let next = Self::find_neighbor(pool, current_id, created_at, false).await?;
+        Ok((prev, next))
+    }
+
+    async fn find_neighbor(
+        pool: &PgPool,
+        current_id: i64,
+        created_at: Option<DateTime<Utc>>,
+        older: bool,
+    ) -> Result<Option<BlogListItem>, ApiError> {
+        let sql = if older {
+            r#"
+            SELECT id, title, slug, author, LEFT(content, 200) as excerpt, thumbnail,
+                   view_count, is_published, created_at
+            FROM blogs
+            WHERE is_published = true
+              AND id <> $1
+              AND (
+                    created_at < $2
+                    OR (created_at IS NOT DISTINCT FROM $2 AND id < $1)
+                  )
+            ORDER BY created_at DESC NULLS LAST, id DESC
+            LIMIT 1
+            "#
+        } else {
+            r#"
+            SELECT id, title, slug, author, LEFT(content, 200) as excerpt, thumbnail,
+                   view_count, is_published, created_at
+            FROM blogs
+            WHERE is_published = true
+              AND id <> $1
+              AND (
+                    created_at > $2
+                    OR (created_at IS NOT DISTINCT FROM $2 AND id > $1)
+                  )
+            ORDER BY created_at ASC NULLS LAST, id ASC
+            LIMIT 1
+            "#
+        };
+
+        let row = sqlx::query_as::<
+            _,
+            (
+                i64,
+                String,
+                Option<String>,
+                Option<String>,
+                Option<String>,
+                Option<String>,
+                i64,
+                bool,
+                Option<DateTime<Utc>>,
+            ),
+        >(sql)
+        .bind(current_id)
+        .bind(created_at)
+        .fetch_optional(pool)
+        .await?;
+
+        Ok(row.map(
+            |(
+                id,
+                title,
+                slug,
+                author,
+                excerpt,
+                thumbnail,
+                view_count,
+                is_published,
+                created_at,
+            )| {
+                BlogListItem {
+                    id,
+                    title,
+                    slug,
+                    author,
+                    excerpt,
+                    thumbnail,
+                    category: None,
+                    tags: Vec::new(),
+                    view_count,
+                    is_published,
+                    created_at,
+                }
+            },
+        ))
+    }
+
     /// Check if slug already exists (excluding a specific ID for updates)
     pub async fn slug_exists(
         pool: &PgPool,

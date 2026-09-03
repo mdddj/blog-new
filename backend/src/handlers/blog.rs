@@ -9,7 +9,8 @@ use std::net::SocketAddr;
 
 use crate::error::{ApiError, ApiResponse, PaginatedData};
 use crate::models::blog::{
-    BlogDetail, BlogListItem, BlogQueryParams, BlogResponse, CreateBlogRequest, UpdateBlogRequest,
+    AdjacentBlogs, BlogDetail, BlogListItem, BlogQueryParams, BlogResponse, CreateBlogRequest,
+    UpdateBlogRequest,
 };
 use crate::repositories::blog_repo::BlogRepository;
 use crate::services::blog_service::BlogService;
@@ -204,6 +205,26 @@ pub async fn get_blog_by_slug(
         BlogService::increment_view_count(&state.db, &state.cache, response.id, &client_ip).await;
 
     Ok(Json(ApiResponse::success(response)))
+}
+
+/// GET /api/v1/blogs/:id/prev-next
+///
+/// Previous and next published blogs around the current post (public endpoint)
+pub async fn get_adjacent_blogs(
+    State(state): State<AppState>,
+    Path(id): Path<i64>,
+) -> Result<Json<ApiResponse<AdjacentBlogs>>, ApiError> {
+    let blog = BlogRepository::find_by_id(&state.db, id)
+        .await?
+        .ok_or_else(|| ApiError::NotFound(format!("Blog with id {} not found", id)))?;
+
+    if !blog.is_published {
+        return Err(ApiError::NotFound(format!("Blog with id {} not found", id)));
+    }
+
+    let (prev, next) = BlogRepository::find_adjacent_published(&state.db, id).await?;
+
+    Ok(Json(ApiResponse::success(AdjacentBlogs { prev, next })))
 }
 
 /// GET /api/v1/admin/blogs

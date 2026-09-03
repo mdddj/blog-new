@@ -134,6 +134,13 @@ pub struct BlogResponse {
     pub references: Option<JsonValue>,
 }
 
+/// Previous / next published posts for the article footer.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AdjacentBlogs {
+    pub prev: Option<BlogListItem>,
+    pub next: Option<BlogListItem>,
+}
+
 impl From<BlogDetail> for BlogResponse {
     fn from(blog: BlogDetail) -> Self {
         Self {
