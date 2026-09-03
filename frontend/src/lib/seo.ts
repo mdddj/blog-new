@@ -4,7 +4,7 @@ import type { Blog, Category, Tag } from "@/types";
 const configuredSiteUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim();
 export const SITE_URL = (
   configuredSiteUrl ||
-  (process.env.NODE_ENV === "production" ? "https://itbug.shop" : "http://localhost:3000")
+  (process.env.NODE_ENV === "production" ? "https://itbug.shop" : "http://localhost:3001")
 ).replace(/\/+$/, "");
 export const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "梁典典的博客";
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-default.svg`;
