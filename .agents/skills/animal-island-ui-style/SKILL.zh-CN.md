@@ -9,9 +9,13 @@
 
 ## 正文对照
 
-animal-island-ui 是受任天堂《集合啦！动物森友会》界面启发的 React + TypeScript 组件库 —— 30 个组件、零运行时依赖、CC BY-NC 4.0（仅限非商业使用）
+animal-island-ui 是受任天堂《集合啦！动物森友会》界面启发的 React + TypeScript 组件库 —— 38 个组件，自 2.0 起为 MIT 许可（v1.x 为 CC BY-NC 4.0，仅限非商业；绝不要拷贝 v1.x 的素材）。运行时：依赖 `naive-icons` 提供图标，peer 依赖 `classnames`、`react`、`react-dom`
 
 源码与设计规范定义：https://github.com/guokaigdg/animal-island-ui
+
+**本 skill 对照 animal-island-ui 2.1.1（当前 `latest`）校对**。与 `node_modules/animal-island-ui/dist/types/` 冲突时，以已安装的类型声明为准
+
+图标已不属于该库：v2 移除了 `Icon` / `ICON_LIST`，改为依赖 [naive-icons](https://github.com/guokaigdg/naive-icons)（MIT，159 个具名 `<XIcon />` 导出）。v2 同时移除：`Phone`、`Wallet`、`FooterType`（`Footer type="sea" | "tree"`）、`TimeType`、`Progress.infoPosition`
 
 ### 先选场景
 
@@ -24,7 +28,7 @@ animal-island-ui 是受任天堂《集合啦！动物森友会》界面启发的
 
 ### 一段话说清风格
 
-温暖羊皮纸底色（`--animal-bg`）、大地棕文字（绝不用纯黑）、薄荷青绿主色、大圆角 pill 形（按钮和输入框是 50px pill；交互元素圆角最小 12px）、3D「游戏按键」堆叠阴影仅用于 primary 按钮、圆体 Nunito + Noto Sans SC 字体（正文字重 500，标题 600–900）、`cubic-bezier(0.4, 0, 0.2, 1)` 柔和动效（0.15–0.35s），几何形（燕尾飘带 Title、胶囊 Wallet）与有机形（SVG blob 裁切的 Modal）并存
+温暖羊皮纸底色（`--animal-bg`）、大地棕文字（绝不用纯黑）、薄荷青绿主色、大圆角 pill 形（按钮和输入框是 50px pill；交互元素圆角最小 12px）、3D「游戏按键」堆叠阴影仅用于 primary 按钮、圆体 Nunito + Noto Sans SC 字体（正文字重 500，标题 600–900）、`cubic-bezier(0.4, 0, 0.2, 1)` 柔和动效（0.15–0.35s），几何形（燕尾飘带 Title、邮票齿孔 Image 相框）与有机形（SVG blob 裁切的 Modal）并存
 
 ### Design Tokens
 
@@ -48,15 +52,18 @@ props 参考按大类分组在 `references/components/` 下（props、合法取�
 
 | 大类 | 组件 | 参考文件 |
 | --- | --- | --- |
-| 通用 | Button, Icon, Typewriter, Cursor | [general.md](references/components/general.md) |
-| 布局 | Card, Title, Divider, Collapse, Tabs | [layout.md](references/components/layout.md) |
+| 通用 | Button, Typewriter, Cursor | [general.md](references/components/general.md) |
+| 图标 | `naive-icons` 包（MIT）—— `<CameraIcon />`，159 个导出 | [general.md](references/components/general.md) |
+| 布局 | Card, Title, Divider, Collapse, Tabs, Background | [layout.md](references/components/layout.md) |
 | 表单控件 | Input, Switch, Checkbox, Radio, Select | [form-controls.md](references/components/form-controls.md) |
 | 表单容器 | Form (+ FormItem, useForm) | [Form.md](references/components/Form.md) |
 | 浮层 | Modal, Drawer, Tooltip | [overlays.md](references/components/overlays.md) |
 | 反馈 | Loading, Progress, Skeleton, BackTop | [feedback.md](references/components/feedback.md) |
 | 通知 | Notification（命令式 API） | [Notification.md](references/components/Notification.md) |
 | 数据展示 | Table, CodeBlock, Tag | [data-display.md](references/components/data-display.md) |
-| 装饰 | Time, Phone, Footer, Wallet | [decorative.md](references/components/decorative.md) |
+| 装饰 | Time, Footer | [decorative.md](references/components/decorative.md) |
+
+2.1 新增、参考文件尚未覆盖的组件（以 `node_modules/animal-island-ui/dist/types/components/<Name>/` 为准）：`Avatar` / `AvatarGroup`、`Background`、`Badge`、`Rate`、`Upload`。2.1 新增 props：`Title.variant`、`Image.variant` / `stampYear`、`Modal.variant`、`Cursor.type`、`Progress.variant`、`Divider.icon` / `iconSize` / `iconGap`
 
 ### 硬规则（违反即 bug）
 
@@ -66,11 +73,12 @@ props 参考按大类分组在 `references/components/` 下（props、合法取�
 4. 不用冷蓝焦点环。焦点色是黄色（输入类 `#ffcc00`）或薄荷主色（按钮）
 5. 交互元素圆角不小于 12px；按钮和输入框是 50px pill
 6. 3D 堆叠阴影仅属于 primary / danger-primary 按钮。Card 无 box-shadow，Switch 无外阴影，Input 阴影是 opt-in（`shadow={true}`）
-7. Modal 必须保留 SVG blob clip-path，不可换圆角矩形；Title 是燕尾飘带，不是 blob/pill/普通块（`Card type="title"` 已不存在）
+7. Modal 必须保留 SVG blob clip-path，不可换圆角矩形；Title 只能是它的三种形态（`variant="ribbon"` 燕尾默认、`"layer"` 双层纸、`"tab"` 折角便签），不是 blob/pill/普通块（`Card type="title"` 已不存在）
 8. 字体 Nunito + Noto Sans SC；字重不低于 400；UI 文字不用等宽字体（CodeBlock 除外）
 9. 动效统一 `cubic-bezier(0.4, 0, 0.2, 1)`，时长 0.15–0.35s
-10. 图标只用 `<Icon name="..." />`（10 个内置名字）—— 不用 emoji、Unicode 符号（✓ ✕ →）、手写 SVG 或第三方图标库
+10. 图标只用 `naive-icons`（MIT，159 个导出）—— `import { CameraIcon } from 'naive-icons'`，尺寸用 `size`，颜色由 `currentColor` 决定。不用 emoji、Unicode 符号（✓ ✕ →）、手写 SVG 或第三方图标字体
 11. Select 仅受控（`options` + `value` + `onChange` 都必填）；受控的 `Input`/`Switch`/`Checkbox`/`Radio` 也要配 `onChange`
 12. 优先用库组件而非裸 HTML：可见 UI 不允许原生 `<button>`、`<input>`、`<select>`、原生 checkbox/radio
 13. 只从包根和 `animal-island-ui/style` 导入，不做深路径导入
 14. 自定义元素用 `var(--animal-*)` token 上色，不硬编码颜色；不用 `className`/`style` 覆盖组件的颜色、圆角、阴影
+15. 绝不内联 v1.x 素材。v1.x 的 `Icon` / `ICON_LIST` / `Phone` / `Wallet` / `Footer` 素材是 CC BY-NC 4.0（仅限非商业），v2 才是 MIT。要图标就用 `naive-icons`，或自己画，不要把旧 SVG/PNG 拷进项目

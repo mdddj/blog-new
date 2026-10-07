@@ -46,7 +46,7 @@ export default function App() {
                     </Button>
                 </Card>
             </main>
-            <Footer type="sea" />
+            <Footer />
         </Cursor>
     );
 }
@@ -78,7 +78,7 @@ FAQ page:
     {faqs.map((f) => (
         <Collapse key={f.id} question={f.q} answer={f.a} />
     ))}
-    <Footer type="sea" />
+    <Footer />
 </Cursor>
 ```
 

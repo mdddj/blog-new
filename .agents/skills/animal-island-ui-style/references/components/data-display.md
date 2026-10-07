@@ -143,7 +143,9 @@ interface ImageProps extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'sr
     alt?: string; // default '' — empty means decorative
     width?: number | string;
     height?: number | string;
-    color?: ImageColor; // default 'white' — plain #fff; others are the Card pattern base colours (pastel, no dots)
+    color?: ImageColor; // default 'white' — only takes effect when variant='bordered'; others are the Card pattern base colours (pastel, no dots)
+    variant?: 'default' | 'bordered' | 'stamp'; // default 'default' — big-shadow large-radius card frame; 'bordered' = soft shadow + small radius; 'stamp' = postage-stamp perforated border
+    stampYear?: string; // only for variant='stamp' — issuance year printed on the top-right, e.g. '2026'; omit to hide
     lazy?: boolean; // default false — maps to native loading="lazy"
     preview?: boolean; // default true — click opens a lightbox (ESC / mask / close button)
     onLoad?: (e: React.SyntheticEvent<HTMLImageElement>) => void;
@@ -157,7 +159,11 @@ interface ImageProps extends Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'sr
 <Image src="/photo.png" alt="粉色" color="app-pink" />
 <Image src="/photo.png" alt="懒加载" lazy />
 <Image src="/photo.png" alt="预览" width={200} height={130} preview />
+<Image src="/photo.png" alt="细边框" variant="bordered" color="app-teal" />
+<Image src="/photo.png" alt="邮票" variant="stamp" stampYear="2026" />
 <Image src="/broken.png" alt="失败" width={140} height={140} />
 ```
+
+> `variant` is new in 2.1: `default` (大阴影 + 大圆角), `bordered` (柔和边框阴影 + 小圆角 — the only variant that honours `color`), and `stamp` (postage-stamp perforated border, optional `stampYear` printed top-right).
 
 > Renders a `<img>` in a fixed mat frame (`#fff` plain background for `color="white"`; every other `color` is the Card `pattern` base colour — soft pastel, no dotted overlay — 12px padding so the image sits inset, 8px rounded corners, `0 8px 14px 0 rgba(0,0,0,0.08)` shadow, no border, `overflow: hidden` + `line-height: 0`). `width`/`height` apply to the frame while the image fills it at 100%. The image stays hidden (`opacity: 0`) until `onLoad` fades it in; on error it renders a built-in placeholder (`role="img"` + `aria-label`). With `preview` (on by default), the frame becomes a `<button>` and clicking opens a portaled lightbox (`role="dialog"` + `aria-modal`, name from `alt`) — close via ESC, the mask, or the top-right close button; focus is moved to the close button on open and restored on close.

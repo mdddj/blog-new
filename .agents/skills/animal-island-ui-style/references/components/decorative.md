@@ -2,81 +2,47 @@
 
 Props/types below are copied from the library source. In an npm-installed project, the installed package's TypeScript declarations (`dist/types/index.d.ts`) are the ground truth — prefer exploring them when in doubt.
 
+> **Removed in v2:** `Phone` (NookPhone showcase widget) and `Wallet` (Nook-bag currency pill)
+> are gone from the package, and `Footer type="sea" | "tree"` no longer exists. There is no
+> drop-in replacement for any of them — see the licensing note under Footer.
+
 ## Time
 
 ```ts
-interface TimeProps {
-    className?: string;
-    type?: 'hud' | 'game'; // 'game' (default): vertical — time / divider / date + weekday (中文单字周几); 'hud': horizontal — weekday/date | time
-}
+type TimeProps = React.HTMLAttributes<HTMLDivElement>;
 ```
 
 ```tsx
-<Time />             // default: game — vertical layout: time / divider / date + weekday
-<Time type="hud" />  // horizontal: weekday/date | time
+<Time />
 ```
 
-> Only `className` and `type` — it is a self-contained HUD widget. No `format`, no `value`, no timezone — uses the browser's local clock. In `game` mode the date renders as `6月8日` and the weekday as a single Chinese character (`一` for Monday … `日` for Sunday).
-
-## Phone (decorative NookPhone)
-
-```ts
-interface PhoneProps {
-    className?: string;
-}
-```
-
-```tsx
-<Phone />
-```
-
-> Fixed size 527×788px. A decorative showcase widget: 3×3 app grid + live AM/PM clock + blinking colon + hover icon bounce. Not configurable beyond `className` — no app slots, no badge API, no callback.
+> A live clock card: `HH:MM` on top, refreshing every second with a blinking colon, and a
+> primary-colour pill below showing the weekday and month/day, faded in on mount.
+>
+> `type="hud" | "game"` was removed in v2 — there is exactly one layout now. Extra props
+> spread onto the root `<div>` (`className`, `style`, `id`, …). No `format`, no `value`, no
+> timezone: it reads the browser's local clock.
 
 ## Footer
 
 ```ts
-type FooterType = 'sea' | 'tree';
-
 interface FooterProps {
-    type?: FooterType; // default 'tree'
-    seamless?: boolean; // default true (无缝拼接背景循环平铺)
+    text?: string; // default 'All Rights Reserved.'
+    year?: number; // default: the current year, read dynamically
     className?: string;
     style?: React.CSSProperties;
 }
 ```
 
 ```tsx
-<Footer />                        {/* forest silhouette, 80px tall — default */}
-<Footer type="sea" />             {/* ocean wave */}
-<Footer type="sea" seamless />    {/* ocean wave with seamless horizontal tiling */}
+<Footer />                                  // © 2026 All Rights Reserved.
+<Footer year={2024} text="Acme Inc." />
 ```
 
-> `style` accepts layout properties only (margin / position). Don't try to recolor via `backgroundColor` — the asset is a fixed PNG/SVG.
-
-## Wallet
-
-```ts
-type WalletSize = 'small' | 'medium' | 'large';
-
-interface WalletProps {
-    value?: number | string; // default '00,000' — numbers auto-formatted with thousandSeparator
-    icon?: React.ReactNode; // default built-in Nook bag PNG (item-022.png)
-    size?: WalletSize; // default 'medium'
-    thousandSeparator?: string; // default ',' — pass '' to disable grouping
-    className?: string;
-    style?: React.CSSProperties;
-}
-```
-
-```tsx
-<Wallet value={12345} />
-<Wallet value="9,999,999" size="large" />
-<Wallet value={-1500} thousandSeparator="." size="small" />
-<Wallet value={8888} icon={<span>💰</span>} />
-```
-
-> Decorative currency display — Nook-bag-style olive-yellow pill with the bag icon overlapping 70% above. Three sizes: small (96×32 pill / 38px bag / 12px text), medium default (132×42 / 50px / 17px), large (176×54 / 66px / 22px).
+> In v2 this is **plain text only**: a centred, muted, 12px line rendering `© {year} {text}`.
+> The decorative sea-wave / forest-silhouette strip of v1.x (80px tall, driven by `type` and
+> `seamless`) is gone, and no replacement asset ships with the package.
 >
-> **Value formatting:** `number` → thousand-grouped with `thousandSeparator`; `string` → rendered as-is; `undefined`/`null` → `00,000`. Negative numbers prefix `-`.
->
-> **`icon` replaces the entire bag slot** (a single ReactNode in an absolutely-positioned 50×50 px container). Default is the built-in `assets/img/icons/items/item-022.png` rendered via the `Icon` component's hidden `src` prop.
+> Do not vendor the v1.x artwork to get it back: that SVG/webp was **CC BY-NC 4.0
+> (non-commercial only)** while v2 is MIT. Draw your own art, or build the footer from custom
+> markup plus `var(--animal-*)` tokens.

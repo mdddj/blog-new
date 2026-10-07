@@ -30,40 +30,63 @@ interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>
 <Button type="text">Cancel</Button>
 ```
 
-## Icon (+ `ICON_LIST`)
+## Icons — `naive-icons` (not part of this library)
+
+v2 removed `Icon` / `ICON_LIST`. The library now depends on the MIT-licensed
+[`naive-icons`](https://github.com/guokaigdg/naive-icons) package for icon art, and ships no
+icons of its own. `naive-icons` is only a transitive dependency of `animal-island-ui`, so it
+is not resolvable from application code — add it directly first: `pnpm add naive-icons`.
 
 ```ts
-type IconName =
-    | 'icon-miles'
-    | 'icon-camera'
-    | 'icon-chat'
-    | 'icon-critterpedia'
-    | 'icon-design'
-    | 'icon-diy'
-    | 'icon-helicopter'
-    | 'icon-map'
-    | 'icon-shopping'
-    | 'icon-variant';
-
-interface IconProps {
-    name: IconName; // REQUIRED — one of the 10 built-in SVG icons
-    size?: number | string; // default 24 — applied to width & height
-    className?: string;
-    style?: React.CSSProperties;
-    bounce?: boolean; // default false — adds hover bounce animation
+interface IconProps extends React.SVGProps<SVGSVGElement> {
+    size?: number | string | null; // default 24 — equal width & height; null keeps natural size
+    color?: string; // stroke colour, default ink '#2A2A2A'; pass 'currentColor' to follow text
+    strokeWidth?: number | string; // default 3.5 on a 48×48 canvas; scales inner strokes too
+    fill?: string; // default 'none'
+    title?: string; // accessible title
 }
 
-// Runtime catalogue for dynamic rendering / pickers (length = 10):
-declare const ICON_LIST: { name: IconName; label: string }[];
+// 159 named icon components, plus these exports:
+type IconName = 'AirplaneIcon' | 'AlertCircleIcon' | … | 'ZoomOutIcon';
+type IconComponent = React.FC<IconProps>;
+declare const NAIVE_PALETTE: Record<string, string>;
+type PaletteColor = string;
 ```
 
 ```tsx
-<Icon name="icon-camera" size={32} />
-<Icon name="icon-chat" bounce />
-{ICON_LIST.map(({ name, label }) => <Icon key={name} name={name} />)}
+import { CameraIcon, ChatIcon, ShoppingBagIcon } from 'naive-icons';
+
+<CameraIcon size={32} />
+<ChatIcon size={20} color="currentColor" />
+<ShoppingBagIcon size={24} strokeWidth={5} title="Shop" />
 ```
 
-Icons render as a `<span>` with a background-image SVG. Use `size` (number = px, string = any CSS length) — do NOT wrap in a sized div.
+Every icon is drawn on a 48×48 grid with a 3.5 stroke and rounded caps. Icons are
+stroke-based and support `currentColor`, so inherit colour from the surrounding text rather
+than hard-coding hex values. Set `size` — do NOT wrap the icon in a sized div.
+
+Substitutes for the removed v1.x island icons (match by meaning, not by pixel shape):
+
+| v1.x | nearest `naive-icons` |
+| --- | --- |
+| `icon-camera` | `CameraIcon` |
+| `icon-chat` | `ChatIcon` |
+| `icon-map` | `MapIcon` |
+| `icon-shopping` | `ShoppingBagIcon` |
+| `icon-miles` | `GiftIcon` / `StarIcon` / `CreditCardIcon` |
+| `icon-critterpedia` | `BookIcon` / `LadybugIcon` |
+| `icon-design` | `PaintbrushIcon` |
+| `icon-diy` | `PencilIcon` (no toolbox or hammer icon exists) |
+| `icon-variant` | `GridIcon`, or `SlidersIcon` on ≥1.5 |
+| `icon-helicopter` | `AirplaneIcon` |
+
+**Never restore `<Icon name="icon-…" />`.** No published version ships those SVGs any more,
+and the v1.x artwork is CC BY-NC 4.0 (non-commercial only) while v2 is MIT.
+
+> **Version floor for React 19:** `naive-icons` ≤ 1.5.0 emits hyphenated SVG attributes
+> (`"stroke-width"`) as React props, so React logs ``Invalid DOM property `stroke-width`. Did
+> you mean `strokeWidth`?`` once per page in dev. The SVG itself still renders correctly.
+> **Fixed in 1.5.3** — use 1.5.3 or newer; do not patch the package or pin it backwards.
 
 ## Typewriter
 
@@ -96,6 +119,7 @@ interface CursorProps {
     children?: React.ReactNode;
     className?: string;
     style?: React.CSSProperties;
+    type?: 'default' | 'raindrop'; // default 'default' — finger arrow; 'raindrop' = blue droplet (new in 2.1)
     forceAll?: boolean; // default true — force the custom cursor on every descendant
 }
 ```

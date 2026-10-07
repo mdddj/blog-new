@@ -39,6 +39,7 @@ Need a chapter/section heading? Use `<Title>` (ribbon banner). `Card type="title
 
 ```ts
 type TitleSize = 'small' | 'middle' | 'large';
+type TitleVariant = 'ribbon' | 'layer' | 'tab';
 
 type TitleColor =
     | 'default' | 'app-pink' | 'purple' | 'app-blue' | 'app-yellow' | 'app-orange' | 'app-teal'
@@ -48,6 +49,7 @@ interface TitleProps {
     children: React.ReactNode; // REQUIRED
     size?: TitleSize; // default 'middle'
     color?: TitleColor; // default 'default'
+    variant?: TitleVariant; // default 'ribbon' — 'layer' double paper, 'tab' folded note (new in 2.1)
     className?: string;
     style?: React.CSSProperties;
 }
@@ -56,28 +58,24 @@ interface TitleProps {
 ```tsx
 <Title>Chapter One</Title>
 <Title size="large" color="app-yellow">Notification</Title>
+<Title variant="layer" color="app-teal">Section</Title>
+<Title variant="tab" color="brown">Note</Title>
 ```
 
-Renders an Animal-Crossing-style ribbon banner (swallowtail clip-path ends + fold-shadow triangles + raised front). Uses the same 13 NookPhone palette as `Card.color`; `size` scales the whole ribbon via `em` units (small 14px / middle 20px / large 28px base).
+Renders an Animal-Crossing-style ribbon banner (swallowtail clip-path ends + fold-shadow triangles + raised front). Uses the same 13 NookPhone palette as `Card.color`; `size` scales the whole shape via `em` units (small 14px / middle 20px / large 28px base).
 
 **Not supported:** no `level` (`h1..h6`) — renders as an inline-block `<div>`; no `bordered`; no `code` / `mark` / `underline` / `delete` modifiers (this is a decorative ribbon banner, NOT a generic typography-heading component).
 
 ## Divider
 
 ```ts
-type DividerType =
-    | 'line-brown'
-    | 'line-teal'
-    | 'line-white'
-    | 'line-yellow'
-    | 'wave-yellow'
-    | 'dashed-brown'
-    | 'dashed-teal'
-    | 'dashed-white'
-    | 'dashed-yellow';
+type DividerType = 'dashed-brown' | 'thin' | 'hairline' | 'wave-yellow' | 'squiggle';
 
 interface DividerProps {
-    type?: DividerType; // default 'line-brown'
+    type?: DividerType; // default 'dashed-brown' — mutually exclusive with `icon`, and `icon` wins
+    icon?: React.ReactNode; // naive-icons element, e.g. <FishIcon size={24} /> — renders a repeating "icon + connector" band across the full row
+    iconSize?: number; // icon size in px, default 24
+    iconGap?: number; // px between icons, i.e. connector length, default 8 (tightly joined)
     className?: string;
     style?: React.CSSProperties;
 }
@@ -86,9 +84,12 @@ interface DividerProps {
 ```tsx
 <Divider />
 <Divider type="wave-yellow" />
+<Divider icon={<FishIcon size={24} />} iconGap={16} />
 ```
 
 Height fixed at 12px. Purely decorative background-image band. No `orientation` / `dashed` / `plain` / children — for a vertical separator, use a CSS `border-left` on adjacent elements.
+
+> **v2 replaced every colour value.** `line-brown` / `line-teal` / `line-white` / `line-yellow` / `dashed-teal` / `dashed-white` / `dashed-yellow` are gone — passing one is a type error and renders an unstyled band. The `icon` / `iconSize` / `iconGap` trio is new in 2.1.1.
 
 ## Collapse
 
@@ -126,7 +127,7 @@ interface TabsProps {
     onChange?: (key: string) => void;
     className?: string;
     style?: React.CSSProperties;
-    leafAnimation?: boolean; // default true — active-tab leaf wiggle
+    leafAnimation?: boolean; // @deprecated in 2.1 — the leaf decoration was removed, this prop does nothing
 }
 ```
 

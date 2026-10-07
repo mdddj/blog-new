@@ -32,8 +32,14 @@ animal-island-ui-style/
 └── references/
     ├── react-project.md         # scenario: React project with the npm package
     ├── standalone-html.md       # scenario: single-file HTML, no build step
-    └── components/              # props references by category (9 files, 30 components)
+    └── components/              # props references by category (9 files; 38 components in 2.1)
 ```
+
+Icon art is not part of this library: v2 dropped `Icon` / `ICON_LIST` and depends on the
+MIT-licensed [`naive-icons`](https://github.com/guokaigdg/naive-icons) package instead (159
+named `<XIcon />` exports). `Phone`, `Wallet`, `FooterType` (`Footer type="sea"`), `TimeType`
+and `Progress.infoPosition` were removed in the same release; the reference files document
+the replacements.
 
 Exact design values (every hex/px/keyframe) are deliberately not duplicated into the
 skill — it links to the canonical
@@ -42,5 +48,10 @@ in the repository.
 
 ## License
 
-The library and this skill are CC BY-NC 4.0 — non-commercial use only. See the
+`animal-island-ui` is **MIT licensed since 2.0** — see the
 [repository LICENSE](https://github.com/guokaigdg/animal-island-ui/blob/main/LICENSE).
+
+The **v1.x releases were CC BY-NC 4.0 (non-commercial only)**, as were their icon and
+footer artwork. Nothing from v1.x may be copied into a commercial project; use
+`naive-icons` (MIT) or your own art instead. For the license of the skill text and the
+docs in this repository, check the upstream repository LICENSE.

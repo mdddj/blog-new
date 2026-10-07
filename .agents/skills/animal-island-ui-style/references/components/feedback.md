@@ -5,21 +5,26 @@ Props/types below are copied from the library source. In an npm-installed projec
 ## Loading
 
 ```ts
-interface LoadingProps {
-    active?: boolean; // default true
-    className?: string;
-    style?: React.CSSProperties;
+interface LoadingProps extends React.HTMLAttributes<HTMLDivElement> {
+    active?: boolean; // default true — false fades the scene out
+    tip?: React.ReactNode; // message rendered in the centre of the scene
+    delay?: number; // ms before showing, avoids a flash on fast loads; default 0 = immediate
+    fadeDuration?: number; // seconds of fade-out; default 0.6
+    zIndex?: number; // full-screen layer; default 3000 (above Notification's 2000)
 }
 ```
 
 ```tsx
-<Loading />                  {/* full-bleed loading scene */}
+<Loading />                       {/* full-bleed loading scene */}
 <Loading active={isLoading} />
+<Loading active={isLoading} tip="正在加载岛屿…" delay={300} />
 ```
 
-> Self-contained illustrated loading scene (no configurable content). When `active={false}`, the scene fades out via a CSS mask radius transition.
+> Self-contained illustrated loading scene. When `active={false}`, the scene fades out via a CSS mask radius transition (`fadeDuration` seconds).
 >
-> **Not supported:** no `tip` / `text`, no `size`, no `spinning`, no `delay`, no `indicator`, no `children` (this is NOT a generic Spin-style wrapper — do not wrap content with it). Use it as a sibling overlay element controlled via `active`.
+> **v2 added `tip`, `delay`, `fadeDuration` and `zIndex`** — v1 only had `active` / `className` / `style`.
+>
+> **Not supported:** no `size`, no `spinning`, no `indicator`, no `percent`, no `children` (this is NOT a generic Spin-style wrapper — do not wrap content with it). Use it as a sibling overlay element controlled via `active`.
 
 ## Progress
 
@@ -27,13 +32,13 @@ Horizontal bar whose fill reuses the **Button loading** stripe: a teal `-45°` r
 
 ```ts
 type ProgressSize = 'small' | 'middle' | 'large';
-type ProgressInfoPosition = 'inside' | 'right' | 'top';
+type ProgressVariant = 'sweet-corner' | 'forest-grove' | 'starry-camp' | 'coffee-break';
 
 interface ProgressProps {
     percent: number; // REQUIRED, 0-100, clamped; non-integer rounded for aria
-    size?: ProgressSize; // default 'middle' (small=12px, middle=20px, large=28px)
-    showInfo?: boolean; // default true
-    infoPosition?: ProgressInfoPosition; // default 'inside'
+    size?: ProgressSize; // default 'middle' (small=14px, middle=24px, large=32px — v2 heights)
+    showInfo?: boolean; // default true — label renders to the RIGHT of the bar
+    variant?: ProgressVariant; // fill scene illustration; omit for the flat teal fill (#19c8b9)
     infoFormat?: (percent: number) => React.ReactNode; // default `${percent}%`
     duration?: number; // fill WIDTH transition in seconds; 0 disables; default 0.6 — does NOT affect stripe scroll
     className?: string;
@@ -43,18 +48,19 @@ interface ProgressProps {
 
 ```tsx
 <Progress percent={50} size="large" />
-<Progress percent={45} infoPosition="right" />          {/* or "inside" (default) / "top" */}
+<Progress percent={45} showInfo={false} />
+<Progress percent={70} variant="starry-camp" />   {/* or forest-grove / coffee-break / sweet-corner */}
 <Progress percent={50} infoFormat={(p) => `${Math.round(p / 10)} / 10`} />
-<Progress percent={pct} duration={0} />                 {/* no fill-width animation */}
-<Progress percent={66} showInfo={false} />
+<Progress percent={pct} duration={0} />           {/* no fill-width animation */}
 ```
 
 Notes:
 
 - **Always provide `percent`.** Out-of-range values are clamped to `[0, 100]`. NaN is treated as `0`. The aria value is rounded.
-- **Default `infoPosition="inside"`** — the label rides at the right edge of the fill. If `percent < 18`, the label is **automatically moved outside** the fill (track-end, dark text) to keep white text readable on the sandy track. This is the only "magic" behavior; everything else is purely declarative.
-- **Fill color is fixed** (the same teal stripe as `Button` loading) — there is no `status` / `strokeColor` / `leafAnimated` prop.
-- **Two independent animations**: fill **width** transitions on `percent` change (`duration` prop, default 0.6s, `0` disables) with `cubic-bezier(0.4, 0, 0.2, 1)`; stripe **background-position** scrolls from `0 0` to `-28.28px 0` over 1s linear (matches Button loading 1:1), disabled only under `prefers-reduced-motion: reduce`.
+- **The label sits to the right of the bar** in v2. `infoPosition` (`inside` / `right` / `top`) and `ProgressInfoPosition` were removed in v2; the old "label rides inside the fill, auto-moved outside below 18%" behaviour no longer exists.
+- **Bar heights changed in v2**: small 14px, middle 24px, large 32px (v1 was 12/20/28).
+- **Fill is fixed** — either the flat teal `#19c8b9` or, with `variant`, one of the four scene illustrations. There is no `status` / `strokeColor` prop.
+- **Two independent animations**: fill **width** transitions on `percent` change (`duration` prop, default 0.6s, `0` disables) with `cubic-bezier(0.4, 0, 0.2, 1)`; the stripe **background-position** scrolls on the flat fill and is disabled under `prefers-reduced-motion: reduce`.
 - **Accessibility**: root has `role="progressbar"` with `aria-valuemin=0`, `aria-valuemax=100`, `aria-valuenow=<rounded percent>`, and `aria-valuetext` set to the rendered text when it's a string.
 
 ## Skeleton

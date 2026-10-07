@@ -7,6 +7,7 @@ Props/types below are copied from the library source. In an npm-installed projec
 ```ts
 interface ModalProps {
     open: boolean; // REQUIRED
+    variant?: 'default' | 'game'; // new in 2.1 — implementation default is 'game' (the .d.ts comment says 'default'; the code wins): organic natural frame; 'default' = plain rounded rectangle
     title?: React.ReactNode; // heading text — NOT the <Title> component
     width?: number | string; // default 520
     maskClosable?: boolean; // default true
@@ -38,6 +39,7 @@ const [open, setOpen] = useState(false);
 Notes:
 
 - Modal already ships the required SVG blob `<clipPath id="animal-modal-clip">` internally.
+- `variant` is new in 2.1. The implementation defaults to `'game'` (organic frame); pass `variant="default"` for a plain rounded rectangle.
 - To disable the typewriter animation for dynamic content: `typewriter={false}`.
 - Custom footer: pass `footer={<><Button>...</Button></>}` or `footer={null}` to hide.
 - `title` accepts a `ReactNode` — pass plain text. Do NOT pass `<Title>` here.
@@ -114,7 +116,7 @@ interface TooltipProps {
 ```tsx
 <Tooltip title="Save your island"><Button type="primary">Save</Button></Tooltip>
 <Tooltip title="More info" placement="right" trigger="click">
-  <Icon name="icon-chat" />
+  <ChatIcon size={20} />
 </Tooltip>
 <Tooltip title="Game-style bubble" variant="island"><span>?</span></Tooltip>
 ```
