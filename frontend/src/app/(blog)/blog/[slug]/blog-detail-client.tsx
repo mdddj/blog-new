@@ -20,10 +20,10 @@ import {
 } from "@/components/blog/public";
 import {
   Button as AIButton,
-  Icon as AIIcon,
   Tag as AITag,
   Title as AITitle,
 } from "animal-island-ui";
+import { AnimalIcon as AIIcon } from "@/components/animal-icon";
 import { cn } from "@/lib/utils";
 
 function escapeRegExp(value: string) {

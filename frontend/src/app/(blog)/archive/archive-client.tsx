@@ -11,7 +11,8 @@ import {
   PUBLIC_CONTAINER,
   formatDate,
 } from "@/components/blog/public";
-import { Icon as AIIcon, Collapse as AICollapse, Tag as AITag } from "animal-island-ui";
+import { Collapse as AICollapse, Tag as AITag } from "animal-island-ui";
+import { AnimalIcon as AIIcon } from "@/components/animal-icon";
 
 function formatDay(input: string) {
   return formatDate(input, { month: "2-digit", day: "2-digit" }).replace(/\//g, "-");

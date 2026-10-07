@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Button, Icon, Tag } from "animal-island-ui";
+import { Button, Tag } from "animal-island-ui";
+import { AnimalIcon as Icon } from "@/components/animal-icon";
 import { PublicCard } from "@/components/blog/public";
 import type { Ad } from "@/types";
 

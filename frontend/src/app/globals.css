@@ -263,6 +263,27 @@
   .public-shell [data-post-card-motion]:active {
     transform: none;
   }
+
+  .animal-icon-bounce:hover {
+    animation: none;
+  }
+}
+
+/* Hover bounce for the island icons (AnimalIcon, backed by naive-icons). */
+.animal-icon-bounce:hover {
+  animation: animal-icon-bounce 0.3s ease-in-out forwards;
+}
+
+@keyframes animal-icon-bounce {
+  0% {
+    transform: scale(1) rotate(0);
+  }
+  50% {
+    transform: scale(1.2) rotate(-5deg);
+  }
+  to {
+    transform: scale(1.1) rotate(-4deg);
+  }
 }
 
 @font-face {

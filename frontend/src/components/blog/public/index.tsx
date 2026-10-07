@@ -33,14 +33,13 @@ import {
   BackTop as AIBackTop,
   Button as AIButton,
   Divider as AIDivider,
-  Footer as AIFooter,
-  Icon as AIIcon,
   Skeleton as AISkeleton,
   Tag as AITag,
   Title as AITitle,
   type CardColor,
   type CardType,
 } from "animal-island-ui";
+import { AnimalIcon as AIIcon } from "@/components/animal-icon";
 
 // Color pool for Animal Island Cards
 const CARD_COLORS: CardColor[] = [
@@ -74,7 +73,7 @@ export function getCardColor(seed: number | string): CardColor {
 export const PUBLIC_CONTAINER = "mx-auto w-[min(1120px,calc(100vw-2rem))]";
 
 const NAV_LINKS = [
-  { href: "/", label: "首页", icon: "icon-miles" as const },
+  { href: "/", label: "首页", icon: "icon-home" as const },
   { href: "/archive", label: "归档", icon: "icon-critterpedia" as const },
   { href: "/categories", label: "分类", icon: "icon-design" as const },
   { href: "/tags", label: "标签", icon: "icon-diy" as const },
@@ -157,6 +156,8 @@ function BrandIcon({ path, title }: { path: string; title: string }) {
     </svg>
   );
 }
+
+const CURRENT_YEAR = new Date().getFullYear();
 
 const BRAND_ICON_PATHS = {
   github:
@@ -268,7 +269,7 @@ export function PublicBackTop() {
 
 export function PublicFooter() {
   const { config } = useSiteConfig();
-  const currentYear = new Date().getFullYear();
+  const currentYear = CURRENT_YEAR;
   const socialLinks = [
     {
       href: config.social_github,
@@ -313,7 +314,7 @@ export function PublicFooter() {
   ];
 
   return (
-    <footer className="relative mt-16 border-t border-[var(--animal-border-color-light)] bg-[var(--animal-bg-color-secondary)] pb-0 pt-8">
+    <footer className="relative mt-16 border-t border-[var(--animal-border-color-light)] bg-[var(--animal-bg-color-secondary)] pb-10 pt-8">
       <div
         className={cn(
           PUBLIC_CONTAINER,
@@ -377,7 +378,6 @@ export function PublicFooter() {
           ))}
         </div>
       </div>
-      <AIFooter type="sea" className="mt-8" />
     </footer>
   );
 }

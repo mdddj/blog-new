@@ -5,11 +5,11 @@ import Image from "next/image";
 import { toast } from "sonner";
 import {
   Button as AIButton,
-  Icon as AIIcon,
   Input as AIInput,
   Tag as AITag,
   Title as AITitle,
 } from "animal-island-ui";
+import { AnimalIcon as AIIcon } from "@/components/animal-icon";
 import { Textarea } from "@/components/ui/textarea";
 import { PageHero, PublicCard, PUBLIC_CONTAINER } from "@/components/blog/public";
 import { ylsImageApi, type YlsImageGenerateResponse } from "@/lib/api";

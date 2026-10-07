@@ -11,7 +11,8 @@ import {
   PUBLIC_CONTAINER,
   formatDate,
 } from "@/components/blog/public";
-import { Button as AIButton, Icon as AIIcon } from "animal-island-ui";
+import { Button as AIButton } from "animal-island-ui";
+import { AnimalIcon as AIIcon } from "@/components/animal-icon";
 import { cn } from "@/lib/utils";
 
 function extractHeadings(html: string): { id: string; text: string; level: number }[] {

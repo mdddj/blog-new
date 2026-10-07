@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation";
 import {
   Button as AIButton,
   CodeBlock as AICodeBlock,
-  Icon as AIIcon,
   Input as AIInput,
   Tag as AITag,
   Title as AITitle,
 } from "animal-island-ui";
+import { AnimalIcon as AIIcon } from "@/components/animal-icon";
 import { PublicCard, PUBLIC_CONTAINER, formatDate } from "@/components/blog/public";
 import { textApi } from "@/lib/api";
 import { cn } from "@/lib/utils";

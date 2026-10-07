@@ -10,7 +10,8 @@ import {
   PublicCard,
   PUBLIC_CONTAINER,
 } from "@/components/blog/public";
-import { Icon as AIIcon, Table as AITable, Tag as AITag, type TableColumn } from "animal-island-ui";
+import { Table as AITable, Tag as AITag, type TableColumn } from "animal-island-ui";
+import { AnimalIcon as AIIcon } from "@/components/animal-icon";
 import { cn } from "@/lib/utils";
 
 export function TagsClient({ tags, categories }: { tags: Tag[]; categories: Category[] }) {

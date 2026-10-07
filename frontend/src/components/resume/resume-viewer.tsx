@@ -2,7 +2,8 @@
 
 import { useRef } from "react";
 import { FileText, Printer } from "lucide-react";
-import { Button as AIButton, Icon as AIIcon } from "animal-island-ui";
+import { Button as AIButton } from "animal-island-ui";
+import { AnimalIcon as AIIcon } from "@/components/animal-icon";
 import { toast } from "sonner";
 
 import { EmptyState, PUBLIC_CONTAINER } from "@/components/blog/public";

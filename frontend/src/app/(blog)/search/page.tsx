@@ -22,7 +22,8 @@ import {
   formatDate,
   getCardColor,
 } from "@/components/blog/public";
-import { Input as AIInput, Button as AIButton, Icon as AIIcon } from "animal-island-ui";
+import { Input as AIInput, Button as AIButton } from "animal-island-ui";
+import { AnimalIcon as AIIcon } from "@/components/animal-icon";
 import { cn } from "@/lib/utils";
 
 function escapeRegex(str: string) {

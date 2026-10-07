@@ -11,7 +11,7 @@ import {
   PUBLIC_CONTAINER,
   getCardColor,
 } from "@/components/blog/public";
-import { Icon as AIIcon } from "animal-island-ui";
+import { AnimalIcon as AIIcon } from "@/components/animal-icon";
 import { cn } from "@/lib/utils";
 
 function safeHostname(url: string) {
