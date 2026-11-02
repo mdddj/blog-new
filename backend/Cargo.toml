@@ -9,7 +9,7 @@ description = "A high-performance blog backend built with Rust and Axum"
 # Web framework
 axum = { version = "0.8", features = ["macros", "multipart"] }
 tower = "0.5"
-tower-http = { version = "0.6", features = ["cors", "trace", "fs"] }
+tower-http = { version = "0.7", features = ["cors", "trace", "fs"] }
 
 # Async runtime
 tokio = { version = "1.53.1", features = ["full"] }
