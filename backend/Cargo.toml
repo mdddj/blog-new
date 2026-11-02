@@ -61,7 +61,6 @@ dotenvy = "0.15"
 thiserror = "2.0.20"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-yls-agi-rust-sdk = "0.1.5"
 
 [[bin]]
 name = "blog-backend"
