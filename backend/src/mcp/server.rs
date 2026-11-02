@@ -8,7 +8,7 @@ use axum::{
 use base64::{engine::general_purpose::STANDARD as BASE64_STANDARD, Engine as _};
 use rmcp::{
     handler::server::{router::tool::ToolRouter, wrapper::Parameters},
-    model::{ServerCapabilities, ServerInfo},
+    model::{ServerCapabilities, ServerConfig},
     tool, tool_handler, tool_router,
     transport::streamable_http_server::{
         session::local::LocalSessionManager, StreamableHttpServerConfig, StreamableHttpService,
@@ -2282,8 +2282,8 @@ impl BlogMcpServer {
     }
 }
 
-fn server_info() -> ServerInfo {
-    ServerInfo::new(ServerCapabilities::builder().enable_tools().build()).with_instructions(
+fn server_info() -> ServerConfig {
+    ServerConfig::new(ServerCapabilities::builder().enable_tools().build()).with_instructions(
         "典典博客 MCP：支持博客正文模糊检索、文件上传、字典文本、文档与目录、分类、标签、友链、项目、广告、博客管理和 AI 文本处理。"
             .to_string(),
     )
@@ -2291,7 +2291,7 @@ fn server_info() -> ServerInfo {
 
 #[tool_handler(router = self.tool_router)]
 impl ServerHandler for BlogMcpServer {
-    fn get_info(&self) -> ServerInfo {
+    fn get_info(&self) -> ServerConfig {
         server_info()
     }
 }
