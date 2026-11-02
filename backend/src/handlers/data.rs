@@ -716,7 +716,10 @@ pub async fn import_sql(
             continue;
         }
 
-        match sqlx::query(stmt).execute(&state.db).await {
+        match sqlx::query(sqlx::AssertSqlSafe(stmt.to_string()))
+            .execute(&state.db)
+            .await
+        {
             Ok(_) => {
                 result.statements_executed += 1;
             }

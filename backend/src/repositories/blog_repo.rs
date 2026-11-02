@@ -45,7 +45,7 @@ impl BlogRepository {
             count_query.push_str(&where_clauses.join(" AND "));
         }
 
-        let total = sqlx::query_scalar::<_, i64>(&count_query)
+        let total = sqlx::query_scalar::<_, i64>(sqlx::AssertSqlSafe(count_query))
             .fetch_one(pool)
             .await?;
 
@@ -104,7 +104,7 @@ impl BlogRepository {
                 Option<String>,
                 Option<DateTime<Utc>>,
             ),
-        >(&data_query)
+        >(sqlx::AssertSqlSafe(data_query))
         .fetch_all(pool)
         .await?;
 

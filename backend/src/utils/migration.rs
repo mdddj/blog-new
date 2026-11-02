@@ -75,7 +75,7 @@ pub async fn run_migrations(pool: &PgPool) -> Result<(), sqlx::Error> {
         info!("Running migration: {}", name);
 
         // Execute migration (split by semicolons for multiple statements)
-        match sqlx::raw_sql(sql).execute(pool).await {
+        match sqlx::raw_sql(*sql).execute(pool).await {
             Ok(_) => {
                 // Record migration
                 sqlx::query("INSERT INTO _migrations (name) VALUES ($1)")
