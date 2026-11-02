@@ -33,7 +33,6 @@
 - 日期排期
 - 按分类或文章定向
 - 首页侧栏、信息流穿插、页脚等其它位置的 UI
-- MCP 工具
 - 数据导入导出
 - 第三方广告脚本（AdSense 等）
 
@@ -96,6 +95,15 @@ CREATE INDEX idx_ads_slot_enabled ON ads (slot, enabled);
 - `DELETE /api/v1/admin/ads/:id`
 
 写操作成功后删除对应 slot 的公开缓存。
+
+### MCP
+
+后台 JWT 接口之外，`/mcp` 暴露同一套广告 CRUD（工具定义在 `backend/src/mcp/server.rs`）：
+
+- `list_ads` 全部广告，可按 `slot` / `enabled` 筛选
+- `create_ad`、`update_ad`、`delete_ad`
+
+校验与归一化直接复用 `models::ad`（`normalize_*` / `validate_*` / `resolve_cta_text`），HTTP 与 MCP 共用一套规则。写操作同样清理对应 slot 的公开缓存。
 
 ### Validation
 
@@ -160,4 +168,4 @@ CREATE INDEX idx_ads_slot_enabled ON ads (slot, enabled);
 - 首页侧栏、文章侧栏等新 `slot`
 - 点击计数表 + 防刷上报
 - 后台封面走文件选择器
-- 数据导入导出与 MCP 工具
+- 数据导入导出

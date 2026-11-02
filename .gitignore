@@ -34,3 +34,6 @@ npm-debug.log*
 /*.sql
 /blog_data.json
 sql/
+
+# Project MCP config holds a bearer token
+.pi/mcp.json

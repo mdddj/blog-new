@@ -22,6 +22,10 @@ use std::collections::BTreeMap;
 
 use crate::error::ApiError;
 use crate::mcp::auth::mcp_auth_middleware;
+use crate::models::ad::{
+    is_valid_slot, normalize_create_ad, normalize_update_ad, resolve_cta_text, validate_create_ad,
+    validate_update_ad, AdResponse, CreateAdRequest, UpdateAdRequest,
+};
 use crate::models::blog::{CreateBlogRequest, UpdateBlogRequest};
 use crate::models::category::{CreateCategoryRequest, UpdateCategoryRequest};
 use crate::models::directory::{CreateDirectoryRequest, UpdateDirectoryRequest};
@@ -30,6 +34,7 @@ use crate::models::file::{CreateFileRequest, FileResponse};
 use crate::models::friend_link::{CreateFriendLinkRequest, UpdateFriendLinkRequest};
 use crate::models::project::{CreateProjectRequest, UpdateProjectRequest};
 use crate::models::tag::{CreateTagRequest, UpdateTagRequest};
+use crate::repositories::ad_repo::AdRepository;
 use crate::repositories::{
     blog_repo::BlogRepository, category_repo::CategoryRepository,
     directory_repo::DirectoryRepository, document_repo::DocumentRepository,
@@ -409,6 +414,46 @@ struct SetBlogGlobalSummaryArgs {
     summary: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+struct ListAdsArgs {
+    slot: Option<String>,
+    enabled: Option<bool>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+struct AdIdArgs {
+    #[serde(alias = "id")]
+    ad_id: i64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+struct CreateAdArgs {
+    title: String,
+    image_url: String,
+    target_url: String,
+    intro: Option<String>,
+    cta_text: Option<String>,
+    slot: Option<String>,
+    weight: Option<i32>,
+    enabled: Option<bool>,
+    sort_order: Option<i32>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
+struct UpdateAdArgs {
+    #[serde(alias = "id")]
+    ad_id: i64,
+    title: Option<String>,
+    intro: Option<String>,
+    image_url: Option<String>,
+    target_url: Option<String>,
+    cta_text: Option<String>,
+    slot: Option<String>,
+    weight: Option<i32>,
+    enabled: Option<bool>,
+    sort_order: Option<i32>,
+}
+
 #[derive(Clone)]
 pub struct BlogMcpServer {
     state: AppState,
@@ -606,6 +651,44 @@ impl BlogMcpServer {
     fn api_error_to_string(error: ApiError) -> String {
         error.to_string()
     }
+}
+
+fn build_create_ad_request(args: CreateAdArgs) -> Result<CreateAdRequest, String> {
+    let mut req = CreateAdRequest {
+        title: args.title,
+        intro: args.intro,
+        image_url: args.image_url,
+        target_url: args.target_url,
+        cta_text: args.cta_text,
+        slot: args.slot,
+        weight: args.weight,
+        enabled: args.enabled,
+        sort_order: args.sort_order,
+    };
+    normalize_create_ad(&mut req);
+    validate_create_ad(&req).map_err(|error| format!("广告校验失败：{error}"))?;
+    req.cta_text = Some(resolve_cta_text(req.cta_text.as_deref()));
+    Ok(req)
+}
+
+fn build_update_ad_request(args: UpdateAdArgs) -> Result<UpdateAdRequest, String> {
+    let mut req = UpdateAdRequest {
+        title: args.title,
+        intro: args.intro,
+        image_url: args.image_url,
+        target_url: args.target_url,
+        cta_text: args.cta_text,
+        slot: args.slot,
+        weight: args.weight,
+        enabled: args.enabled,
+        sort_order: args.sort_order,
+    };
+    normalize_update_ad(&mut req);
+    validate_update_ad(&req).map_err(|error| format!("广告校验失败：{error}"))?;
+    if req.cta_text.is_some() {
+        req.cta_text = Some(resolve_cta_text(req.cta_text.as_deref()));
+    }
+    Ok(req)
 }
 
 #[tool_router(router = tool_router)]
@@ -1969,6 +2052,138 @@ impl BlogMcpServer {
     }
 
     #[tool(
+        name = "list_ads",
+        description = "获取广告列表（含停用广告），可按投放位 slot 和启用状态 enabled 筛选"
+    )]
+    async fn list_ads(
+        &self,
+        Parameters(args): Parameters<ListAdsArgs>,
+    ) -> Result<McpJson<Value>, String> {
+        let slot = args
+            .slot
+            .as_deref()
+            .map(str::trim)
+            .filter(|slot| !slot.is_empty());
+        if let Some(slot) = slot {
+            if !is_valid_slot(slot) {
+                return Err(format!("未知投放位：{slot}"));
+            }
+        }
+
+        let ads = AdRepository::find_all(&self.state.db)
+            .await
+            .map_err(Self::api_error_to_string)?;
+
+        let items: Vec<AdResponse> = ads
+            .into_iter()
+            .filter(|ad| match slot {
+                Some(slot) => ad.slot == slot,
+                None => true,
+            })
+            .filter(|ad| match args.enabled {
+                Some(enabled) => ad.enabled == enabled,
+                None => true,
+            })
+            .map(AdResponse::from)
+            .collect();
+
+        Self::json_result(items)
+    }
+
+    #[tool(
+        name = "create_ad",
+        description = "创建广告。封面和跳转链接必须是 http/https，weight 至少为 1，slot 目前只支持 article_end"
+    )]
+    async fn create_ad(
+        &self,
+        Parameters(args): Parameters<CreateAdArgs>,
+    ) -> Result<McpJson<Value>, String> {
+        let req = build_create_ad_request(args)?;
+
+        let ad = AdRepository::create(&self.state.db, &req)
+            .await
+            .map_err(Self::api_error_to_string)?;
+
+        let _ = self
+            .state
+            .cache
+            .delete(&cache_keys::ad_list(&ad.slot))
+            .await;
+
+        Self::json_result(AdResponse::from(ad))
+    }
+
+    #[tool(
+        name = "update_ad",
+        description = "更新广告，只传需要修改的字段；enabled=false 可停用广告并立即从公开列表移除"
+    )]
+    async fn update_ad(
+        &self,
+        Parameters(args): Parameters<UpdateAdArgs>,
+    ) -> Result<McpJson<Value>, String> {
+        let ad_id = args.ad_id;
+
+        let existing = AdRepository::find_by_id(&self.state.db, ad_id)
+            .await
+            .map_err(Self::api_error_to_string)?
+            .ok_or_else(|| format!("广告 {ad_id} 不存在"))?;
+
+        let req = build_update_ad_request(args)?;
+
+        let ad = AdRepository::update(&self.state.db, ad_id, &req)
+            .await
+            .map_err(Self::api_error_to_string)?
+            .ok_or_else(|| format!("广告 {ad_id} 不存在"))?;
+
+        let _ = self
+            .state
+            .cache
+            .delete(&cache_keys::ad_list(&existing.slot))
+            .await;
+        if ad.slot != existing.slot {
+            let _ = self
+                .state
+                .cache
+                .delete(&cache_keys::ad_list(&ad.slot))
+                .await;
+        }
+
+        Self::json_result(AdResponse::from(ad))
+    }
+
+    #[tool(
+        name = "delete_ad",
+        description = "删除广告，并清除对应投放位的公开缓存"
+    )]
+    async fn delete_ad(
+        &self,
+        Parameters(AdIdArgs { ad_id }): Parameters<AdIdArgs>,
+    ) -> Result<McpJson<Value>, String> {
+        let ad = AdRepository::find_by_id(&self.state.db, ad_id)
+            .await
+            .map_err(Self::api_error_to_string)?
+            .ok_or_else(|| format!("广告 {ad_id} 不存在"))?;
+
+        let deleted = AdRepository::delete(&self.state.db, ad_id)
+            .await
+            .map_err(Self::api_error_to_string)?;
+        if !deleted {
+            return Err(format!("广告 {ad_id} 不存在"));
+        }
+
+        let _ = self
+            .state
+            .cache
+            .delete(&cache_keys::ad_list(&ad.slot))
+            .await;
+
+        Self::json_result(json!({
+            "success": true,
+            "ad_id": ad_id,
+        }))
+    }
+
+    #[tool(
         name = "polish_markdown",
         description = "调用站点 AI 配置润色 Markdown 文本"
     )]
@@ -2069,7 +2284,7 @@ impl BlogMcpServer {
 
 fn server_info() -> ServerInfo {
     ServerInfo::new(ServerCapabilities::builder().enable_tools().build()).with_instructions(
-        "典典博客 MCP：支持博客正文模糊检索、文件上传、字典文本、文档与目录、分类、标签、友链、项目、博客管理和 AI 文本处理。"
+        "典典博客 MCP：支持博客正文模糊检索、文件上传、字典文本、文档与目录、分类、标签、友链、项目、广告、博客管理和 AI 文本处理。"
             .to_string(),
     )
 }
@@ -2084,8 +2299,9 @@ impl ServerHandler for BlogMcpServer {
 #[cfg(test)]
 mod tests {
     use super::{
-        server_info, streamable_http_config, BlogIdArgs, BlogMcpServer, CreateBlogDraftArgs,
-        CreateDocumentArgs, UpdateBlogArgs, UpdateDocumentArgs, UploadFileArgs, UploadImageArgs,
+        build_create_ad_request, build_update_ad_request, server_info, streamable_http_config,
+        AdIdArgs, BlogIdArgs, BlogMcpServer, CreateAdArgs, CreateBlogDraftArgs, CreateDocumentArgs,
+        UpdateAdArgs, UpdateBlogArgs, UpdateDocumentArgs, UploadFileArgs, UploadImageArgs,
         MCP_MAX_REQUEST_BODY_BYTES,
     };
     use rmcp::model::ProtocolVersion;
@@ -2127,6 +2343,110 @@ mod tests {
             references_schema.is_object(),
             "references schema should be an object schema, got: {references_schema:?}"
         );
+    }
+
+    #[test]
+    fn ad_id_accepts_canonical_and_legacy_names() {
+        let canonical: AdIdArgs =
+            serde_json::from_value(json!({ "ad_id": 7 })).expect("ad_id should deserialize");
+        assert_eq!(canonical.ad_id, 7);
+
+        let legacy: AdIdArgs =
+            serde_json::from_value(json!({ "id": 7 })).expect("id alias should deserialize");
+        assert_eq!(legacy.ad_id, 7);
+    }
+
+    #[test]
+    fn create_ad_normalizes_input_and_applies_default_cta() {
+        let req = build_create_ad_request(CreateAdArgs {
+            title: "  Spring sale  ".to_string(),
+            image_url: "  https://example.com/ad.png  ".to_string(),
+            target_url: "https://example.com/landing".to_string(),
+            intro: Some("  cozy promo  ".to_string()),
+            cta_text: Some("   ".to_string()),
+            slot: Some(" article_end ".to_string()),
+            weight: None,
+            enabled: None,
+            sort_order: None,
+        })
+        .expect("valid ad should build");
+
+        assert_eq!(req.title, "Spring sale");
+        assert_eq!(req.image_url, "https://example.com/ad.png");
+        assert_eq!(req.intro.as_deref(), Some("cozy promo"));
+        assert_eq!(req.slot.as_deref(), Some("article_end"));
+        assert_eq!(req.cta_text.as_deref(), Some("了解更多"));
+    }
+
+    #[test]
+    fn create_ad_rejects_non_http_urls_and_bad_weight() {
+        let base = || CreateAdArgs {
+            title: "Spring sale".to_string(),
+            image_url: "https://example.com/ad.png".to_string(),
+            target_url: "https://example.com/landing".to_string(),
+            intro: None,
+            cta_text: None,
+            slot: None,
+            weight: None,
+            enabled: None,
+            sort_order: None,
+        };
+
+        let mut bad_image = base();
+        bad_image.image_url = "javascript:alert(1)".to_string();
+        assert!(build_create_ad_request(bad_image).is_err());
+
+        let mut bad_target = base();
+        bad_target.target_url = "ftp://example.com/file".to_string();
+        assert!(build_create_ad_request(bad_target).is_err());
+
+        let mut bad_weight = base();
+        bad_weight.weight = Some(0);
+        assert!(build_create_ad_request(bad_weight).is_err());
+
+        let mut bad_slot = base();
+        bad_slot.slot = Some("sidebar".to_string());
+        assert!(build_create_ad_request(bad_slot).is_err());
+    }
+
+    #[test]
+    fn update_ad_allows_partial_payload() {
+        let req = build_update_ad_request(UpdateAdArgs {
+            ad_id: 7,
+            title: None,
+            intro: None,
+            image_url: None,
+            target_url: None,
+            cta_text: None,
+            slot: None,
+            weight: None,
+            enabled: Some(false),
+            sort_order: None,
+        })
+        .expect("partial update should build");
+
+        assert_eq!(req.enabled, Some(false));
+        assert!(
+            req.cta_text.is_none(),
+            "omitted cta_text must stay unchanged"
+        );
+    }
+
+    #[test]
+    fn update_ad_rejects_unknown_slot() {
+        assert!(build_update_ad_request(UpdateAdArgs {
+            ad_id: 7,
+            title: None,
+            intro: None,
+            image_url: None,
+            target_url: None,
+            cta_text: None,
+            slot: Some("sidebar".to_string()),
+            weight: None,
+            enabled: None,
+            sort_order: None,
+        })
+        .is_err());
     }
 
     #[test]
