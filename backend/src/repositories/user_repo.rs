@@ -3,7 +3,7 @@
 use crate::error::ApiError;
 use crate::models::user::{CreateUserRequest, User};
 use argon2::{
-    password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
+    password_hash::{phc::PasswordHash, PasswordHasher, PasswordVerifier},
     Argon2,
 };
 use sqlx::PgPool;
@@ -80,11 +80,10 @@ impl UserRepository {
 
     /// Hash a password using Argon2
     pub fn hash_password(password: &str) -> Result<String, ApiError> {
-        let salt = SaltString::generate(&mut OsRng);
         let argon2 = Argon2::default();
 
         let password_hash = argon2
-            .hash_password(password.as_bytes(), &salt)
+            .hash_password(password.as_bytes())
             .map_err(|e| {
                 tracing::error!("Failed to hash password: {}", e);
                 ApiError::InternalError("Password hashing failed".to_string())

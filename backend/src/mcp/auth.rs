@@ -1,5 +1,5 @@
 use argon2::{
-    password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
+    password_hash::{phc::PasswordHash, PasswordHasher, PasswordVerifier},
     Argon2,
 };
 use axum::{
@@ -136,9 +136,8 @@ pub fn generate_mcp_token() -> String {
 }
 
 pub fn hash_secret(secret: &str) -> Result<String, crate::error::ApiError> {
-    let salt = SaltString::generate(&mut OsRng);
     let hash = Argon2::default()
-        .hash_password(secret.as_bytes(), &salt)
+        .hash_password(secret.as_bytes())
         .map_err(|error| {
             tracing::error!("Failed to hash MCP token: {}", error);
             crate::error::ApiError::InternalError("Failed to hash MCP token".to_string())
