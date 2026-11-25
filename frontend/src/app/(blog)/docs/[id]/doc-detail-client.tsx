@@ -76,9 +76,9 @@ export function DocDetailClient({
 
 
   const treePanel = (
-    <PublicCard color="default" className="grid gap-4 p-4 shadow-sm border border-[#725d42]/10">
-      <div className="flex items-center justify-between gap-3 border-b border-[#725d42]/10 pb-2 select-none">
-        <div className="inline-flex items-center gap-1.5 font-extrabold text-[#725d42] text-sm">
+    <PublicCard color="default" className="grid gap-4 p-4">
+      <div className="flex items-center justify-between gap-3 border-b border-[var(--animal-border-color-light)] pb-2 select-none">
+        <div className="inline-flex items-center gap-1.5 font-extrabold text-[var(--animal-text-color)] text-sm">
           <AIIcon name="icon-design" size={16} bounce />
           知识目录
         </div>
@@ -127,13 +127,13 @@ export function DocDetailClient({
 
         <article className="grid min-w-0 gap-5">
           <header className="grid gap-3">
-            <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-400 select-none">
+            <div className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[var(--animal-text-color-secondary)] select-none">
               Documentation
             </div>
-            <h1 className="wrap-break-word text-3xl font-extrabold leading-tight tracking-tight text-[#725d42]">
+            <h1 className="wrap-break-word text-3xl font-extrabold leading-tight tracking-tight text-[var(--animal-text-color)]">
               {doc.name}
             </h1>
-            <p className="inline-flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-bold text-slate-400">
+            <p className="inline-flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-bold text-[var(--animal-text-color-secondary)]">
               <span>{doc.created_at ? formatDate(doc.created_at) : "未知日期"}</span>
               <span className="inline-flex items-center gap-2">
                 <Clock3 className="h-3.5 w-3.5" />
@@ -146,7 +146,7 @@ export function DocDetailClient({
             <DocumentContentRenderer
               html={processedHtml}
               references={doc.references}
-              className="prose min-w-0 max-w-none overflow-x-auto wrap-break-word prose-slate dark:prose-invert prose-headings:scroll-mt-28 prose-headings:font-extrabold prose-headings:text-[#725d42] prose-p:leading-8 prose-p:font-bold prose-p:text-[#725d42]/90 prose-a:no-underline hover:prose-a:underline prose-code:break-words prose-code:before:content-none prose-code:after:content-none prose-code:text-[#c45a1f] prose-code:bg-[#725d42]/5 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-lg prose-code:font-bold prose-pre:overflow-x-auto prose-pre:rounded-2xl prose-pre:bg-[#f4efe4] prose-pre:text-[#725d42] prose-pre:border-2 prose-pre:border-[#725d42]/15 [&_pre_code]:bg-transparent [&_pre_code]:bg-none [&_pre_code]:p-0 [&_pre_code]:border-none prose-blockquote:not-italic prose-blockquote:border-l-4 prose-blockquote:border-[#725d42]/30 prose-blockquote:bg-black/5 prose-blockquote:px-4 prose-blockquote:py-1 prose-blockquote:rounded-r-xl"
+              className="prose article-prose"
             />
           </PublicCard>
         </article>
@@ -155,9 +155,9 @@ export function DocDetailClient({
           {tocItems.length > 0 ? (
             <PublicCard
               color="default"
-              className="sticky top-28 grid gap-3 p-4 shadow-sm border border-[#725d42]/10 select-none"
+              className="sticky top-28 grid gap-3 p-4 select-none"
             >
-              <div className="text-sm font-extrabold text-[#725d42] flex items-center gap-1.5 border-b border-[#725d42]/10 pb-2">
+              <div className="text-sm font-extrabold text-[var(--animal-text-color)] flex items-center gap-1.5 border-b border-[var(--animal-border-color-light)] pb-2">
                 <AIIcon name="icon-critterpedia" size={16} />
                 目录导航
               </div>

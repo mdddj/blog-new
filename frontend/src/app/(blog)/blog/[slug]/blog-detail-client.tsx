@@ -249,7 +249,7 @@ export function BlogDetailClient({
               <BlogContentRenderer
                 html={html}
                 references={blog.references}
-                className="prose min-w-0 max-w-none wrap-break-word prose-headings:scroll-mt-28 prose-headings:font-extrabold prose-headings:text-[var(--animal-text-color)] prose-p:font-medium prose-p:leading-8 prose-p:text-[var(--animal-text-color-secondary)] prose-a:text-[var(--animal-primary-color-active)] prose-a:no-underline hover:prose-a:underline prose-code:wrap-break-word prose-code:before:content-none prose-code:after:content-none prose-code:text-[var(--animal-warning-color-active)] prose-code:bg-[var(--animal-bg-color-secondary)] prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-lg prose-code:font-bold prose-pre:overflow-x-auto prose-pre:rounded-2xl prose-pre:bg-[var(--animal-bg-color-secondary)] prose-pre:text-[var(--animal-text-color)] prose-pre:border-2 prose-pre:border-[var(--animal-border-color)] [&_pre_code]:bg-transparent [&_pre_code]:bg-none [&_pre_code]:p-0 [&_pre_code]:border-none prose-blockquote:text-[var(--animal-text-color-secondary)] prose-strong:text-[var(--animal-text-color)] prose-li:text-[var(--animal-text-color-secondary)] prose-li:font-medium prose-th:text-[var(--animal-text-color)] prose-td:text-[var(--animal-text-color-secondary)] prose-hr:border-[var(--animal-border-color)]"
+                className="prose article-prose"
               />
             </PublicCard>
           </div>

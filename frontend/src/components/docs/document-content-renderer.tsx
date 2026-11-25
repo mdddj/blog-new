@@ -6,6 +6,7 @@ import { ImagePreview } from "@/components/blog/image-preview";
 import type { DocumentReference } from "@/types";
 import { sanitizeReferenceRecord } from "@/lib/reference-utils";
 import { sanitizeHtml } from "@/lib/sanitize";
+import { CodeBlockEnhancer } from "@/components/blog/code-block-enhancer";
 
 interface DocumentContentRendererProps {
   html: string;
@@ -66,6 +67,7 @@ export function DocumentContentRenderer({
 
   return (
     <ImagePreview className={className}>
+      <CodeBlockEnhancer watch={html}>
       {parts.map((part, index) => {
         if (part.type === "reference" && part.refId && safeReferences[part.refId]) {
           return (
@@ -82,6 +84,7 @@ export function DocumentContentRenderer({
           />
         );
       })}
+      </CodeBlockEnhancer>
     </ImagePreview>
   );
 }

@@ -3,14 +3,13 @@
 //! Provides Markdown to HTML conversion with syntax highlighting for code blocks.
 
 use pulldown_cmark::{html, CodeBlockKind, Event, Options, Parser, Tag, TagEnd};
-use syntect::highlighting::ThemeSet;
-use syntect::html::highlighted_html_for_string;
-use syntect::parsing::SyntaxSet;
+use syntect::html::{ClassStyle, ClassedHTMLGenerator};
+use syntect::parsing::{SyntaxReference, SyntaxSet};
+use syntect::util::LinesWithEndings;
 
 /// Markdown renderer with syntax highlighting support
 pub struct MarkdownRenderer {
     syntax_set: SyntaxSet,
-    theme_set: ThemeSet,
 }
 
 impl Default for MarkdownRenderer {
@@ -23,8 +22,8 @@ impl MarkdownRenderer {
     /// Create a new Markdown renderer
     pub fn new() -> Self {
         Self {
-            syntax_set: SyntaxSet::load_defaults_newlines(),
-            theme_set: ThemeSet::load_defaults(),
+            // syntect's defaults lack TOML, TypeScript, Dockerfile, etc.; two-face bundles bat's syntax set.
+            syntax_set: two_face::syntax::extra_newlines(),
         }
     }
 
@@ -74,6 +73,12 @@ impl MarkdownRenderer {
 
     /// Highlight code with syntax highlighting
     fn highlight_code(&self, code: &str, lang: &str) -> String {
+        // Fence info strings may carry extras ("rust,ignore", "js title=x"); keep the language token only.
+        let lang = lang
+            .split(|c: char| c.is_whitespace() || c == ',' || c == '{')
+            .next()
+            .unwrap_or("");
+
         // Normalize language name (handle common aliases)
         let lang_lower = lang.to_lowercase();
         let normalized_lang = match lang_lower.as_str() {
@@ -83,7 +88,14 @@ impl MarkdownRenderer {
             "ts" | "typescript" => "ts",
             "py" | "python" => "py",
             "rb" | "ruby" => "rb",
-            "sh" | "bash" | "shell" => "sh",
+            "sh" | "bash" | "shell" | "zsh" | "console" | "shellscript" => "sh",
+            "docker" => "dockerfile",
+            "kt" => "kotlin",
+            "golang" => "go",
+            "rs" => "rust",
+            "conf" | "nginxconf" => "nginx",
+            "proto3" | "protobuf" => "proto",
+            "vb" => "vbnet",
             "yml" => "yaml",
             "md" => "markdown",
             other => other,
@@ -99,30 +111,42 @@ impl MarkdownRenderer {
                 .unwrap_or_else(|| self.syntax_set.find_syntax_plain_text())
         };
 
-        // Use a default theme (InspiredGitHub is a good light theme)
-        let theme = &self.theme_set.themes["InspiredGitHub"];
-
         // Build language class attribute
         let lang_class = if lang.is_empty() {
             String::new()
         } else {
-            format!(" class=\"language-{}\"", lang)
+            format!(" class=\"language-{}\"", html_escape(lang))
         };
 
         // Try to highlight the code
-        match highlighted_html_for_string(code, &self.syntax_set, syntax, theme) {
-            Ok(highlighted) => {
-                // syntect returns: <pre style="...">...content...</pre>
-                // We need to extract just the content and wrap it ourselves
-                let content = extract_pre_content(&highlighted);
-                format!("<pre><code{}>{}</code></pre>", lang_class, content)
+        // Class-based output (`hl-keyword`, `hl-string`, ...) instead of inline styles:
+        // the frontend sanitizer strips `style`, and classes let the site theme the colors.
+        match self.highlight_classed(code, syntax) {
+            Some(highlighted) => {
+                format!("<pre><code{}>{}</code></pre>", lang_class, highlighted)
             }
-            Err(_) => {
+            None => {
                 // Fallback to plain code block
                 let escaped = html_escape(code);
                 format!("<pre><code{}>{}</code></pre>", lang_class, escaped)
             }
         }
+    }
+}
+
+impl MarkdownRenderer {
+    fn highlight_classed(&self, code: &str, syntax: &SyntaxReference) -> Option<String> {
+        let mut generator = ClassedHTMLGenerator::new_with_class_style(
+            syntax,
+            &self.syntax_set,
+            ClassStyle::SpacedPrefixed { prefix: "hl-" },
+        );
+        for line in LinesWithEndings::from(code) {
+            generator
+                .parse_html_for_line_which_includes_newline(line)
+                .ok()?;
+        }
+        Some(generator.finalize())
     }
 }
 
@@ -133,15 +157,6 @@ fn html_escape(s: &str) -> String {
         .replace('>', "&gt;")
         .replace('"', "&quot;")
         .replace('\'', "&#39;")
-}
-
-/// Extract content from syntect's <pre style="...">...</pre> output
-fn extract_pre_content(html: &str) -> &str {
-    // Find the end of opening <pre ...> tag
-    let start = html.find('>').map(|i| i + 1).unwrap_or(0);
-    // Find the closing </pre> tag
-    let end = html.rfind("</pre>").unwrap_or(html.len());
-    &html[start..end]
 }
 
 /// Global markdown renderer instance (lazy initialized)
@@ -250,6 +265,35 @@ mod tests {
         assert!(html.contains("<pre>"));
         assert!(html.contains("<code"));
         assert!(html.contains("language-rust"));
+    }
+
+    #[test]
+    fn test_code_block_uses_highlight_classes() {
+        let md = "```rust,ignore\nfn main() {}\n```";
+        let html = render_markdown(md);
+        assert!(html.contains("class=\"language-rust\""));
+        assert!(html.contains("class=\"hl-"));
+        assert!(!html.contains("style="));
+    }
+
+    #[test]
+    fn test_extra_languages_are_highlighted() {
+        let samples = [
+            ("toml", "name = \"x\""),
+            ("yaml", "name: x"),
+            ("py", "def f(): return 1"),
+            ("ts", "const x: number = 1;"),
+            ("tsx", "const x = <div />;"),
+            ("dockerfile", "FROM rust:1 AS build"),
+            ("kotlin", "fun main() {}"),
+            ("vue", "<template><div /></template>"),
+        ];
+        for (lang, code) in samples {
+            let md = format!("```{}\n{}\n```", lang, code);
+            let html = render_markdown(&md);
+            assert!(html.contains("class=\"hl-source") || html.contains("class=\"hl-text"), "{} not highlighted: {}", lang, html);
+            assert!(html.matches("class=\"hl-").count() > 1, "{} has no token classes: {}", lang, html);
+        }
     }
 
     #[test]

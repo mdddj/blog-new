@@ -508,3 +508,228 @@
     url("/animal-island-cursor.png") 4 0,
     default !important;
 }
+
+/* ------------------------------------------------------------------
+ * Article body (blog + docs share one reading style)
+ * ------------------------------------------------------------------ */
+.public-shell .article-prose {
+  min-width: 0;
+  max-width: none;
+  overflow-wrap: anywhere;
+  font-size: 1rem;
+  line-height: 1.85;
+  color: var(--animal-text-color-secondary);
+  --tw-prose-body: var(--animal-text-color-secondary);
+  --tw-prose-headings: var(--animal-text-color);
+  --tw-prose-bold: var(--animal-text-color);
+  --tw-prose-links: var(--animal-primary-color-active);
+  --tw-prose-quotes: var(--animal-text-color-secondary);
+  --tw-prose-quote-borders: var(--animal-border-color-hover);
+  --tw-prose-bullets: var(--animal-primary-color);
+  --tw-prose-counters: var(--animal-text-color-secondary);
+  --tw-prose-hr: var(--animal-border-color);
+  --tw-prose-th-borders: var(--animal-border-color);
+  --tw-prose-td-borders: var(--animal-border-color-light);
+}
+
+.public-shell .article-prose p,
+.public-shell .article-prose li {
+  font-weight: 500;
+}
+
+.public-shell .article-prose :is(h1, h2, h3, h4, h5, h6) {
+  scroll-margin-top: 7rem;
+  font-weight: 800;
+  color: var(--animal-text-color);
+  letter-spacing: -0.01em;
+}
+
+.public-shell .article-prose h2 {
+  margin-top: 2.4em;
+  padding-bottom: 0.4em;
+  border-bottom: 2px dashed var(--animal-border-color);
+}
+
+.public-shell .article-prose h3 {
+  margin-top: 1.9em;
+}
+
+.public-shell .article-prose a {
+  text-decoration: none;
+  font-weight: 700;
+  border-bottom: 2px solid var(--animal-primary-color-bg);
+  transition: border-color var(--animal-motion-duration-fast) var(--animal-motion-ease);
+}
+
+.public-shell .article-prose a:hover {
+  border-bottom-color: var(--animal-primary-color);
+}
+
+.public-shell .article-prose blockquote {
+  font-style: normal;
+  margin-inline: 0;
+  padding: 0.6em 1.1em;
+  border-left: 4px solid var(--animal-primary-color);
+  border-radius: 0 var(--animal-border-radius-sm) var(--animal-border-radius-sm) 0;
+  background: var(--animal-primary-color-bg);
+}
+
+.public-shell .article-prose blockquote p:first-of-type::before,
+.public-shell .article-prose blockquote p:last-of-type::after {
+  content: none;
+}
+
+/* Wide tables scroll inside the column instead of stretching the page. */
+.public-shell .article-prose table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 0.92em;
+}
+
+.public-shell .article-prose thead th {
+  background: var(--animal-bg-color-secondary);
+  color: var(--animal-text-color);
+  font-weight: 800;
+  padding: 0.6em 0.9em;
+}
+
+.public-shell .article-prose tbody td {
+  padding: 0.55em 0.9em;
+}
+
+/* Inline code */
+.public-shell .article-prose :not(pre) > code {
+  padding: 0.15em 0.45em;
+  border-radius: 8px;
+  background: var(--animal-bg-color-secondary);
+  color: #b0601e;
+  font-weight: 700;
+  font-size: 0.88em;
+  overflow-wrap: anywhere;
+}
+
+.public-shell .article-prose :not(pre) > code::before,
+.public-shell .article-prose :not(pre) > code::after {
+  content: none;
+}
+
+/* ------------------------------------------------------------------
+ * Code blocks: frame + header (added by CodeBlockEnhancer)
+ * ------------------------------------------------------------------ */
+.public-shell .article-prose .code-block {
+  margin: 1.6em 0;
+  overflow: hidden;
+  border: 2px solid var(--animal-border-color);
+  border-radius: var(--animal-border-radius-base);
+  background: #fbf7ee;
+}
+
+.public-shell .article-prose .code-block__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 40px;
+  padding: 0.2rem 0.5rem 0.2rem 1rem;
+  border-bottom: 2px solid var(--animal-border-color-light);
+  background: var(--animal-bg-color-secondary);
+}
+
+.public-shell .article-prose .code-block__lang {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--animal-text-color);
+}
+
+.public-shell .article-prose .code-block__actions {
+  display: inline-flex;
+  align-items: center;
+}
+
+.public-shell .article-prose pre {
+  margin: 0;
+  padding: 1rem 1.15rem;
+  overflow-x: auto;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #5b4630;
+  font-size: 0.88rem;
+  line-height: 1.7;
+  tab-size: 2;
+}
+
+/* A bare <pre> that has not been wrapped yet (SSR first paint) keeps a frame. */
+.public-shell .article-prose div:not(.code-block) > pre {
+  margin: 1.6em 0;
+  border: 2px solid var(--animal-border-color);
+  border-radius: var(--animal-border-radius-base);
+  background: #fbf7ee;
+}
+
+.public-shell .article-prose pre code {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  white-space: pre;
+  overflow-wrap: normal;
+}
+
+/* ------------------------------------------------------------------
+ * Syntax tokens (backend syntect, ClassStyle::SpacedPrefixed "hl-")
+ * Warm palette tuned for the parchment code background.
+ * ------------------------------------------------------------------ */
+.public-shell .article-prose pre .hl-comment {
+  color: #a3927a;
+  font-style: italic;
+}
+.public-shell .article-prose pre :is(.hl-keyword, .hl-storage) {
+  color: #c2410c;
+  font-weight: 700;
+}
+.public-shell .article-prose pre :is(.hl-string, .hl-markup.hl-inline) {
+  color: #4d8a12;
+}
+.public-shell .article-prose pre :is(.hl-constant, .hl-numeric) {
+  color: #b7791f;
+}
+.public-shell .article-prose pre .hl-entity.hl-name.hl-function,
+.public-shell .article-prose pre .hl-support.hl-function {
+  color: #0f8f84;
+  font-weight: 700;
+}
+.public-shell .article-prose pre :is(.hl-entity.hl-name.hl-type, .hl-entity.hl-name.hl-class, .hl-support.hl-type, .hl-support.hl-class, .hl-storage.hl-type) {
+  color: #8a4fb8;
+}
+.public-shell .article-prose pre .hl-entity.hl-name.hl-tag {
+  color: #c2410c;
+}
+.public-shell .article-prose pre .hl-entity.hl-other.hl-attribute-name {
+  color: #b7791f;
+}
+.public-shell .article-prose pre :is(.hl-variable.hl-parameter, .hl-variable.hl-language) {
+  color: #a15c2b;
+}
+.public-shell .article-prose pre :is(.hl-punctuation, .hl-operator) {
+  color: #8c7a64;
+}
+.public-shell .article-prose pre .hl-invalid {
+  color: #e05a5a;
+}
+.public-shell .article-prose pre .hl-markup.hl-heading {
+  color: #c2410c;
+  font-weight: 800;
+}
+.public-shell .article-prose pre .hl-markup.hl-inserted {
+  color: #4d8a12;
+}
+.public-shell .article-prose pre .hl-markup.hl-deleted {
+  color: #e05a5a;
+}

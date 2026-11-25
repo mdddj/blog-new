@@ -6,6 +6,7 @@ import { ImagePreview } from "./image-preview";
 import type { BlogReference } from "@/types";
 import { sanitizeReferenceRecord } from "@/lib/reference-utils";
 import { sanitizeHtml } from "@/lib/sanitize";
+import { CodeBlockEnhancer } from "./code-block-enhancer";
 
 interface BlogContentRendererProps {
   html: string;
@@ -66,6 +67,7 @@ export function BlogContentRenderer({
 
   return (
     <ImagePreview className={className}>
+      <CodeBlockEnhancer watch={html}>
       {parts.map((part, index) => {
         if (part.type === "reference" && part.refId && safeReferences[part.refId]) {
           return (
@@ -82,6 +84,7 @@ export function BlogContentRenderer({
           />
         );
       })}
+      </CodeBlockEnhancer>
     </ImagePreview>
   );
 }

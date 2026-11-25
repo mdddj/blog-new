@@ -41,6 +41,8 @@ argon2 = "0.6"
 # Markdown rendering
 pulldown-cmark = "0.13"
 syntect = "5"
+# Extra syntaxes for syntect (TOML, TypeScript, Dockerfile, Vue, Kotlin, ...)
+two-face = { version = "0.4", default-features = false, features = ["syntect-onig"] }
 regex = "1.13.1"
 
 # S3 storage
