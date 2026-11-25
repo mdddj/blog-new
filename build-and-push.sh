@@ -50,6 +50,7 @@ docker buildx build \
     --platform $PLATFORMS \
     --tag $DOCKER_USER/blog-frontend:$TAG \
     --tag $DOCKER_USER/blog-frontend:$(date +%Y%m%d) \
+    --build-arg NPM_REGISTRY="${NPM_REGISTRY-https://registry.npmmirror.com}" \
     --push \
     ./frontend
 

@@ -5,7 +5,10 @@ WORKDIR /app
 
 # Install dependencies
 COPY package.json package-lock.json* ./
-RUN npm config set registry https://registry.npmmirror.com && npm install
+# Optional npm registry (e.g. https://registry.npmmirror.com for builds inside China).
+# Empty = registry.npmjs.org; mirrors can lag behind fresh releases.
+ARG NPM_REGISTRY=""
+RUN if [ -n "$NPM_REGISTRY" ]; then npm config set registry "$NPM_REGISTRY"; fi && npm install
 
 # Copy source code
 COPY . .
