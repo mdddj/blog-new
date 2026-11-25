@@ -41,7 +41,7 @@ pub async fn login(
     }
 
     // Generate tokens
-    let auth_service = AuthService::new(state.config.jwt.clone());
+    let auth_service = AuthService::new(state.config.jwt.clone())?;
     let response = auth_service.create_login_response(user)?;
 
     tracing::info!("User '{}' logged in successfully", req.username);
@@ -64,7 +64,7 @@ pub async fn refresh_token(
     }
 
     // Verify refresh token
-    let auth_service = AuthService::new(state.config.jwt.clone());
+    let auth_service = AuthService::new(state.config.jwt.clone())?;
     let claims = auth_service.verify_refresh_token(&req.refresh_token)?;
 
     // Find user to ensure they still exist
@@ -139,7 +139,7 @@ pub async fn setup_admin(
     let user = UserRepository::create(&state.db, &req).await?;
 
     // Generate tokens and return login response
-    let auth_service = AuthService::new(state.config.jwt.clone());
+    let auth_service = AuthService::new(state.config.jwt.clone())?;
     let response = auth_service.create_login_response(user)?;
 
     tracing::info!("First admin user '{}' created successfully", req.username);

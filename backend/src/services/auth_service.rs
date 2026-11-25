@@ -47,15 +47,17 @@ pub struct AuthService {
 
 impl AuthService {
     /// Create a new AuthService instance
-    pub fn new(jwt_config: JwtConfig) -> Self {
-        let encoding_key = EncodingKey::from_secret(jwt_config.secret.as_bytes());
-        let decoding_key = DecodingKey::from_secret(jwt_config.secret.as_bytes());
+    pub fn new(jwt_config: JwtConfig) -> Result<Self, ApiError> {
+        let encoding_key = EncodingKey::from_secret(jwt_config.secret.as_bytes())
+            .map_err(|e| ApiError::InternalError(format!("Invalid JWT secret: {e}")))?;
+        let decoding_key = DecodingKey::from_secret(jwt_config.secret.as_bytes())
+            .map_err(|e| ApiError::InternalError(format!("Invalid JWT secret: {e}")))?;
 
-        Self {
+        Ok(Self {
             jwt_config,
             encoding_key,
             decoding_key,
-        }
+        })
     }
 
     /// Generate access token for a user

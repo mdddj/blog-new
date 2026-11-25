@@ -54,7 +54,10 @@ pub async fn auth_middleware(
     };
 
     // Verify token
-    let auth_service = AuthService::new(state.config.jwt.clone());
+    let auth_service = match AuthService::new(state.config.jwt.clone()) {
+        Ok(service) => service,
+        Err(e) => return e.into_response(),
+    };
     let claims = match auth_service.verify_access_token(token) {
         Ok(claims) => claims,
         Err(e) => {
