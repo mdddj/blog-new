@@ -35,6 +35,7 @@ docker buildx build \
     --platform $PLATFORMS \
     --tag $DOCKER_USER/blog-backend:$TAG \
     --tag $DOCKER_USER/blog-backend:$(date +%Y%m%d) \
+    --build-arg APT_MIRROR="${APT_MIRROR-mirrors.ustc.edu.cn}" \
     --push \
     ./backend
 

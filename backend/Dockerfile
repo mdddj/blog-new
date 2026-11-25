@@ -1,10 +1,12 @@
 # Build stage - native build on target platform
 FROM rust:1.98.0-slim-bookworm AS builder
+# Optional apt mirror host (e.g. mirrors.ustc.edu.cn for builds inside China). Empty = deb.debian.org.
+ARG APT_MIRROR=""
 
 WORKDIR /app
 
 # Install build dependencies
-RUN sed -i "s|deb.debian.org|mirrors.ustc.edu.cn|g" /etc/apt/sources.list.d/debian.sources 2>/dev/null || sed -i "s|deb.debian.org|mirrors.ustc.edu.cn|g" /etc/apt/sources.list && apt-get update && apt-get install -y \
+RUN if [ -n "$APT_MIRROR" ]; then sed -i "s|deb.debian.org|$APT_MIRROR|g" /etc/apt/sources.list.d/debian.sources 2>/dev/null || sed -i "s|deb.debian.org|$APT_MIRROR|g" /etc/apt/sources.list; fi && apt-get update && apt-get install -y \
     pkg-config \
     libssl-dev \
     && rm -rf /var/lib/apt/lists/*
@@ -30,11 +32,13 @@ RUN touch src/main.rs src/bin/create_admin.rs && \
 
 # Runtime stage
 FROM debian:bookworm-slim
+# Optional apt mirror host (e.g. mirrors.ustc.edu.cn for builds inside China). Empty = deb.debian.org.
+ARG APT_MIRROR=""
 
 WORKDIR /app
 
 # Install runtime dependencies
-RUN sed -i "s|deb.debian.org|mirrors.ustc.edu.cn|g" /etc/apt/sources.list.d/debian.sources 2>/dev/null || sed -i "s|deb.debian.org|mirrors.ustc.edu.cn|g" /etc/apt/sources.list && apt-get update && apt-get install -y \
+RUN if [ -n "$APT_MIRROR" ]; then sed -i "s|deb.debian.org|$APT_MIRROR|g" /etc/apt/sources.list.d/debian.sources 2>/dev/null || sed -i "s|deb.debian.org|$APT_MIRROR|g" /etc/apt/sources.list; fi && apt-get update && apt-get install -y \
     ca-certificates \
     libssl3 \
     curl \
