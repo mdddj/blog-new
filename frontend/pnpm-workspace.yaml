@@ -10,7 +10,7 @@ minimumReleaseAgeExclude:
   - '@next/swc-linux-x64-musl@16.3.4 || 16.4.0'
   - '@next/swc-win32-arm64-msvc@16.3.4 || 16.4.0'
   - '@next/swc-win32-x64-msvc@16.3.4 || 16.4.0'
-  - lucide-react@1.38.0 || 1.62.0
+  - lucide-react@1.38.0 || 1.62.0 || 1.79.0
   - next@16.3.4 || 16.4.0
   - '@oxfmt/binding-android-arm-eabi@0.75.0'
   - '@oxfmt/binding-android-arm64@0.75.0'
@@ -55,4 +55,4 @@ minimumReleaseAgeExclude:
   - '@uiw/react-md-editor@4.2.2'
   - oxlint-plugin-react-doctor@0.9.22
   - react-doctor@0.9.22
-  - react-resizable-panels@4.16.1
+  - react-resizable-panels@4.16.1 || 4.24.2
